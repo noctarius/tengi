@@ -16,11 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.github.tengi.client
+package com.github.tengi.client.buffer
 {
-    import com.github.tengi.client.lang.ASEnum;
-
-    public interface TransportType extends ASEnum
+    public final class ByteOrderConstants
     {
+
+        public static const BIG_ENDIAN : ByteOrder = new ByteOrderEnum( "BIG_ENDIAN", 0 );
+
+        public static const LITTLE_ENDIAN : ByteOrder = new ByteOrderEnum( "LITTLE_ENDIAN", 1 );
+
     }
 }

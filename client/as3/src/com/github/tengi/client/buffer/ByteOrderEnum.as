@@ -16,11 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.github.tengi.client
+package com.github.tengi.client.buffer
 {
-    import com.github.tengi.client.lang.ASEnum;
-
-    public interface TransportType extends ASEnum
+    internal class ByteOrderEnum implements ByteOrder
     {
+
+        private var mName : String;
+        private var mOrdinal : int;
+
+        public function ByteOrderEnum( name : String, ordinal : int )
+        {
+            this.mName = name;
+            this.mOrdinal = ordinal;
+        }
+
+        public function get ordinal():int
+        {
+            return mOrdinal;
+        }
+
+        public function get name():String
+        {
+            return mName;
+        }
     }
 }

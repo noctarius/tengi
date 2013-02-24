@@ -23,13 +23,6 @@ package com.github.tengi.client.transport
     internal class TransportTypeEnum implements TransportType
     {
 
-        public static const TCP : TransportType = new TransportTypeEnum( "TCP", 0 );
-        public static const UDP : TransportType = new TransportTypeEnum( "UDP", 1 );
-        public static const HTTP_POLLING : TransportType = new TransportTypeEnum( "HTTP_POLLING", 2 );
-        public static const HTTP_LONG_POLLING : TransportType = new TransportTypeEnum( "HTTP_LONG_POLLING", 3 );
-        public static const WEBSOCKET : TransportType = new TransportTypeEnum( "WEBSOCKET", 4 );
-        public static const SPDY : TransportType = new TransportTypeEnum( "SPDY", 5 );
-
         private var mName : String;
         private var mOrdinal : int;
 

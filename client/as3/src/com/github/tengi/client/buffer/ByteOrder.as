@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.github.tengi.client
+package com.github.tengi.client.buffer
 {
     import com.github.tengi.client.lang.ASEnum;
 
-    public interface TransportType extends ASEnum
+    public interface ByteOrder extends ASEnum
     {
     }
 }

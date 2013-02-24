@@ -16,11 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.github.tengi.client
+package com.github.tengi.client.transport
 {
-    import com.github.tengi.client.lang.ASEnum;
+    import com.github.tengi.client.TransportType;
 
-    public interface TransportType extends ASEnum
+    public final class TransportTypeConstants
     {
+
+        public static const TCP : TransportType = new TransportTypeEnum( "TCP", 0 );
+
+        public static const UDP : TransportType = new TransportTypeEnum( "UDP", 1 );
+
+        public static const HTTP_POLLING : TransportType = new TransportTypeEnum( "HTTP_POLLING", 2 );
+
+        public static const HTTP_LONG_POLLING : TransportType = new TransportTypeEnum( "HTTP_LONG_POLLING", 3 );
+
+        public static const WEBSOCKET : TransportType = new TransportTypeEnum( "WEBSOCKET", 4 );
+
+        public static const SPDY : TransportType = new TransportTypeEnum( "SPDY", 5 );
+
     }
 }

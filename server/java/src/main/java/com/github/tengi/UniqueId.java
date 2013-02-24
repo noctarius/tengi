@@ -1,4 +1,4 @@
-package com.github.tengi.buffer;
+package com.github.tengi;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -66,7 +66,7 @@ public class UniqueId
         return leastSigBits;
     }
 
-    byte[] getUniqueIdData()
+    public byte[] getUniqueIdData()
     {
         return uniqueIdData;
     }

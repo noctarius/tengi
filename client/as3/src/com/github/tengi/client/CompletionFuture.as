@@ -1,4 +1,3 @@
-package com.github.tengi;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,16 +16,29 @@ package com.github.tengi;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import java.util.UUID;
-
-import com.github.tengi.buffer.ReadableMemoryBuffer;
-
-public interface Message
+package com.github.tengi.client
 {
+    public class CompletionFuture
+    {
 
-    UniqueId getUniqueId();
+        private var mSuccess : Function;
+        private var mFailure : Function;
 
-    ReadableMemoryBuffer getMemoryBuffer();
+        public function CompletionFuture( success : Function, failure : Function )
+        {
+            this.mSuccess = success;
+            this.mFailure = failure;
+        }
 
+        public function get success() : Function
+        {
+            return mSuccess;
+        }
+
+        public function get failure() : Function
+        {
+            return mFailure;
+        }
+
+    }
 }

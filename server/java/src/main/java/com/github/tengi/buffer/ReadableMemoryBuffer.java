@@ -19,6 +19,8 @@ package com.github.tengi.buffer;
  * under the License.
  */
 
+import com.github.tengi.UniqueId;
+
 import java.nio.ByteBuffer;
 
 

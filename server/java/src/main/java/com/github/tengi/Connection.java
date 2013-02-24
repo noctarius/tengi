@@ -19,7 +19,6 @@ package com.github.tengi;
  */
 
 import com.github.tengi.buffer.ReadableMemoryBuffer;
-import com.github.tengi.buffer.UniqueId;
 
 public interface Connection
 {

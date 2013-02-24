@@ -25,7 +25,7 @@ import java.nio.ByteOrder;
 
 import com.github.tengi.buffer.MemoryBuffer;
 import com.github.tengi.buffer.ReadableMemoryBuffer;
-import com.github.tengi.buffer.UniqueId;
+import com.github.tengi.UniqueId;
 import com.github.tengi.buffer.WritableMemoryBuffer;
 
 class ByteBufMemoryBuffer

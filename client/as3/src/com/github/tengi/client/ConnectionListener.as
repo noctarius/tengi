@@ -1,4 +1,3 @@
-package com.github.tengi;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,15 +17,22 @@ package com.github.tengi;
  * under the License.
  */
 
-import java.util.UUID;
-
-import com.github.tengi.buffer.ReadableMemoryBuffer;
-
-public interface Message
+package com.github.tengi.client
 {
+    public interface ConnectionListener
+    {
 
-    UniqueId getUniqueId();
+        function onHandshake( connection : Connection ) : void;
 
-    ReadableMemoryBuffer getMemoryBuffer();
+        function onConnect( connection : Connection ) : void;
 
+        function onClose( connection : Connection ) : void;
+
+        function onReconnect( connection : Connection ) : void;
+
+        function onSend( connection : Connection, message : Message ) : void;
+
+        function onArrival( connection : Connection, message : Message ) : void;
+
+    }
 }

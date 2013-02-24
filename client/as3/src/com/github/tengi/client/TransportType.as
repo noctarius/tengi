@@ -1,4 +1,3 @@
-package com.github.tengi;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,16 +16,14 @@ package com.github.tengi;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import java.util.UUID;
-
-import com.github.tengi.buffer.ReadableMemoryBuffer;
-
-public interface Message
+package com.github.tengi.client
 {
+    public interface TransportType
+    {
 
-    UniqueId getUniqueId();
+        function get ordinal() : int;
 
-    ReadableMemoryBuffer getMemoryBuffer();
+        function get name() : String;
 
+    }
 }

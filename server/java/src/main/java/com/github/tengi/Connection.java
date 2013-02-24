@@ -27,8 +27,12 @@ public interface Connection
 
     TransportType getConnectionType();
 
-    <T extends Message> CompletionFuture<T> sendMessage( T message );
+    <T extends Message> void sendMessage( T message, CompletionFuture<T> completionFuture );
 
-    <T> CompletionFuture<T> sendRawData( ReadableMemoryBuffer memoryBuffer, T metadata );
+    <T> void sendRawData( ReadableMemoryBuffer memoryBuffer, T metadata, CompletionFuture<T> completionFuture );
+
+    void setMessageListener( MessageListener messageListener );
+
+    void clearMessageListener();
 
 }

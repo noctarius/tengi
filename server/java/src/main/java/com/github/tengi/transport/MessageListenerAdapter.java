@@ -1,3 +1,4 @@
+package com.github.tengi.transport;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -16,24 +17,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.github.tengi.client
+
+import com.github.tengi.Connection;
+import com.github.tengi.Message;
+import com.github.tengi.MessageListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundMessageHandlerAdapter;
+
+class MessageListenerAdapter extends ChannelInboundMessageHandlerAdapter<Message>
 {
-    import flash.utils.ByteArray;
 
-    public interface Connection
+    private final MessageListener messageListener;
+
+    private final Connection connection;
+
+    MessageListenerAdapter( MessageListener messageListener, Connection connection )
     {
+        this.messageListener = messageListener;
+        this.connection = connection;
+    }
 
-        function getUniqueId() : UniqueId;
 
-        function getTransportType() : TransportType;
-
-        function sendMessage( message : Message, completionFuture : CompletionFuture = null) : void;
-
-        function sendRawData( buffer : ByteArray, completionFuture : CompletionFuture = null) : void;
-
-        function setMessageListener( messageListener : MessageListener ) : void;
-
-        function clearMessageListener() : void;
-
+    @Override
+    public void messageReceived( ChannelHandlerContext ctx, Message msg )
+        throws Exception
+    {
+        messageListener.messageReceived( msg, connection );
     }
 }

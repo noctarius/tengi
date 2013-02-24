@@ -20,8 +20,6 @@ package com.github.tengi.client.buffer
 {
     import com.github.tengi.client.UniqueId;
 
-    import flash.utils.ByteArray;
-
     public interface MemoryBuffer
     {
 

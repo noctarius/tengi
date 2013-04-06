@@ -27,7 +27,7 @@ package com.github.tengi.client.buffer
 
         function get byteOrder() : ByteOrder;
 
-        function set byteOrder( byteOrder : ByteOrder );
+        function set byteOrder( byteOrder : ByteOrder ) : void;
 
         function free() : Boolean;
 

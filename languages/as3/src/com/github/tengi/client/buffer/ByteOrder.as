@@ -18,9 +18,45 @@
  */
 package com.github.tengi.client.buffer
 {
-    import com.github.tengi.client.lang.ASEnum;
+    import com.github.tengi.client.lang.IllegalArgumentError;
+    import com.github.tengi.client.lang.util.Enum;
 
-    public interface ByteOrder extends ASEnum
+    public final class ByteOrder extends Enum
     {
+
+        public static const BIG_ENDIAN : ByteOrder = new ByteOrder( "BIG_ENDIAN", 0, _ );
+
+        public static const LITTLE_ENDIAN : ByteOrder = new ByteOrder( "LITTLE_ENDIAN", 1, _ );
+
+        function ByteOrder( name : String, ordinal : int, restrictor : * )
+        {
+            super( name, ordinal, restrictor );
+        }
+
+
+        internal static function get constants():Array
+        {
+            return [ BIG_ENDIAN, LITTLE_ENDIAN ];
+        }
+
+        public static function valueOf(name : String):ByteOrder
+        {
+            try
+            {
+                return ByteOrder( BIG_ENDIAN.constantOf( name ) );
+            }
+            catch (e : Error)
+            {
+                throw new IllegalArgumentError( e.message );
+            }
+
+            return null;
+        }
+
+        override protected function getConstants():Array
+        {
+            return constants;
+        }
+
     }
 }

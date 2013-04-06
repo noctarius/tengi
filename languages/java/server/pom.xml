@@ -2,9 +2,9 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.tengi</groupId>
-  <artifactId>tengi-java-base</artifactId>
+  <artifactId>tengi-java-server</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>tengi: Java Base API</name>
+  <name>tengi: Java Server Implementation</name>
 
   <dependencies>
     <dependency>

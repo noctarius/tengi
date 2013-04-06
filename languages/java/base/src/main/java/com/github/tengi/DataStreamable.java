@@ -1,3 +1,4 @@
+package com.github.tengi;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -16,28 +17,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.github.tengi.client.buffer
+
+import com.github.tengi.buffer.MemoryBuffer;
+
+public interface DataStreamable
 {
-    internal class ByteOrderEnum implements ByteOrder
-    {
 
-        private var mName : String;
-        private var mOrdinal : int;
+    void readStream( MemoryBuffer memoryBuffer );
 
-        public function ByteOrderEnum( name : String, ordinal : int )
-        {
-            this.mName = name;
-            this.mOrdinal = ordinal;
-        }
+    void writeStream( MemoryBuffer memoryBuffer );
 
-        public function get ordinal():int
-        {
-            return mOrdinal;
-        }
-
-        public function get name():String
-        {
-            return mName;
-        }
-    }
 }

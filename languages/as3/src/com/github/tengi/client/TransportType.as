@@ -18,9 +18,54 @@
  */
 package com.github.tengi.client
 {
-    import com.github.tengi.client.lang.ASEnum;
 
-    public interface TransportType extends ASEnum
+    import com.github.tengi.client.TransportType;
+    import com.github.tengi.client.lang.IllegalArgumentError;
+    import com.github.tengi.client.lang.util.Enum;
+
+    public final class TransportType extends Enum
     {
+
+        public static const TCP : TransportType = new TransportType( "TCP", 0, _ );
+
+        public static const UDP : TransportType = new TransportType( "UDP", 1, _ );
+
+        public static const HTTP_POLLING : TransportType = new TransportType( "HTTP_POLLING", 2, _ );
+
+        public static const HTTP_LONG_POLLING : TransportType = new TransportType( "HTTP_LONG_POLLING", 3, _ );
+
+        public static const WEBSOCKET : TransportType = new TransportType( "WEBSOCKET", 4, _ );
+
+        public static const SPDY : TransportType = new TransportType( "SPDY", 5, _ );
+
+        function TransportType( name : String, ordinal : int, restrictor : *) : void
+        {
+            super( name, ordinal, restrictor );
+        }
+
+        internal static function get constants():Array
+        {
+            return [ TCP, UDP, HTTP_POLLING, HTTP_LONG_POLLING, WEBSOCKET, SPDY ];
+        }
+
+        public static function valueOf(name : String):TransportType
+        {
+            try
+            {
+                return TransportType( TCP.constantOf( name ) );
+            }
+            catch (e : Error)
+            {
+                throw new IllegalArgumentError( e.message );
+            }
+
+            return null;
+        }
+
+        override protected function getConstants():Array
+        {
+            return constants;
+        }
+
     }
 }

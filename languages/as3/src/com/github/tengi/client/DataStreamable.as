@@ -16,14 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.github.tengi.client.buffer
+package com.github.tengi.client
 {
-    public final class ByteOrderConstants
+    import com.github.tengi.client.buffer.MemoryBuffer;
+
+    public interface DataStreamable
     {
 
-        public static const BIG_ENDIAN : ByteOrder = new ByteOrderEnum( "BIG_ENDIAN", 0 );
+        function readStream( memoryBuffer : MemoryBuffer ) : void;
 
-        public static const LITTLE_ENDIAN : ByteOrder = new ByteOrderEnum( "LITTLE_ENDIAN", 1 );
+        function writeStream( memoryBuffer : MemoryBuffer ) : void;
 
     }
 }

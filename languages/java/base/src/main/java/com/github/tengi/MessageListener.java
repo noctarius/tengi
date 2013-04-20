@@ -18,9 +18,13 @@ package com.github.tengi;
  * under the License.
  */
 
+import com.github.tengi.buffer.MemoryBuffer;
+
 public interface MessageListener
 {
 
     void messageReceived( Message message, Connection connection );
+
+    void messageReceived( MemoryBuffer memoryBuffer );
 
 }

@@ -18,14 +18,10 @@
  */
 package com.github.tengi.client
 {
-    import com.github.tengi.client.buffer.MemoryBuffer;
-
-    public interface MessageListener
+    public interface LongPollingRequestFactory
     {
 
-        function messageReceived( message:Message, connection:Connection ):void;
-
-        function dataReceived( memoryBuffer:MemoryBuffer, connection:Connection ):void;
+        function prepareLongPollingRequest( connection:Connection ):Streamable;
 
     }
 }

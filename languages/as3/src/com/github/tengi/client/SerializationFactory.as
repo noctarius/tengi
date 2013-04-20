@@ -1,4 +1,3 @@
-package com.github.tengi;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,14 +16,20 @@ package com.github.tengi;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import com.github.tengi.buffer.MemoryBuffer;
-
-public interface DataStreamable
+package com.github.tengi.client
 {
+    import com.github.tengi.client.buffer.MemoryBuffer;
 
-    void readStream( MemoryBuffer memoryBuffer );
+    public interface SerializationFactory
+    {
 
-    void writeStream( MemoryBuffer memoryBuffer );
+        function instantiate( classId:int ):Streamable;
 
+        function getClassIdentifier( streamable:Streamable ):int;
+
+        function isEntity( classId:int ):Boolean;
+
+        function readEntity( memoryBuffer:MemoryBuffer, classId:int ):Entity;
+
+    }
 }

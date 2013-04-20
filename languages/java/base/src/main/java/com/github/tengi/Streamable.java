@@ -1,3 +1,4 @@
+package com.github.tengi;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -16,16 +17,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.github.tengi.client
+
+import com.github.tengi.buffer.MemoryBuffer;
+
+public interface Streamable
 {
-    import com.github.tengi.client.buffer.MemoryBuffer;
 
-    public interface MessageListener
-    {
+    void readStream( MemoryBuffer memoryBuffer );
 
-        function messageReceived( message:Message, connection:Connection ):void;
+    void writeStream( MemoryBuffer memoryBuffer );
 
-        function dataReceived( memoryBuffer:MemoryBuffer, connection:Connection ):void;
-
-    }
 }

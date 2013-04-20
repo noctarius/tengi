@@ -19,89 +19,313 @@
 package com.github.tengi.client.buffer
 {
     import com.github.tengi.client.UniqueId;
+    import com.github.tengi.client.lang.IllegalArgumentError;
+    import com.github.tengi.client.lang.math.Long;
 
-    public interface MemoryBuffer
+    import flash.utils.ByteArray;
+
+    public class MemoryBuffer
     {
 
-        function get capacity() : int;
+        private var byteArray:ByteArray;
 
-        function get byteOrder() : ByteOrder;
+        private var _readerIndex:uint = 0;
+        private var _writerIndex:uint;
 
-        function set byteOrder( byteOrder : ByteOrder ) : void;
+        public function MemoryBuffer( byteArray:ByteArray )
+        {
+            this.byteArray = byteArray;
+            this._writerIndex = byteArray.length;
+        }
 
-        function free() : Boolean;
+        public function get capacity():int
+        {
+            return int.MAX_VALUE;
+        }
 
-        function clear() : void;
+        public function free():Boolean
+        {
+            clear();
+            return true;
+        }
 
-        function get readable() : Boolean;
+        public function clear():void
+        {
+            byteArray.clear();
+            _writerIndex = 0;
+            _readerIndex = 0;
+        }
 
-        function get readableByte() : int;
+        public function get readable():Boolean
+        {
+            return byteArray.length > 0 && _readerIndex < byteArray.length;
+        }
 
-        function readBytes( buffer : *, offset : int = -1, length : int = -1 ) : int;
+        public function get readableByte():int
+        {
+            return byteArray.length - _readerIndex;
+        }
 
-        function readBoolean() : Boolean;
+        public function readBytes( buffer:*, offset:int = -1, length:int = -1 ):int
+        {
+            byteArray.position = _readerIndex;
+            var target:ByteArray;
+            if ( buffer is ByteArray )
+            {
+                target = buffer as ByteArray;
+            }
+            else if ( buffer is MemoryBuffer )
+            {
+                target = (buffer as MemoryBuffer).byteArray;
+            }
+            else
+            {
+                throw new IllegalArgumentError( "Given buffer type is unsupported (legal types ByteArray, MemoryBuffer)" );
+            }
 
-        function readByte() : int;
+            var writeableBytes:int = length != -1 ? length : target.length - target.position;
+            var writeOffset:int = offset != -1 ? offset : target.position;
+            byteArray.readBytes( target, writeOffset, writeableBytes );
+            _readerIndex += writeableBytes;
+            return writeableBytes;
+        }
 
-        function readUnsignedByte() : int;
+        public function readBoolean():Boolean
+        {
+            byteArray.position = _readerIndex;
+            var value:Boolean = byteArray.readBoolean();
+            _readerIndex += 1;
+            return value;
+        }
 
-        function readShort() : int;
+        public function readByte():int
+        {
+            byteArray.position = _readerIndex;
+            var value:int = byteArray.readByte();
+            _readerIndex += 1;
+            return value;
+        }
 
-        function readChar() : int;
+        public function readUnsignedByte():int
+        {
+            return readByte() & 0xFF;
+        }
 
-        function readInt() : int;
+        public function readShort():int
+        {
+            byteArray.position = _readerIndex;
+            var value:int = byteArray.readShort();
+            _readerIndex += 2;
+            return value;
+        }
 
-        function readCompressedInt() : int;
+        public function readChar():int
+        {
+            return readInt();
+        }
 
-        function readLong() : Number;
+        public function readInt():int
+        {
+            byteArray.position = _readerIndex;
+            var value:int = byteArray.readInt();
+            _readerIndex += 4;
+            return value;
+        }
 
-        function readCompressedLong() : Number;
+        public function readCompressedInt():int
+        {
+            // Missing CompressionUtils
+            return readInt();
+        }
 
-        function readFloat() : Number;
+        public function readLong():Long
+        {
+            byteArray.position = _readerIndex;
+            var u1:uint = byteArray.readUnsignedInt();
+            var u0:uint = byteArray.readUnsignedInt();
+            var value:Long = Long.newLong( u1, u0 );
+            _readerIndex += 8;
+            return value;
+        }
 
-        function readDouble() : Number;
+        public function readCompressedLong():Long
+        {
+            // Missing CompressionUtils
+            return readLong();
+        }
 
-        function readString() : String;
+        public function readFloat():Number
+        {
+            byteArray.position = _readerIndex;
+            var value:Number = byteArray.readFloat();
+            _readerIndex += 4;
+            return value;
+        }
 
-        function readUniqueId() : UniqueId;
+        public function readDouble():Number
+        {
+            byteArray.position = _readerIndex;
+            var value:Number = byteArray.readDouble();
+            _readerIndex += 8;
+            return value;
+        }
 
-        function get readerIndex() : int;
+        public function readString():String
+        {
+            byteArray.position = _readerIndex;
+            var value:String = byteArray.readUTF();
+            _readerIndex += (byteArray.position - _readerIndex);
+            return value;
+        }
 
-        function set readerIndex( readerIndex : int ) : void;
+        public function readUniqueId():UniqueId
+        {
+            byteArray.position = _readerIndex;
+            var value:UniqueId = UniqueId.readFromStream( this );
+            _readerIndex += 16;
+            return value;
+        }
 
-        function get writable() : Boolean;
+        public function get readerIndex():int
+        {
+            return _readerIndex;
+        }
 
-        function get writableBytes() : int;
+        public function set readerIndex( readerIndex:int ):void
+        {
+            _readerIndex = readerIndex;
+        }
 
-        function writeBytes( buffer : *, offset : int = -1, length : int = -1 ) : int;
+        public function get writable():Boolean
+        {
+            return true;
+        }
 
-        function writeBoolean( value : Boolean ) : void;
+        public function get writableBytes():int
+        {
+            return int.MAX_VALUE;
+        }
 
-        function writeByte( value : int ) : void;
+        public function writeBytes( buffer:*, offset:int = -1, length:int = -1 ):int
+        {
+            byteArray.position = _writerIndex;
+            var source:ByteArray;
+            if ( buffer is ByteArray )
+            {
+                source = buffer as ByteArray;
+            }
+            else if ( buffer is MemoryBuffer )
+            {
+                source = (buffer as MemoryBuffer).byteArray;
+            }
+            else
+            {
+                throw new IllegalArgumentError( "Given buffer type is unsupported (legal types ByteArray, MemoryBuffer)" );
+            }
 
-        function writeUnsignedByte( value : int ) : void;
+            var readableBytes:int = length != -1 ? length : source.length - source.position;
+            var readOffset:int = offset != -1 ? offset : source.position;
+            source.readBytes( byteArray, readOffset, readableBytes );
+            _writerIndex += readableBytes;
+            return readableBytes;
 
-        function writeShort( value : int ) : void;
+        }
 
-        function writeChar( value : int ) : void;
+        public function writeBoolean( value:Boolean ):void
+        {
+            byteArray.position = _writerIndex;
+            byteArray.writeBoolean( value );
+            _writerIndex += 1;
+        }
 
-        function writeCompressedInt( value : int ) : void;
+        public function writeByte( value:int ):void
+        {
+            byteArray.position = _writerIndex;
+            byteArray.writeByte( value );
+            _writerIndex += 1;
+        }
 
-        function writeLong( value : Number ) : void;
+        public function writeUnsignedByte( value:int ):void
+        {
+            writeByte( value );
+        }
 
-        function writeCompressedLong( value : Number ) : void;
+        public function writeShort( value:int ):void
+        {
+            byteArray.position = _writerIndex;
+            byteArray.writeShort( value );
+            _writerIndex += 2;
+        }
 
-        function writeFloat( value : Number ) : void;
+        public function writeChar( value:int ):void
+        {
+            writeInt( value );
+        }
 
-        function writeDouble( value : Number ) : void;
+        public function writeInt( value:int ):void
+        {
+            byteArray.position = _writerIndex;
+            byteArray.writeInt( value );
+            _writerIndex += 4;
+        }
 
-        function writeString( value : String ) : void;
+        public function writeCompressedInt( value:int ):void
+        {
+            // Missing CompressionUtils
+            writeInt( value );
+        }
 
-        function writeUniqueId( value : UniqueId ) : void;
+        public function writeLong( value:Long ):void
+        {
+            byteArray.position = _writerIndex;
+            byteArray.writeUnsignedInt( value.composite0 );
+            byteArray.writeUnsignedInt( value.composite1 );
+            _writerIndex += 8;
+        }
 
-        function get writerIndex() : int;
+        public function writeCompressedLong( value:Long ):void
+        {
+            // Missing CompressionUtils
+            writeLong( value );
+        }
 
-        function set writerIndex( writerIndex : int ) : void;
+        public function writeFloat( value:Number ):void
+        {
+            byteArray.position = _writerIndex;
+            byteArray.writeFloat( value );
+            _writerIndex += 4;
+        }
+
+        public function writeDouble( value:Number ):void
+        {
+            byteArray.position = _writerIndex;
+            byteArray.writeDouble( value );
+            _writerIndex += 8;
+        }
+
+        public function writeString( value:String ):void
+        {
+            byteArray.position = _writerIndex;
+            byteArray.writeUTF( value );
+            _writerIndex += (byteArray.position - _writerIndex);
+        }
+
+        public function writeUniqueId( value:UniqueId ):void
+        {
+            byteArray.position = _writerIndex;
+            value.writeStream( this );
+            _writerIndex += 16;
+        }
+
+        public function get writerIndex():int
+        {
+            return _writerIndex;
+        }
+
+        public function set writerIndex( writerIndex:int ):void
+        {
+            _writerIndex = writerIndex;
+        }
 
     }
 }

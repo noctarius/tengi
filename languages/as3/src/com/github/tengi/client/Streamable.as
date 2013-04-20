@@ -20,12 +20,12 @@ package com.github.tengi.client
 {
     import com.github.tengi.client.buffer.MemoryBuffer;
 
-    public interface MessageListener
+    public interface Streamable
     {
 
-        function messageReceived( message:Message, connection:Connection ):void;
+        function readStream( memoryBuffer : MemoryBuffer ) : void;
 
-        function dataReceived( memoryBuffer:MemoryBuffer, connection:Connection ):void;
+        function writeStream( memoryBuffer : MemoryBuffer ) : void;
 
     }
 }

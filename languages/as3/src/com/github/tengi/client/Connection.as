@@ -18,22 +18,28 @@
  */
 package com.github.tengi.client
 {
-    import flash.utils.ByteArray;
+    import com.github.tengi.client.buffer.MemoryBuffer;
 
     public interface Connection
     {
 
-        function getUniqueId() : UniqueId;
+        function getTransportType():TransportType;
 
-        function getTransportType() : TransportType;
+        function sendMessage( message:Message, completionFuture:CompletionFuture = null ):void;
 
-        function sendMessage( message : Message, completionFuture : CompletionFuture = null) : void;
+        function sendRawData( memoryBuffer:MemoryBuffer, completionFuture:CompletionFuture = null ):void;
 
-        function sendRawData( buffer : ByteArray, completionFuture : CompletionFuture = null) : void;
+        function setMessageListener( messageListener:MessageListener ):void;
 
-        function setMessageListener( messageListener : MessageListener ) : void;
+        function clearMessageListener():void;
 
-        function clearMessageListener() : void;
+        function registerLongPollingRequestFactory( longPollingRequestFactory:LongPollingRequestFactory ):void;
+
+        function startLongPollingCycle():void;
+
+        function prepareMessage( body:Streamable, longPolling:Boolean = false ):Message;
+
+        function close():void;
 
     }
 }

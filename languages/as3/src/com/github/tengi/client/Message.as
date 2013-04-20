@@ -19,14 +19,97 @@
 
 package com.github.tengi.client
 {
-import flash.utils.ByteArray;
+    import com.github.tengi.client.buffer.MemoryBuffer;
 
-public interface Message
+    public class Message implements Streamable
     {
 
-        function getUniqueId() : UniqueId;
+        public static const MESSAGE_TYPE_DEFAULT:int = 0;
 
-        function getMemoryBuffer() : ByteArray;
+        public static const MESSAGE_TYPE_LONG_POLLING:int = 1;
+
+        private var serializationFactory:SerializationFactory;
+
+        private var _connection:Connection;
+
+        private var _body:Streamable;
+
+        private var _messageId:UniqueId;
+
+        private var _type:int = MESSAGE_TYPE_DEFAULT;
+
+        public function Message( serializationFactory:SerializationFactory, connection:Connection,
+                                 body:Streamable = null, messageId:UniqueId = null, type:int = 0 )
+        {
+            this.serializationFactory = serializationFactory;
+            this._connection = connection;
+            this._messageId = messageId != null ? messageId : UniqueId.randomUniqueId();
+            this._body = body;
+            this._type = type;
+        }
+
+        public function toString():String
+        {
+            return "Message [messageId=" + _messageId + ", body=" + (body != null ? body.toString() : "null") + "]";
+        }
+
+        public function readStream( memoryBuffer:MemoryBuffer ):void
+        {
+            this._messageId = new UniqueId();
+            this._messageId.readStream( memoryBuffer );
+            this._type = memoryBuffer.readByte();
+            if ( memoryBuffer.readByte() == 1 )
+            {
+                var classId:int = memoryBuffer.readShort();
+                _body = serializationFactory.instantiate( classId );
+                _body.readStream( memoryBuffer );
+            }
+        }
+
+        public function writeStream( memoryBuffer:MemoryBuffer ):void
+        {
+            _messageId.writeStream( memoryBuffer )
+            memoryBuffer.writeByte( _type );
+            if ( body == null )
+            {
+                memoryBuffer.writeByte( 0 );
+            }
+            else
+            {
+                memoryBuffer.writeByte( 1 );
+                var classId = serializationFactory.getClassIdentifier( _body );
+                memoryBuffer.writeShort( classId );
+                _body.writeStream( memoryBuffer );
+            }
+        }
+
+        public function get connection():Connection
+        {
+            return _connection;
+        }
+
+        public function get body():Streamable
+        {
+            return _body;
+        }
+
+        public function get messageId():UniqueId
+        {
+            return _messageId;
+        }
+
+        public function get type():int
+        {
+            return _type;
+        }
+
+        public static function read( memoryBuffer:MemoryBuffer, serializationFactory:SerializationFactory,
+                                     connection:Connection ):Message
+        {
+            var message:Message = new Message( serializationFactory, connection );
+            message.readStream( memoryBuffer );
+            return message;
+        }
 
     }
 }

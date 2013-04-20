@@ -18,14 +18,15 @@
  */
 package com.github.tengi.client
 {
-    import com.github.tengi.client.buffer.MemoryBuffer;
-
-    public interface DataStreamable
+    public class ConnectionConstants
     {
+        function ConnectionConstants()
+        {
+        }
 
-        function readStream( memoryBuffer : MemoryBuffer ) : void;
+        public static const DATA_TYPE_MESSAGE:int = 1;
 
-        function writeStream( memoryBuffer : MemoryBuffer ) : void;
+        public static const DATA_TYPE_RAW:int = 2;
 
     }
 }

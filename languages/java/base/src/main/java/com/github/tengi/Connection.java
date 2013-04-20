@@ -25,7 +25,7 @@ public interface Connection
 
     UniqueId getUniqueId();
 
-    TransportType getConnectionType();
+    TransportType getTransportType();
 
     <T extends Message> void sendMessage( T message, CompletionFuture<T> completionFuture );
 

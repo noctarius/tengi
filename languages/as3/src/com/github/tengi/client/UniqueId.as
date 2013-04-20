@@ -19,34 +19,91 @@
 
 package com.github.tengi.client
 {
-    import flash.utils.ByteArray;
+    import com.github.tengi.client.buffer.MemoryBuffer;
 
-    public class UniqueId
+    import flash.system.System;
+    import flash.utils.ByteArray;
+    import flash.utils.getTimer;
+
+    public class UniqueId implements Streamable
     {
 
-        private const uniqueIdData : ByteArray = new ByteArray();
+        private static const CHARS:Array = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70];
 
-        function UniqueId( uniqueIdData : ByteArray ) : void
+        private const uniqueIdData:ByteArray = new ByteArray();
+
+        function UniqueId( uniqueIdData:ByteArray = null ):void
         {
-            this.uniqueIdData.writeBytes(uniqueIdData , 0, 16);
+            if ( uniqueIdData != null )
+            {
+                this.uniqueIdData.clear();
+                this.uniqueIdData.writeBytes( uniqueIdData, 0, 16 );
+            }
         }
 
-        public function equals( obj : UniqueId ) : Boolean
+        public function equals( obj:UniqueId ):Boolean
         {
-            var temp : ByteArray = new ByteArray();
+            var temp:ByteArray = new ByteArray();
             temp.writeBytes( obj.uniqueIdData, 0, 16 );
 
-            var index : int = 0;
-            for each ( var data : int in uniqueIdData )
+            var index:int = 0;
+            for each ( var data:int in uniqueIdData )
             {
                 temp.position = index;
-                if ( data != obj.uniqueIdData.readByte())
+                if ( data != obj.uniqueIdData.readByte() )
                 {
                     return false;
                 }
                 index++;
             }
             return true;
+        }
+
+        public function writeStream( memoryBuffer:MemoryBuffer ):void
+        {
+            uniqueIdData.position = 0;
+            memoryBuffer.writeBytes( uniqueIdData, 0, 16 );
+        }
+
+        public function readStream( memoryBuffer:MemoryBuffer ):void
+        {
+            uniqueIdData.clear();
+            memoryBuffer.readBytes( uniqueIdData, 0, 16 );
+        }
+
+        public function toString():String
+        {
+            uniqueIdData.position = 0;
+            var chars:Array = new Array( 36 );
+            var index:uint = 0;
+            for ( var i:uint = 0; i < 16; i++ )
+            {
+                if ( i == 4 || i == 6 || i == 8 || i == 10 )
+                {
+                    chars[index++] = 45; // Hyphen char code
+                }
+                var b:int = uniqueIdData.readByte();
+                chars[index++] = CHARS[(b & 0xF0) >>> 4];
+                chars[index++] = CHARS[(b & 0x0F)];
+            }
+            return String.fromCharCode.apply( null, chars );
+        }
+
+        public static function readFromStream( memoryBuffer:MemoryBuffer ):UniqueId
+        {
+            var uniqueId:UniqueId = new UniqueId();
+            uniqueId.readStream( memoryBuffer );
+            return uniqueId;
+        }
+
+        public static function randomUniqueId():UniqueId
+        {
+            var data:ByteArray = new ByteArray();
+            var r:uint = uint( new Date().time );
+            data.writeUnsignedInt( System.totalMemory ^ r );
+            data.writeInt( getTimer() ^ r );
+            data.writeDouble( Math.random() * r );
+            return new UniqueId( data );
         }
 
     }

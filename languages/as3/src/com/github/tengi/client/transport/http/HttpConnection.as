@@ -370,7 +370,13 @@ package com.github.tengi.client.transport.http
             }
             else if ( dataType == ConnectionConstants.DATA_TYPE_RAW )
             {
-                //TODO read metadata from stream
+                var metadata:Streamable = null;
+                if ( memoryBuffer.readByte() == 1 )
+                {
+                    var classId:int = memoryBuffer.readShort();
+                    metadata = serializationFactory.instantiate( classId );
+                    metadata.readStream( memoryBuffer );
+                }
 
                 var length:int = memoryBuffer.readInt();
                 var data:ByteArray = new ByteArray();
@@ -378,7 +384,7 @@ package com.github.tengi.client.transport.http
 
                 if ( messageListener != null )
                 {
-                    messageListener.dataReceived( new MemoryBuffer( data ), this );
+                    messageListener.dataReceived( new MemoryBuffer( data ), metadata, this );
                 }
             }
         }

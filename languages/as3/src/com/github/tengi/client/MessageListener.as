@@ -25,7 +25,7 @@ package com.github.tengi.client
 
         function messageReceived( message:Message, connection:Connection ):void;
 
-        function dataReceived( memoryBuffer:MemoryBuffer, connection:Connection ):void;
+        function dataReceived( memoryBuffer:MemoryBuffer, metadata:Streamable, connection:Connection ):void;
 
     }
 }

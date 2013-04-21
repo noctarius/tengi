@@ -23,7 +23,7 @@ package com.github.tengi.client.buffer
     public class MemoryBufferPool
     {
 
-        private var memoryBufferPool:Vector.<MemoryBuffer> = new <MemoryBuffer>[];
+        private var memoryBufferPool:Vector.<MemoryBuffer> = new Vector.<MemoryBuffer>();
 
         public function MemoryBufferPool( poolSize:int )
         {

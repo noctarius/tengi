@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.tengi.buffer;
+package com.github.tengi.utils;
+
+import com.github.tengi.buffer.ReadableMemoryBuffer;
+import com.github.tengi.buffer.WritableMemoryBuffer;
 
 import java.lang.reflect.Constructor;
 

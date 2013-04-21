@@ -24,12 +24,12 @@ import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import java.util.Random;
 import java.util.UUID;
 
-public final class UUIDBuilder
+public final class ConcurrentUuidUtil
 {
 
     private static final ThreadLocal<RandomBasedGenerator> UUID_GENERATOR_CACHE = new ThreadLocal<>();
 
-    private UUIDBuilder()
+    private ConcurrentUuidUtil()
     {
     }
 

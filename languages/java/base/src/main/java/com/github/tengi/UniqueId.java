@@ -20,7 +20,7 @@ package com.github.tengi;
 
 import com.fasterxml.uuid.impl.UUIDUtil;
 import com.github.tengi.buffer.MemoryBuffer;
-import com.github.tengi.utils.UUIDBuilder;
+import com.github.tengi.utils.ConcurrentUuidUtil;
 
 import java.util.UUID;
 
@@ -63,7 +63,7 @@ public class UniqueId
 
     public static UniqueId randomUniqueId()
     {
-        UUID uuid = UUIDBuilder.generateRandomUUID();
+        UUID uuid = ConcurrentUuidUtil.generateRandomUUID();
         UniqueId uniqueId = new UniqueId();
         UUIDUtil.toByteArray( uuid, uniqueId.data );
         return uniqueId;

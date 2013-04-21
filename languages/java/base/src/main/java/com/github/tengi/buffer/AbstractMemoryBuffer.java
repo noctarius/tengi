@@ -19,16 +19,93 @@ package com.github.tengi.buffer;
  */
 
 import com.github.tengi.UniqueId;
+import com.github.tengi.utils.UnicodeUtil;
+import com.github.tengi.utils.UnsafeUtil;
 
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 
 public abstract class AbstractMemoryBuffer
     implements MemoryBuffer
 {
 
+    private static final sun.misc.Unsafe unsafe = UnsafeUtil.getUnsafe();
+
+    private static final long lockCounterOffset;
+
+    static
+    {
+        try
+        {
+
+            Field lockCounterField = AbstractMemoryBuffer.class.getDeclaredField( "lockCounter" );
+            lockCounterField.setAccessible( true );
+            lockCounterOffset = unsafe.objectFieldOffset( lockCounterField );
+        }
+        catch ( Exception e )
+        {
+            throw new RuntimeException( "Incompatible JVM - sun.misc.Unsafe support is missing" );
+        }
+    }
+
+    private volatile int lockCounter = 0;
+
     protected long writerIndex = 0;
 
     protected long readerIndex = 0;
+
+    @Override
+    public void lock()
+    {
+        if ( lockCounter == -1 )
+        {
+            throw new IllegalStateException( "MemoryBuffer already released" );
+        }
+
+        while ( true )
+        {
+            int lockCount = lockCounter + 1;
+            if ( unsafe.compareAndSwapInt( this, lockCounterOffset, lockCounter, lockCount ) )
+            {
+                return;
+            }
+        }
+    }
+
+    @Override
+    public void release()
+    {
+        if ( lockCounter == -1 )
+        {
+            throw new IllegalStateException( "MemoryBuffer already released" );
+        }
+
+        while ( true )
+        {
+            int lockCount = lockCounter - 1;
+            if ( unsafe.compareAndSwapInt( this, lockCounterOffset, lockCounter, lockCount ) )
+            {
+                if ( lockCount == -1 )
+                {
+                    free();
+                }
+
+                return;
+            }
+        }
+    }
+
+    @Override
+    public boolean isReleased()
+    {
+        return lockCounter == -1;
+    }
+
+    @Override
+    public boolean isReleasable()
+    {
+        return lockCounter == 0;
+    }
 
     @Override
     public void clear()

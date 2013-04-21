@@ -32,4 +32,14 @@ public interface MemoryBuffer
 
     void clear();
 
+    MemoryBuffer duplicate();
+
+    void lock();
+
+    void release();
+
+    boolean isReleased();
+
+    boolean isReleasable();
+
 }

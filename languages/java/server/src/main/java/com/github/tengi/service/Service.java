@@ -1,4 +1,4 @@
-package com.github.tengi;
+package com.github.tengi.service;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,34 +18,16 @@ package com.github.tengi;
  * under the License.
  */
 
-public enum TransportType
+import com.github.tengi.Connection;
+import com.github.tengi.Message;
+import com.github.tengi.Streamable;
+import com.github.tengi.buffer.MemoryBuffer;
+
+public interface Service<V extends Message>
 {
-    BioTcpSocket,
-    NioTcpSocket,
-    BioUdpSocket,
-    NioUdpSocket,
-    MemoryChannel,
-    HttpPolling( true ),
-    HttpLongPolling( true ),
-    WebSocket,
-    SPDY,
-    SCTP;
 
-    private boolean polling;
+    void call( V request, Connection connection );
 
-    private TransportType()
-    {
-        this( false );
-    }
-
-    private TransportType( boolean polling )
-    {
-        this.polling = polling;
-    }
-
-    public boolean isPolling()
-    {
-        return polling;
-    }
+    void call( MemoryBuffer request, Streamable metadata, Connection connection );
 
 }

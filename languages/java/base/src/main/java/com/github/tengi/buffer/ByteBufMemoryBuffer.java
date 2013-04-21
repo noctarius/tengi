@@ -86,4 +86,10 @@ public class ByteBufMemoryBuffer
         super.clear();
         buffer.clear();
     }
+
+    @Override
+    public MemoryBuffer duplicate()
+    {
+        return new ByteBufMemoryBuffer( buffer.duplicate() );
+    }
 }

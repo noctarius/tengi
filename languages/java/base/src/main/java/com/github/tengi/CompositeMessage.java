@@ -37,7 +37,7 @@ public class CompositeMessage
     }
 
     public CompositeMessage( SerializationFactory serializationFactory, Connection connection, List<Message> messages,
-                             UniqueId messageId, byte type )
+                             UniqueId messageId )
     {
         super( serializationFactory, connection, null, messageId, Message.MESSAGE_TYPE_COMPOSITE );
         this.messages = new ArrayList<>( messages );
@@ -59,7 +59,6 @@ public class CompositeMessage
 
     @Override
     public void readStream( MemoryBuffer memoryBuffer )
-        throws Exception
     {
         super.readStream( memoryBuffer );
 
@@ -73,7 +72,6 @@ public class CompositeMessage
 
     @Override
     public void writeStream( MemoryBuffer memoryBuffer )
-        throws Exception
     {
         super.writeStream( memoryBuffer );
         memoryBuffer.writeShort( (short) messages.size() );

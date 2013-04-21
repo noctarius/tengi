@@ -29,6 +29,7 @@ package com.github.tengi.client.transport.http
     import com.github.tengi.client.UniqueId;
     import com.github.tengi.client.buffer.MemoryBuffer;
     import com.github.tengi.client.buffer.MemoryBufferPool;
+    import com.github.tengi.client.transport.polling.PollingMessage;
 
     import flash.errors.IOError;
     import flash.events.Event;
@@ -66,6 +67,8 @@ package com.github.tengi.client.transport.http
         private var port:int;
         private var ssl:Boolean;
         private var url:String;
+
+        private var lastUpdateId:int;
 
         private var closed:Boolean = false;
 
@@ -223,8 +226,9 @@ package com.github.tengi.client.transport.http
 
         public function prepareMessage( body:Streamable, longPolling:Boolean = false ):Message
         {
-            var type:int = longPolling ? Message.MESSAGE_TYPE_LONG_POLLING : Message.MESSAGE_TYPE_DEFAULT;
-            return new Message( serializationFactory, this, body, UniqueId.randomUniqueId(), type );
+            var messageId:UniqueId = UniqueId.randomUniqueId();
+            return longPolling ? new PollingMessage( serializationFactory, this, messageId, lastUpdateId )
+                    : new Message( serializationFactory, this, body, messageId, Message.MESSAGE_TYPE_DEFAULT );
         }
 
         public function startLongPollingCycle():void

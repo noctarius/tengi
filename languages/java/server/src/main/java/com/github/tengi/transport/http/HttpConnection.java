@@ -19,35 +19,34 @@ package com.github.tengi.transport.http;
  */
 
 import com.github.tengi.CompletionFuture;
-import com.github.tengi.Connection;
 import com.github.tengi.ConnectionConstants;
 import com.github.tengi.Message;
 import com.github.tengi.MessageListener;
+import com.github.tengi.transport.polling.PollingConnection;
 import com.github.tengi.SerializationFactory;
 import com.github.tengi.Streamable;
 import com.github.tengi.TransportType;
 import com.github.tengi.UniqueId;
 import com.github.tengi.buffer.ByteBufMemoryBuffer;
 import com.github.tengi.buffer.MemoryBuffer;
+import com.github.tengi.service.messagecache.MessageQueue;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
-import java.util.Deque;
-import java.util.concurrent.LinkedBlockingDeque;
-
 public class HttpConnection
-    implements Connection
+    implements PollingConnection
 {
 
-    private final Deque<MemoryBuffer> messageQueue = new LinkedBlockingDeque<MemoryBuffer>( 10 );
-
     private final SerializationFactory serializationFactory;
+
+    private final MessageQueue messageQueue;
 
     private MessageListener messageListener = null;
 
     public HttpConnection( SerializationFactory serializationFactory )
     {
         this.serializationFactory = serializationFactory;
+        this.messageQueue = new MessageQueue( this, serializationFactory );
     }
 
     @Override
@@ -118,6 +117,12 @@ public class HttpConnection
                 completionFuture.onFailure( e, null, this );
             }
         }
+    }
+
+    @Override
+    public Message pollResponses( int lastUpdateId )
+    {
+        return messageQueue.snapshot( lastUpdateId );
     }
 
     @Override

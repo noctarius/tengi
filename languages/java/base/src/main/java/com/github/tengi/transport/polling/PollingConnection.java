@@ -1,4 +1,4 @@
-package com.github.tengi;
+package com.github.tengi.transport.polling;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,34 +18,13 @@ package com.github.tengi;
  * under the License.
  */
 
-public enum TransportType
+import com.github.tengi.Connection;
+import com.github.tengi.Message;
+
+public interface PollingConnection
+    extends Connection
 {
-    BioTcpSocket,
-    NioTcpSocket,
-    BioUdpSocket,
-    NioUdpSocket,
-    MemoryChannel,
-    HttpPolling( true ),
-    HttpLongPolling( true ),
-    WebSocket,
-    SPDY,
-    SCTP;
 
-    private boolean polling;
-
-    private TransportType()
-    {
-        this( false );
-    }
-
-    private TransportType( boolean polling )
-    {
-        this.polling = polling;
-    }
-
-    public boolean isPolling()
-    {
-        return polling;
-    }
+    Message pollResponses( int lastUpdateId );
 
 }

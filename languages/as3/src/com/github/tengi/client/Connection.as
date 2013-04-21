@@ -25,9 +25,9 @@ package com.github.tengi.client
 
         function getTransportType():TransportType;
 
-        function sendMessage( message:Message, completionFuture:CompletionFuture = null ):void;
+        function sendMessage( message:Message, success:Function = null, failure:Function = null ):void;
 
-        function sendRawData( memoryBuffer:MemoryBuffer, completionFuture:CompletionFuture = null ):void;
+        function sendRawData( memoryBuffer:MemoryBuffer, success:Function = null, failure:Function = null ):void;
 
         function setMessageListener( messageListener:MessageListener ):void;
 

@@ -18,7 +18,6 @@
  */
 package com.github.tengi.client.transport.http
 {
-    import com.github.tengi.client.CompletionFuture;
     import com.github.tengi.client.Connection;
     import com.github.tengi.client.ConnectionConstants;
     import com.github.tengi.client.LongPollingRequestFactory;
@@ -30,6 +29,7 @@ package com.github.tengi.client.transport.http
     import com.github.tengi.client.UniqueId;
     import com.github.tengi.client.buffer.MemoryBuffer;
 
+    import flash.errors.IOError;
     import flash.events.Event;
     import flash.events.HTTPStatusEvent;
     import flash.events.IOErrorEvent;
@@ -39,6 +39,7 @@ package com.github.tengi.client.transport.http
     import flash.net.URLLoader;
     import flash.net.URLLoaderDataFormat;
     import flash.net.URLRequest;
+    import flash.net.URLRequestHeader;
     import flash.net.URLRequestMethod;
     import flash.utils.ByteArray;
     import flash.utils.Dictionary;
@@ -57,6 +58,7 @@ package com.github.tengi.client.transport.http
         private var longPollingRequestFactory:LongPollingRequestFactory = null;
 
         private var serializationFactory:SerializationFactory;
+        private var contentType:String;
         private var contextPath:String;
         private var host:String;
         private var port:int;
@@ -67,10 +69,11 @@ package com.github.tengi.client.transport.http
 
         private var lastLongPollTime = getTimer();
 
-        public function HttpConnection( host:String, port:int, contextPath:String, ssl:Boolean,
+        public function HttpConnection( host:String, port:int, contextPath:String, ssl:Boolean, contentType:String,
                                         serializationFactory:SerializationFactory )
         {
             this.serializationFactory = serializationFactory;
+            this.contentType = contentType;
             this.contextPath = contextPath;
             this.host = host;
             this.port = port;
@@ -90,7 +93,7 @@ package com.github.tengi.client.transport.http
             return TransportType.HTTP_LONG_POLLING;
         }
 
-        public function sendMessage( message:Message, completionFuture:CompletionFuture = null ):void
+        public function sendMessage( message:Message, success:Function = null, failure:Function = null ):void
         {
             try
             {
@@ -106,35 +109,36 @@ package com.github.tengi.client.transport.http
 
                 var request:URLRequest = new URLRequest( url );
                 request.method = URLRequestMethod.POST;
-                request.contentType = "application/bbbinary";
+                request.contentType = contentType;
                 request.data = output;
-
-                requests[message.messageId] = completionFuture;
 
                 var urlLoader:URLLoader = new URLLoader();
                 urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
                 urlLoader.addEventListener( Event.COMPLETE, callCompleteListener );
                 urlLoader.addEventListener( SecurityErrorEvent.SECURITY_ERROR, callSecurityErrorHandler );
-                urlLoader.addEventListener( HTTPStatusEvent.HTTP_STATUS, callHttpStatusHandler );
+                urlLoader.addEventListener( HTTPStatusEvent.HTTP_RESPONSE_STATUS, callHttpStatusHandler );
                 urlLoader.addEventListener( IOErrorEvent.IO_ERROR, callIoErrorHandler );
+
+                var requestMapper:RequestMapper = new RequestMapper();
+                requests[urlLoader] = requestMapper;
 
                 urlLoader.load( request );
 
-                if ( completionFuture != null && completionFuture.success != null )
+                if ( success != null )
                 {
-                    completionFuture.success();
+                    success();
                 }
             }
             catch ( error:Error )
             {
-                if ( completionFuture != null && completionFuture.failure != null )
+                if ( failure != null )
                 {
-                    completionFuture.failure( error, message, this );
+                    failure( error, message, this );
                 }
             }
         }
 
-        public function sendRawData( memoryBuffer:MemoryBuffer, completionFuture:CompletionFuture = null ):void
+        public function sendRawData( memoryBuffer:MemoryBuffer, success:Function = null, failure:Function = null ):void
         {
             try
             {
@@ -145,28 +149,31 @@ package com.github.tengi.client.transport.http
 
                 var request:URLRequest = new URLRequest( url );
                 request.method = URLRequestMethod.POST;
-                request.contentType = "application/bbbinary";
+                request.contentType = contentType;
                 request.data = output;
 
                 var urlLoader:URLLoader = new URLLoader();
                 urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
                 urlLoader.addEventListener( Event.COMPLETE, callCompleteListener );
                 urlLoader.addEventListener( SecurityErrorEvent.SECURITY_ERROR, callSecurityErrorHandler );
-                urlLoader.addEventListener( HTTPStatusEvent.HTTP_STATUS, callHttpStatusHandler );
+                urlLoader.addEventListener( HTTPStatusEvent.HTTP_RESPONSE_STATUS, callHttpStatusHandler );
                 urlLoader.addEventListener( IOErrorEvent.IO_ERROR, callIoErrorHandler );
+
+                var requestMapper:RequestMapper = new RequestMapper();
+                requests[urlLoader] = requestMapper;
 
                 urlLoader.load( request );
 
-                if ( completionFuture != null && completionFuture.success != null )
+                if ( success != null )
                 {
-                    completionFuture.success();
+                    success();
                 }
             }
             catch ( error:Error )
             {
-                if ( completionFuture != null && completionFuture.failure != null )
+                if ( failure != null )
                 {
-                    completionFuture.failure( error, null, this );
+                    failure( error, null, this );
                 }
             }
         }
@@ -235,7 +242,7 @@ package com.github.tengi.client.transport.http
 
             var request:URLRequest = new URLRequest( url );
             request.method = URLRequestMethod.POST;
-            request.contentType = "application/bbbinary";
+            request.contentType = contentType;
             request.data = output;
 
             longPollingUrlLoader.load( request );
@@ -251,7 +258,6 @@ package com.github.tengi.client.transport.http
             {
                 var message:Message = Message.read( memoryBuffer, serializationFactory, this );
 
-                var completionFuture:CompletionFuture = requests[message.messageId];
                 requests[message.messageId] = null;
 
                 if ( messageListener != null )
@@ -304,6 +310,21 @@ package com.github.tengi.client.transport.http
         private function callCompleteListener( event:Event ):void
         {
             var loader:URLLoader = event.target as URLLoader;
+
+            var requestMapper:RequestMapper = requests[loader];
+            delete requests[loader];
+            if ( requestMapper.responseHeaders != null )
+            {
+                for each ( var header:URLRequestHeader in requestMapper.responseHeaders )
+                {
+                    log( header.name + " = " + header.value );
+                    if ( "Content-Type" == header.name && contentType != header.value )
+                    {
+                        throw new IOError( "Illegal content-type received: " + header.value );
+                    }
+                }
+            }
+
             var data:ByteArray = loader.data as ByteArray;
             var memoryBuffer:MemoryBuffer = new MemoryBuffer( data );
 
@@ -312,7 +333,6 @@ package com.github.tengi.client.transport.http
             {
                 var message:Message = Message.read( memoryBuffer, serializationFactory, this );
 
-                var completionFuture:CompletionFuture = requests[message.messageId];
                 requests[message.messageId] = null;
 
                 if ( messageListener != null )
@@ -336,6 +356,7 @@ package com.github.tengi.client.transport.http
         private function callSecurityErrorHandler( event:SecurityErrorEvent ):void
         {
             log( "callSecurityErrorHandler: " + event );
+            delete requests[event.target];
         }
 
         private function callHttpStatusHandler( event:HTTPStatusEvent ):void
@@ -344,11 +365,16 @@ package com.github.tengi.client.transport.http
             {
                 log( "callHttpStatusHandler: " + event );
             }
+
+            var requestMapper:RequestMapper = requests[event.target as URLLoader];
+            requestMapper.httpStatus = event.status;
+            requestMapper.responseHeaders = event.responseHeaders;
         }
 
         private function callIoErrorHandler( event:IOErrorEvent ):void
         {
             log( "callIoErrorHandler: " + event );
+            delete requests[event.target];
         }
 
         private function longPollingTimerFinished( event:TimerEvent ):void
@@ -362,4 +388,12 @@ package com.github.tengi.client.transport.http
         }
 
     }
+
+}
+
+internal class RequestMapper
+{
+    var responseHeaders:Array;
+
+    var httpStatus:int;
 }

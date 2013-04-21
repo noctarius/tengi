@@ -28,9 +28,11 @@ package com.github.tengi.client
 
         public static const MESSAGE_TYPE_LONG_POLLING:int = 1;
 
-        private var serializationFactory:SerializationFactory;
+        public static const MESSAGE_TYPE_COMPOSITE:int = 2;
 
-        private var _connection:Connection;
+        protected var _serializationFactory:SerializationFactory;
+
+        protected var _connection:Connection;
 
         private var _body:Streamable;
 
@@ -41,7 +43,7 @@ package com.github.tengi.client
         public function Message( serializationFactory:SerializationFactory, connection:Connection,
                                  body:Streamable = null, messageId:UniqueId = null, type:int = 0 )
         {
-            this.serializationFactory = serializationFactory;
+            this._serializationFactory = serializationFactory;
             this._connection = connection;
             this._messageId = messageId != null ? messageId : UniqueId.randomUniqueId();
             this._body = body;
@@ -61,7 +63,7 @@ package com.github.tengi.client
             if ( memoryBuffer.readByte() == 1 )
             {
                 var classId:int = memoryBuffer.readShort();
-                _body = serializationFactory.instantiate( classId );
+                _body = _serializationFactory.instantiate( classId );
                 _body.readStream( memoryBuffer );
             }
         }
@@ -77,7 +79,7 @@ package com.github.tengi.client
             else
             {
                 memoryBuffer.writeByte( 1 );
-                var classId = serializationFactory.getClassIdentifier( _body );
+                var classId = _serializationFactory.getClassIdentifier( _body );
                 memoryBuffer.writeShort( classId );
                 _body.writeStream( memoryBuffer );
             }

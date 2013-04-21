@@ -1,3 +1,4 @@
+package com.github.tengi;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -16,16 +17,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.github.tengi.client
+
+import java.util.Iterator;
+
+public interface CompositeMessage
+    extends Message, Iterable<Message>
 {
-    import org.as3commons.lang.IIterator;
 
-    public interface AggregatedMessage extends Message, IIterator
-    {
+    short getMessageCount();
 
-        function getMessageCount() : int;
+    <T extends Message> T getMessage( short index );
 
-        function getMessage( index : int ) : Message;
+    Iterator<Message> iterator();
 
-    }
 }

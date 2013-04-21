@@ -29,7 +29,7 @@ package com.github.tengi.client
         private var _messages:Vector.<Message>;
 
         public function CompositeMessage( serializationFactory:SerializationFactory, connection:Connection,
-                                          messages:Vector.<Message>, messageId:UniqueId = null, type:int = 0 )
+                                          messages:Vector.<Message> = null, messageId:UniqueId = null, type:int = 0 )
         {
             super( serializationFactory, connection, null, messageId, Message.MESSAGE_TYPE_COMPOSITE );
             this._messages = messages;
@@ -38,8 +38,8 @@ package com.github.tengi.client
         override public function readStream( memoryBuffer:MemoryBuffer ):void
         {
             super.readStream( memoryBuffer );
-            memoryBuffer.writeInt( _messages.length );
-            for ( var i:int = _messages.length - 1; i >= 0; i-- )
+            memoryBuffer.writeShort( _messages.length );
+            for ( var i:int = 0; i < _messages.length; i++ )
             {
                 _messages[i].writeStream( memoryBuffer );
             }
@@ -50,11 +50,10 @@ package com.github.tengi.client
             super.writeStream( memoryBuffer );
 
             _messages = new Vector.<Message>();
-            var length:int = memoryBuffer.readInt();
+            var length:int = memoryBuffer.readShort();
             for ( var i:int = 0; i < length; i++ )
             {
-                var message:Message = new Message( _serializationFactory, connection );
-                message.readStream( memoryBuffer );
+                var message:Message = Message.read( memoryBuffer, _serializationFactory, connection );
                 _messages.push( message );
             }
         }

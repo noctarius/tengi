@@ -108,9 +108,26 @@ package com.github.tengi.client
         public static function read( memoryBuffer:MemoryBuffer, serializationFactory:SerializationFactory,
                                      connection:Connection ):Message
         {
-            var message:Message = new Message( serializationFactory, connection );
+            var type:int = memoryBuffer.readByte();
+
+            var message:Message;
+            if ( type == MESSAGE_TYPE_COMPOSITE )
+            {
+                message = new CompositeMessage( serializationFactory, connection );
+            }
+            else
+            {
+                message = new Message( serializationFactory, connection );
+            }
+
             message.readStream( memoryBuffer );
             return message;
+        }
+
+        public static function write( memoryBuffer:MemoryBuffer, message:Message )
+        {
+            memoryBuffer.writeByte( message._type );
+            message.writeStream( memoryBuffer );
         }
 
     }

@@ -1,4 +1,4 @@
-package com.github.tengi;
+package com.github.tengi.utils;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,15 +18,34 @@ package com.github.tengi;
  * under the License.
  */
 
-import com.github.tengi.buffer.MemoryBuffer;
+import com.fasterxml.uuid.Generators;
+import com.fasterxml.uuid.impl.RandomBasedGenerator;
 
-public interface Streamable
+import java.util.Random;
+import java.util.UUID;
+
+public final class UUIDBuilder
 {
 
-    void readStream( MemoryBuffer memoryBuffer )
-        throws Exception;
+    private static final ThreadLocal<RandomBasedGenerator> UUID_GENERATOR_CACHE = new ThreadLocal<>();
 
-    void writeStream( MemoryBuffer memoryBuffer )
-        throws Exception;
+    private UUIDBuilder()
+    {
+    }
+
+    public static UUID generateRandomUUID()
+    {
+        RandomBasedGenerator generator = UUID_GENERATOR_CACHE.get();
+        if ( generator == null )
+        {
+            generator = Generators.randomBasedGenerator( new Random() );
+            UUID_GENERATOR_CACHE.set( generator );
+        }
+        return generator.generate();
+    }
+
+    public static void shutdown()
+    {
+    }
 
 }

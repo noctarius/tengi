@@ -20,13 +20,15 @@ package com.github.tengi;
 
 import com.github.tengi.buffer.MemoryBuffer;
 
-public interface Streamable
+public interface SerializationFactory
 {
 
-    void readStream( MemoryBuffer memoryBuffer )
-        throws Exception;
+    Streamable instantiate( int classId );
 
-    void writeStream( MemoryBuffer memoryBuffer )
-        throws Exception;
+    short getClassIdentifier( Streamable streamable );
+
+    boolean isEntity( int classId );
+
+    Entity readEntity( MemoryBuffer memoryBuffer, int classId );
 
 }

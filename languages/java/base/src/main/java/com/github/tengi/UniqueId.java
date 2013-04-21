@@ -18,93 +18,65 @@ package com.github.tengi;
  * under the License.
  */
 
+import com.fasterxml.uuid.impl.UUIDUtil;
+import com.github.tengi.buffer.MemoryBuffer;
+import com.github.tengi.utils.UUIDBuilder;
+
 import java.util.UUID;
 
 public class UniqueId
+    implements Streamable
 {
 
-    private final byte[] uniqueIdData = new byte[16];
+    private static final char[] CHARS = { 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70 };
 
-    private final long mostSigBits;
+    private final byte[] data = new byte[16];
 
-    private final long leastSigBits;
-
-    private UniqueId( UUID uuid )
+    @Override
+    public void readStream( MemoryBuffer memoryBuffer )
+        throws Exception
     {
-        leastSigBits = uuid.getLeastSignificantBits();
-        mostSigBits = uuid.getMostSignificantBits();
-        copyLongToBytes( leastSigBits, true );
-        copyLongToBytes( mostSigBits, false );
+        memoryBuffer.readBytes( data, 0, 16 );
     }
 
-    private UniqueId( long leastSigBits, long mostSigBits )
+    @Override
+    public void writeStream( MemoryBuffer memoryBuffer )
+        throws Exception
     {
-        this.leastSigBits = leastSigBits;
-        this.mostSigBits = mostSigBits;
-        copyLongToBytes( leastSigBits, true );
-        copyLongToBytes( mostSigBits, false );
+        memoryBuffer.writeBytes( data, 0, 16 );
     }
 
-    private UniqueId( byte[] data )
+    @Override
+    public String toString()
     {
-        if ( data.length != 16 )
+        char[] chars = new char[36];
+        int index = 0;
+        for ( int i = 0; i < 16; i++ )
         {
-            throw new IllegalArgumentException( "data length must be 16 bytes" );
+            if ( i == 4 || i == 6 || i == 8 || i == 10 )
+            {
+                chars[index++] = '-';
+            }
+            chars[index++] = CHARS[( data[i] & 0xF0 ) >>> 4];
+            chars[index++] = CHARS[( data[i] & 0x0F )];
         }
-        System.arraycopy( data, 0, uniqueIdData, 0, 16 );
-        leastSigBits = copyBytesToLong( data, true );
-        mostSigBits = copyBytesToLong( data, false );
+        return new String( chars );
     }
 
-    public long getMostSigBits()
+    public static UniqueId randomUniqueId()
     {
-        return mostSigBits;
+        UUID uuid = UUIDBuilder.generateRandomUUID();
+        UniqueId uniqueId = new UniqueId();
+        UUIDUtil.toByteArray( uuid, uniqueId.data );
+        return uniqueId;
     }
 
-    public long getLeastSigBits()
+    public static UniqueId readFromStream( MemoryBuffer memoryBuffer )
+        throws Exception
     {
-        return leastSigBits;
+        UniqueId uniqueId = new UniqueId();
+        uniqueId.readStream( memoryBuffer );
+        return uniqueId;
     }
 
-    public byte[] getUniqueIdData()
-    {
-        return uniqueIdData;
-    }
-
-    private long copyBytesToLong( byte[] data, boolean leastSig )
-    {
-        int index = leastSig ? 0 : 8;
-        return ( ( ( ( data[index++] & 0xFFL ) << 56 ) | ( ( data[index++] & 0xFFL ) << 48 )
-            | ( ( data[index++] & 0xFFL ) << 40 ) | ( ( data[index++] & 0xFFL ) << 32 )
-            | ( ( data[index++] & 0xFFL ) << 24 ) | ( ( data[index++] & 0xFFL ) << 16 )
-            | ( ( data[index++] & 0xFFL ) << 8 ) | ( ( data[index++] & 0xFFL ) << 0 ) ) );
-    }
-
-    private void copyLongToBytes( long value, boolean leastSig )
-    {
-        int index = leastSig ? 0 : 8;
-        uniqueIdData[index++] = (byte) ( value >> 56 );
-        uniqueIdData[index++] = (byte) ( value >> 48 );
-        uniqueIdData[index++] = (byte) ( value >> 40 );
-        uniqueIdData[index++] = (byte) ( value >> 32 );
-        uniqueIdData[index++] = (byte) ( value >> 24 );
-        uniqueIdData[index++] = (byte) ( value >> 16 );
-        uniqueIdData[index++] = (byte) ( value >> 8 );
-        uniqueIdData[index++] = (byte) ( value >> 0 );
-    }
-
-    public static UniqueId uniqueId( UUID uuid )
-    {
-        return new UniqueId( uuid );
-    }
-
-    public static UniqueId uniqueId( long leastSigBits, long mostSigBits )
-    {
-        return new UniqueId( leastSigBits, mostSigBits );
-    }
-
-    public static UniqueId uniqueId( byte[] data )
-    {
-        return new UniqueId( data );
-    }
 }

@@ -105,7 +105,7 @@ package com.github.tengi.client.transport.http
                 var output:ByteArray = new ByteArray();
                 var memoryBuffer:MemoryBuffer = new MemoryBuffer( output );
                 memoryBuffer.writeByte( ConnectionConstants.DATA_TYPE_MESSAGE );
-                message.writeStream( memoryBuffer );
+                Message.write( memoryBuffer, message );
 
                 var request:URLRequest = new URLRequest( url );
                 request.method = URLRequestMethod.POST;
@@ -238,7 +238,7 @@ package com.github.tengi.client.transport.http
 
             var output:ByteArray = new ByteArray();
             var memoryBuffer:MemoryBuffer = new MemoryBuffer( output );
-            message.writeStream( memoryBuffer );
+            Message.write( memoryBuffer, message );
 
             var request:URLRequest = new URLRequest( url );
             request.method = URLRequestMethod.POST;
@@ -251,31 +251,7 @@ package com.github.tengi.client.transport.http
         private function longPollingCompleteListener( event:Event ):void
         {
             var data:ByteArray = longPollingUrlLoader.data as ByteArray;
-            var memoryBuffer:MemoryBuffer = new MemoryBuffer( data );
-
-            var dataType:int = memoryBuffer.readByte();
-            if ( dataType == 1 )
-            {
-                var message:Message = Message.read( memoryBuffer, serializationFactory, this );
-
-                requests[message.messageId] = null;
-
-                if ( messageListener != null )
-                {
-                    messageListener.messageReceived( message, this );
-                }
-            }
-            else if ( dataType == 2 )
-            {
-                var length:int = memoryBuffer.readInt();
-                var data:ByteArray = new ByteArray();
-                memoryBuffer.readBytes( data, 0, length );
-
-                if ( messageListener != null )
-                {
-                    messageListener.dataReceived( new MemoryBuffer( data ), this );
-                }
-            }
+            handleMessage( data );
 
             lastLongPollTime = getTimer();
             startLongPollingCycle();
@@ -326,31 +302,7 @@ package com.github.tengi.client.transport.http
             }
 
             var data:ByteArray = loader.data as ByteArray;
-            var memoryBuffer:MemoryBuffer = new MemoryBuffer( data );
-
-            var dataType:int = memoryBuffer.readByte();
-            if ( dataType == 1 )
-            {
-                var message:Message = Message.read( memoryBuffer, serializationFactory, this );
-
-                requests[message.messageId] = null;
-
-                if ( messageListener != null )
-                {
-                    messageListener.messageReceived( message, this );
-                }
-            }
-            else if ( dataType == 2 )
-            {
-                var length:int = memoryBuffer.readInt();
-                var data:ByteArray = new ByteArray();
-                memoryBuffer.readBytes( data, 0, length );
-
-                if ( messageListener != null )
-                {
-                    messageListener.dataReceived( new MemoryBuffer( data ), this );
-                }
-            }
+            handleMessage( data );
         }
 
         private function callSecurityErrorHandler( event:SecurityErrorEvent ):void
@@ -385,6 +337,35 @@ package com.github.tengi.client.transport.http
         public function log( message:String ):void
         {
             ExternalInterface.call( "console.log", message );
+        }
+
+        private function handleMessage( data:ByteArray ):void
+        {
+            var memoryBuffer:MemoryBuffer = new MemoryBuffer( data );
+
+            var dataType:int = memoryBuffer.readByte();
+            if ( dataType == ConnectionConstants.DATA_TYPE_MESSAGE )
+            {
+                var message:Message = Message.read( memoryBuffer, serializationFactory, this );
+
+                requests[message.messageId] = null;
+
+                if ( messageListener != null )
+                {
+                    messageListener.messageReceived( message, this );
+                }
+            }
+            else if ( dataType == ConnectionConstants.DATA_TYPE_RAW )
+            {
+                var length:int = memoryBuffer.readInt();
+                var data:ByteArray = new ByteArray();
+                memoryBuffer.readBytes( data, 0, length );
+
+                if ( messageListener != null )
+                {
+                    messageListener.dataReceived( new MemoryBuffer( data ), this );
+                }
+            }
         }
 
     }

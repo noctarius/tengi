@@ -276,7 +276,7 @@ package com.github.tengi.client.buffer
 
         public function writeCompressedInt( value:int ):void
         {
-            // Missing CompressionUtils
+            // TODO Missing CompressionUtils
             writeInt( value );
         }
 
@@ -290,7 +290,7 @@ package com.github.tengi.client.buffer
 
         public function writeCompressedLong( value:Long ):void
         {
-            // Missing CompressionUtils
+            // TODO Missing CompressionUtils
             writeLong( value );
         }
 

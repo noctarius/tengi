@@ -138,13 +138,26 @@ package com.github.tengi.client.transport.http
             }
         }
 
-        public function sendRawData( memoryBuffer:MemoryBuffer, success:Function = null, failure:Function = null ):void
+        public function sendRawData( memoryBuffer:MemoryBuffer, metadata:Streamable = null, success:Function = null,
+                                     failure:Function = null ):void
         {
             try
             {
                 var output:ByteArray = new ByteArray();
                 var memoryBuffer:MemoryBuffer = new MemoryBuffer( output );
                 memoryBuffer.writeByte( ConnectionConstants.DATA_TYPE_RAW );
+
+                if ( metadata == null )
+                {
+                    memoryBuffer.writeByte( 0 );
+                }
+                else
+                {
+                    memoryBuffer.writeByte( 1 );
+                    memoryBuffer.writeShort( serializationFactory.getClassIdentifier( metadata ) );
+                    metadata.writeStream( memoryBuffer );
+                }
+
                 memoryBuffer.writeBytes( memoryBuffer, 0, memoryBuffer.writerIndex );
 
                 var request:URLRequest = new URLRequest( url );
@@ -357,6 +370,8 @@ package com.github.tengi.client.transport.http
             }
             else if ( dataType == ConnectionConstants.DATA_TYPE_RAW )
             {
+                //TODO read metadata from stream
+
                 var length:int = memoryBuffer.readInt();
                 var data:ByteArray = new ByteArray();
                 memoryBuffer.readBytes( data, 0, length );

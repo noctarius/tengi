@@ -27,7 +27,8 @@ package com.github.tengi.client
 
         function sendMessage( message:Message, success:Function = null, failure:Function = null ):void;
 
-        function sendRawData( memoryBuffer:MemoryBuffer, success:Function = null, failure:Function = null ):void;
+        function sendRawData( memoryBuffer:MemoryBuffer, metadata:Streamable = null, success:Function = null,
+                              failure:Function = null ):void;
 
         function setMessageListener( messageListener:MessageListener ):void;
 

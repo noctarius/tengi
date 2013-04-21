@@ -23,6 +23,6 @@ public interface CompletionFuture<T>
 
     void onSuccess( T message, Connection connection );
 
-    void onFailure( Throwable throwable, Connection connection );
+    void onFailure( Throwable throwable, T message, Connection connection );
 
 }

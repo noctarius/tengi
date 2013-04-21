@@ -62,7 +62,6 @@ public class Message
     }
 
     public void readStream( MemoryBuffer memoryBuffer )
-        throws Exception
     {
         this.messageId = new UniqueId();
         this.messageId.readStream( memoryBuffer );
@@ -75,7 +74,6 @@ public class Message
     }
 
     public void writeStream( MemoryBuffer memoryBuffer )
-        throws Exception
     {
         messageId.writeStream( memoryBuffer );
         if ( body == null )
@@ -113,7 +111,6 @@ public class Message
 
     public static Message read( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory,
                                 Connection connection )
-        throws Exception
     {
         byte type = memoryBuffer.readByte();
 
@@ -131,7 +128,6 @@ public class Message
     }
 
     public static void write( MemoryBuffer memoryBuffer, Message message )
-        throws Exception
     {
         memoryBuffer.writeByte( message.type );
         message.writeStream( memoryBuffer );

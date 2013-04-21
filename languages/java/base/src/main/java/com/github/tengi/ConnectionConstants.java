@@ -18,24 +18,15 @@ package com.github.tengi;
  * under the License.
  */
 
-import com.github.tengi.buffer.MemoryBuffer;
-
-public interface Connection
+public class ConnectionConstants
 {
 
-    TransportType getTransportType();
+    private ConnectionConstants()
+    {
+    }
 
-    <T extends Message> void sendMessage( T message, CompletionFuture<T> completionFuture );
+    public static final byte DATA_TYPE_MESSAGE = 1;
 
-    <T extends Streamable> void sendRawData( MemoryBuffer memoryBuffer, T metadata,
-                                             CompletionFuture<T> completionFuture );
-
-    void setMessageListener( MessageListener messageListener );
-
-    void clearMessageListener();
-
-    Message prepareMessage( Streamable body );
-
-    void close();
+    public static final byte DATA_TYPE_RAW = 2;
 
 }

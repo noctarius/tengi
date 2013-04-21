@@ -23,10 +23,8 @@ import com.github.tengi.buffer.MemoryBuffer;
 public interface Streamable
 {
 
-    void readStream( MemoryBuffer memoryBuffer )
-        throws Exception;
+    void readStream( MemoryBuffer memoryBuffer );
 
-    void writeStream( MemoryBuffer memoryBuffer )
-        throws Exception;
+    void writeStream( MemoryBuffer memoryBuffer );
 
 }

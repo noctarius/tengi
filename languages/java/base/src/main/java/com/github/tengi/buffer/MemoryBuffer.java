@@ -18,8 +18,6 @@ package com.github.tengi.buffer;
  * under the License.
  */
 
-import java.nio.ByteOrder;
-
 public interface MemoryBuffer
     extends ReadableMemoryBuffer, WritableMemoryBuffer
 {
@@ -29,10 +27,6 @@ public interface MemoryBuffer
     long maxCapacity();
 
     boolean growing();
-
-    ByteOrder byteOrder();
-
-    void byteOrder( ByteOrder byteOrder );
 
     void free();
 

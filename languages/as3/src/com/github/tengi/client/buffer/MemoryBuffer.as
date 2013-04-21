@@ -36,6 +36,8 @@ package com.github.tengi.client.buffer
         {
             this.byteArray = byteArray;
             this._writerIndex = byteArray.length;
+
+            this.byteArray.endian = "BIG_ENDIAN";
         }
 
         public function get capacity():int

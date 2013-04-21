@@ -34,14 +34,12 @@ public class UniqueId
 
     @Override
     public void readStream( MemoryBuffer memoryBuffer )
-        throws Exception
     {
         memoryBuffer.readBytes( data, 0, 16 );
     }
 
     @Override
     public void writeStream( MemoryBuffer memoryBuffer )
-        throws Exception
     {
         memoryBuffer.writeBytes( data, 0, 16 );
     }

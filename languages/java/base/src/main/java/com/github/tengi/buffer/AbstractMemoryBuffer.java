@@ -21,7 +21,6 @@ package com.github.tengi.buffer;
 import com.github.tengi.UniqueId;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 public abstract class AbstractMemoryBuffer
     implements MemoryBuffer
@@ -30,6 +29,13 @@ public abstract class AbstractMemoryBuffer
     protected long writerIndex = 0;
 
     protected long readerIndex = 0;
+
+    @Override
+    public void clear()
+    {
+        writerIndex = 0;
+        readerIndex = 0;
+    }
 
     @Override
     public boolean readable()
@@ -135,7 +141,7 @@ public abstract class AbstractMemoryBuffer
     @Override
     public short readShort()
     {
-        return ByteOrderUtils.getShort( this, byteOrder() == ByteOrder.BIG_ENDIAN );
+        return ByteOrderUtils.getShort( this, true );
     }
 
     @Override
@@ -147,7 +153,7 @@ public abstract class AbstractMemoryBuffer
     @Override
     public int readInt()
     {
-        return ByteOrderUtils.getInt( this, byteOrder() == ByteOrder.BIG_ENDIAN );
+        return ByteOrderUtils.getInt( this, true );
     }
 
     @Override
@@ -159,7 +165,7 @@ public abstract class AbstractMemoryBuffer
     @Override
     public long readLong()
     {
-        return ByteOrderUtils.getLong( this, byteOrder() == ByteOrder.BIG_ENDIAN );
+        return ByteOrderUtils.getLong( this, true );
     }
 
     @Override
@@ -189,9 +195,14 @@ public abstract class AbstractMemoryBuffer
     @Override
     public UniqueId readUniqueId()
     {
-        byte[] data = new byte[16];
-        readBytes( data, 0, 16 );
-        return UniqueId.uniqueId( data );
+        try
+        {
+            return UniqueId.readFromStream( this );
+        }
+        catch ( Exception e )
+        {
+            throw new RuntimeException( "Error while deserializing UniqueId", e );
+        }
     }
 
     @Override
@@ -307,7 +318,7 @@ public abstract class AbstractMemoryBuffer
     @Override
     public void writeShort( short value )
     {
-        ByteOrderUtils.putShort( value, this, byteOrder() == ByteOrder.BIG_ENDIAN );
+        ByteOrderUtils.putShort( value, this, true );
     }
 
     @Override
@@ -319,7 +330,7 @@ public abstract class AbstractMemoryBuffer
     @Override
     public void writeInt( int value )
     {
-        ByteOrderUtils.putInt( value, this, byteOrder() == ByteOrder.BIG_ENDIAN );
+        ByteOrderUtils.putInt( value, this, true );
     }
 
     @Override
@@ -331,7 +342,7 @@ public abstract class AbstractMemoryBuffer
     @Override
     public void writeLong( long value )
     {
-        ByteOrderUtils.putLong( value, this, byteOrder() == ByteOrder.BIG_ENDIAN );
+        ByteOrderUtils.putLong( value, this, true );
     }
 
     @Override
@@ -361,7 +372,14 @@ public abstract class AbstractMemoryBuffer
     @Override
     public void writeUniqueId( UniqueId uniqueId )
     {
-        writeBytes( uniqueId.getUniqueIdData(), 0, 16 );
+        try
+        {
+            uniqueId.writeStream( this );
+        }
+        catch ( Exception e )
+        {
+            throw new RuntimeException( "Error while serializing UniqueId", e );
+        }
     }
 
     @Override
@@ -384,8 +402,8 @@ public abstract class AbstractMemoryBuffer
         }
         if ( offset >= maxCapacity() )
         {
-            throw new IndexOutOfBoundsException( String.format( "Offset %s is higher than maximum legal index ",
-                                                                offset, ( maxCapacity() - 1 ) ) );
+            throw new IndexOutOfBoundsException(
+                String.format( "Offset %s is higher than maximum legal index ", offset, ( maxCapacity() - 1 ) ) );
         }
     }
 

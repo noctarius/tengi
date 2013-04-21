@@ -18,6 +18,7 @@
  */
 package com.github.tengi.client
 {
+    import com.github.tengi.client.buffer.MemoryBufferPool;
     import com.github.tengi.client.transport.http.HttpConnection;
 
     public class ConnectionManager
@@ -25,17 +26,20 @@ package com.github.tengi.client
         private const connections:Vector.<Connection> = new Vector.<Connection>();
 
         private var serializationFactory:SerializationFactory;
+        private var memoryBufferPool:MemoryBufferPool;
         private var contentType:String;
 
-        public function ConnectionManager( contentType:String, serializationFactory:SerializationFactory )
+        public function ConnectionManager( contentType:String, memoryBufferPoolSize:int,
+                                           serializationFactory:SerializationFactory )
         {
             this.contentType = contentType;
+            this.memoryBufferPool = new MemoryBufferPool( memoryBufferPoolSize );
             this.serializationFactory = serializationFactory;
         }
 
         public function createHttpConnection( host:String, port:int, contextPath:String, ssl:Boolean ):Connection
         {
-            var connection:Connection = new HttpConnection( host, port, contextPath, ssl, contentType,
+            var connection:Connection = new HttpConnection( host, port, contextPath, ssl, contentType, memoryBufferPool,
                                                             serializationFactory );
             connections.push( connection );
             return connection;

@@ -28,6 +28,7 @@ package com.github.tengi.client.transport.http
     import com.github.tengi.client.TransportType;
     import com.github.tengi.client.UniqueId;
     import com.github.tengi.client.buffer.MemoryBuffer;
+    import com.github.tengi.client.buffer.MemoryBufferPool;
 
     import flash.errors.IOError;
     import flash.events.Event;
@@ -58,6 +59,7 @@ package com.github.tengi.client.transport.http
         private var longPollingRequestFactory:LongPollingRequestFactory = null;
 
         private var serializationFactory:SerializationFactory;
+        private var memoryBufferPool:MemoryBufferPool;
         private var contentType:String;
         private var contextPath:String;
         private var host:String;
@@ -70,9 +72,10 @@ package com.github.tengi.client.transport.http
         private var lastLongPollTime = getTimer();
 
         public function HttpConnection( host:String, port:int, contextPath:String, ssl:Boolean, contentType:String,
-                                        serializationFactory:SerializationFactory )
+                                        memoryBufferPool:MemoryBufferPool, serializationFactory:SerializationFactory )
         {
             this.serializationFactory = serializationFactory;
+            this.memoryBufferPool = memoryBufferPool;
             this.contentType = contentType;
             this.contextPath = contextPath;
             this.host = host;
@@ -103,9 +106,10 @@ package com.github.tengi.client.transport.http
                 }
 
                 var output:ByteArray = new ByteArray();
-                var memoryBuffer:MemoryBuffer = new MemoryBuffer( output );
+                var memoryBuffer:MemoryBuffer = memoryBufferPool.pop( output );
                 memoryBuffer.writeByte( ConnectionConstants.DATA_TYPE_MESSAGE );
                 Message.write( memoryBuffer, message );
+                memoryBufferPool.push( memoryBuffer );
 
                 var request:URLRequest = new URLRequest( url );
                 request.method = URLRequestMethod.POST;
@@ -144,7 +148,7 @@ package com.github.tengi.client.transport.http
             try
             {
                 var output:ByteArray = new ByteArray();
-                var memoryBuffer:MemoryBuffer = new MemoryBuffer( output );
+                var memoryBuffer:MemoryBuffer = memoryBufferPool.pop( output );
                 memoryBuffer.writeByte( ConnectionConstants.DATA_TYPE_RAW );
 
                 if ( metadata == null )
@@ -159,6 +163,7 @@ package com.github.tengi.client.transport.http
                 }
 
                 memoryBuffer.writeBytes( memoryBuffer, 0, memoryBuffer.writerIndex );
+                memoryBufferPool.push( memoryBuffer );
 
                 var request:URLRequest = new URLRequest( url );
                 request.method = URLRequestMethod.POST;
@@ -250,8 +255,9 @@ package com.github.tengi.client.transport.http
             }
 
             var output:ByteArray = new ByteArray();
-            var memoryBuffer:MemoryBuffer = new MemoryBuffer( output );
+            var memoryBuffer:MemoryBuffer = memoryBufferPool.pop( output );
             Message.write( memoryBuffer, message );
+            memoryBufferPool.push( memoryBuffer );
 
             var request:URLRequest = new URLRequest( url );
             request.method = URLRequestMethod.POST;
@@ -354,7 +360,7 @@ package com.github.tengi.client.transport.http
 
         private function handleMessage( data:ByteArray ):void
         {
-            var memoryBuffer:MemoryBuffer = new MemoryBuffer( data );
+            var memoryBuffer:MemoryBuffer = memoryBufferPool.pop( data );
 
             var dataType:int = memoryBuffer.readByte();
             if ( dataType == ConnectionConstants.DATA_TYPE_MESSAGE )
@@ -387,6 +393,7 @@ package com.github.tengi.client.transport.http
                     messageListener.dataReceived( new MemoryBuffer( data ), metadata, this );
                 }
             }
+            memoryBufferPool.push( memoryBuffer );
         }
 
     }

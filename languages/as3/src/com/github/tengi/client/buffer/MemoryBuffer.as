@@ -27,12 +27,12 @@ package com.github.tengi.client.buffer
     public class MemoryBuffer
     {
 
-        private var byteArray:ByteArray;
+        var byteArray:ByteArray;
 
         private var _readerIndex:uint = 0;
         private var _writerIndex:uint;
 
-        public function MemoryBuffer( byteArray:ByteArray )
+        public function MemoryBuffer( byteArray:ByteArray = null )
         {
             this.byteArray = byteArray;
             this._writerIndex = byteArray.length;
@@ -53,7 +53,10 @@ package com.github.tengi.client.buffer
 
         public function clear():void
         {
-            byteArray.clear();
+            if ( byteArray != null )
+            {
+                byteArray.clear();
+            }
             _writerIndex = 0;
             _readerIndex = 0;
         }

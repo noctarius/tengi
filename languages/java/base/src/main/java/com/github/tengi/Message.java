@@ -1,4 +1,5 @@
 package com.github.tengi;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -64,18 +65,18 @@ public class Message
     public void readStream( MemoryBuffer memoryBuffer )
     {
         this.messageId = new UniqueId();
-        this.messageId.readStream( memoryBuffer );
+        this.messageId.readStream( memoryBuffer, serializationFactory );
         if ( memoryBuffer.readByte() == 1 )
         {
             int classId = memoryBuffer.readShort();
             body = serializationFactory.instantiate( classId );
-            body.readStream( memoryBuffer );
+            body.readStream( memoryBuffer, serializationFactory );
         }
     }
 
     public void writeStream( MemoryBuffer memoryBuffer )
     {
-        messageId.writeStream( memoryBuffer );
+        messageId.writeStream( memoryBuffer, serializationFactory );
         if ( body == null )
         {
             memoryBuffer.writeByte( (byte) 0 );
@@ -85,7 +86,7 @@ public class Message
             memoryBuffer.writeByte( (byte) 1 );
             short classId = serializationFactory.getClassIdentifier( body );
             memoryBuffer.writeShort( classId );
-            body.writeStream( memoryBuffer );
+            body.writeStream( memoryBuffer, serializationFactory );
         }
     }
 

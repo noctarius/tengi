@@ -19,6 +19,7 @@
 
 package com.github.tengi.client
 {
+
     import com.github.tengi.client.buffer.MemoryBuffer;
 
     public class Message implements Streamable
@@ -52,7 +53,7 @@ package com.github.tengi.client
 
         public function toString():String
         {
-            return "Message [messageId=" + _messageId + ", body=" + (body != null ? body.toString() : "null") + "]";
+            return "Message [messageId=" + _messageId + ", body=" + (_body != null ? _body.toString() : "null") + "]";
         }
 
         public function readStream( memoryBuffer:MemoryBuffer ):void

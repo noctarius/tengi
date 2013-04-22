@@ -1,4 +1,5 @@
 package com.github.tengi;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -29,7 +30,8 @@ public enum TransportType
     HttpLongPolling( true ),
     WebSocket,
     SPDY,
-    SCTP;
+    SCTP,
+    SSL_PROXY;
 
     private boolean polling;
 

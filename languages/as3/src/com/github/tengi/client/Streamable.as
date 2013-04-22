@@ -18,14 +18,17 @@
  */
 package com.github.tengi.client
 {
+
     import com.github.tengi.client.buffer.MemoryBuffer;
 
     public interface Streamable
     {
 
-        function readStream( memoryBuffer : MemoryBuffer ) : void;
+        function readStream( memoryBuffer:MemoryBuffer ):void;
 
-        function writeStream( memoryBuffer : MemoryBuffer ) : void;
+        function writeStream( memoryBuffer:MemoryBuffer ):void;
+
+        function toString():String;
 
     }
 }

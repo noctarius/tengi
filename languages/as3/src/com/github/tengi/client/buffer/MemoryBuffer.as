@@ -18,26 +18,31 @@
  */
 package com.github.tengi.client.buffer
 {
+
     import com.github.tengi.client.UniqueId;
     import com.github.tengi.client.lang.IllegalArgumentError;
     import com.github.tengi.client.lang.math.Long;
 
     import flash.utils.ByteArray;
+    import flash.utils.Endian;
 
     public class MemoryBuffer
     {
 
-        var byteArray:ByteArray;
+        var _byteArray:ByteArray;
 
         private var _readerIndex:uint = 0;
-        private var _writerIndex:uint;
+        private var _writerIndex:uint = 0;
 
         public function MemoryBuffer( byteArray:ByteArray = null )
         {
-            this.byteArray = byteArray;
-            this._writerIndex = byteArray.length;
+            this._byteArray = byteArray;
 
-            this.byteArray.endian = "BIG_ENDIAN";
+            if ( byteArray != null )
+            {
+                this._writerIndex = byteArray.length;
+                this._byteArray.endian = "BIG_ENDIAN";
+            }
         }
 
         public function get capacity():int
@@ -53,9 +58,9 @@ package com.github.tengi.client.buffer
 
         public function clear():void
         {
-            if ( byteArray != null )
+            if ( _byteArray != null )
             {
-                byteArray.clear();
+                _byteArray.clear();
             }
             _writerIndex = 0;
             _readerIndex = 0;
@@ -63,17 +68,17 @@ package com.github.tengi.client.buffer
 
         public function get readable():Boolean
         {
-            return byteArray.length > 0 && _readerIndex < byteArray.length;
+            return _byteArray.length > 0 && _readerIndex < _byteArray.length;
         }
 
         public function get readableByte():int
         {
-            return byteArray.length - _readerIndex;
+            return _byteArray.length - _readerIndex;
         }
 
         public function readBytes( buffer:*, offset:int = -1, length:int = -1 ):int
         {
-            byteArray.position = _readerIndex;
+            _byteArray.position = _readerIndex;
             var target:ByteArray;
             if ( buffer is ByteArray )
             {
@@ -81,7 +86,7 @@ package com.github.tengi.client.buffer
             }
             else if ( buffer is MemoryBuffer )
             {
-                target = (buffer as MemoryBuffer).byteArray;
+                target = (buffer as MemoryBuffer)._byteArray;
             }
             else
             {
@@ -90,23 +95,23 @@ package com.github.tengi.client.buffer
 
             var writeableBytes:int = length != -1 ? length : target.length - target.position;
             var writeOffset:int = offset != -1 ? offset : target.position;
-            byteArray.readBytes( target, writeOffset, writeableBytes );
+            _byteArray.readBytes( target, writeOffset, writeableBytes );
             _readerIndex += writeableBytes;
             return writeableBytes;
         }
 
         public function readBoolean():Boolean
         {
-            byteArray.position = _readerIndex;
-            var value:Boolean = byteArray.readBoolean();
+            _byteArray.position = _readerIndex;
+            var value:Boolean = _byteArray.readBoolean();
             _readerIndex += 1;
             return value;
         }
 
         public function readByte():int
         {
-            byteArray.position = _readerIndex;
-            var value:int = byteArray.readByte();
+            _byteArray.position = _readerIndex;
+            var value:int = _byteArray.readByte();
             _readerIndex += 1;
             return value;
         }
@@ -118,8 +123,8 @@ package com.github.tengi.client.buffer
 
         public function readShort():int
         {
-            byteArray.position = _readerIndex;
-            var value:int = byteArray.readShort();
+            _byteArray.position = _readerIndex;
+            var value:int = _byteArray.readShort();
             _readerIndex += 2;
             return value;
         }
@@ -131,8 +136,8 @@ package com.github.tengi.client.buffer
 
         public function readInt():int
         {
-            byteArray.position = _readerIndex;
-            var value:int = byteArray.readInt();
+            _byteArray.position = _readerIndex;
+            var value:int = _byteArray.readInt();
             _readerIndex += 4;
             return value;
         }
@@ -145,9 +150,9 @@ package com.github.tengi.client.buffer
 
         public function readLong():Long
         {
-            byteArray.position = _readerIndex;
-            var u1:uint = byteArray.readUnsignedInt();
-            var u0:uint = byteArray.readUnsignedInt();
+            _byteArray.position = _readerIndex;
+            var u1:uint = _byteArray.readUnsignedInt();
+            var u0:uint = _byteArray.readUnsignedInt();
             var value:Long = Long.newLong( u1, u0 );
             _readerIndex += 8;
             return value;
@@ -161,31 +166,31 @@ package com.github.tengi.client.buffer
 
         public function readFloat():Number
         {
-            byteArray.position = _readerIndex;
-            var value:Number = byteArray.readFloat();
+            _byteArray.position = _readerIndex;
+            var value:Number = _byteArray.readFloat();
             _readerIndex += 4;
             return value;
         }
 
         public function readDouble():Number
         {
-            byteArray.position = _readerIndex;
-            var value:Number = byteArray.readDouble();
+            _byteArray.position = _readerIndex;
+            var value:Number = _byteArray.readDouble();
             _readerIndex += 8;
             return value;
         }
 
         public function readString():String
         {
-            byteArray.position = _readerIndex;
-            var value:String = byteArray.readUTF();
-            _readerIndex += (byteArray.position - _readerIndex);
+            _byteArray.position = _readerIndex;
+            var value:String = _byteArray.readUTF();
+            _readerIndex += (_byteArray.position - _readerIndex);
             return value;
         }
 
         public function readUniqueId():UniqueId
         {
-            byteArray.position = _readerIndex;
+            _byteArray.position = _readerIndex;
             var value:UniqueId = UniqueId.readFromStream( this );
             _readerIndex += 16;
             return value;
@@ -213,7 +218,7 @@ package com.github.tengi.client.buffer
 
         public function writeBytes( buffer:*, offset:int = -1, length:int = -1 ):int
         {
-            byteArray.position = _writerIndex;
+            _byteArray.position = _writerIndex;
             var source:ByteArray;
             if ( buffer is ByteArray )
             {
@@ -221,7 +226,7 @@ package com.github.tengi.client.buffer
             }
             else if ( buffer is MemoryBuffer )
             {
-                source = (buffer as MemoryBuffer).byteArray;
+                source = (buffer as MemoryBuffer)._byteArray;
             }
             else
             {
@@ -230,7 +235,7 @@ package com.github.tengi.client.buffer
 
             var readableBytes:int = length != -1 ? length : source.length - source.position;
             var readOffset:int = offset != -1 ? offset : source.position;
-            source.readBytes( byteArray, readOffset, readableBytes );
+            source.readBytes( _byteArray, readOffset, readableBytes );
             _writerIndex += readableBytes;
             return readableBytes;
 
@@ -238,15 +243,15 @@ package com.github.tengi.client.buffer
 
         public function writeBoolean( value:Boolean ):void
         {
-            byteArray.position = _writerIndex;
-            byteArray.writeBoolean( value );
+            _byteArray.position = _writerIndex;
+            _byteArray.writeBoolean( value );
             _writerIndex += 1;
         }
 
         public function writeByte( value:int ):void
         {
-            byteArray.position = _writerIndex;
-            byteArray.writeByte( value );
+            _byteArray.position = _writerIndex;
+            _byteArray.writeByte( value );
             _writerIndex += 1;
         }
 
@@ -257,8 +262,8 @@ package com.github.tengi.client.buffer
 
         public function writeShort( value:int ):void
         {
-            byteArray.position = _writerIndex;
-            byteArray.writeShort( value );
+            _byteArray.position = _writerIndex;
+            _byteArray.writeShort( value );
             _writerIndex += 2;
         }
 
@@ -269,8 +274,8 @@ package com.github.tengi.client.buffer
 
         public function writeInt( value:int ):void
         {
-            byteArray.position = _writerIndex;
-            byteArray.writeInt( value );
+            _byteArray.position = _writerIndex;
+            _byteArray.writeInt( value );
             _writerIndex += 4;
         }
 
@@ -282,9 +287,9 @@ package com.github.tengi.client.buffer
 
         public function writeLong( value:Long ):void
         {
-            byteArray.position = _writerIndex;
-            byteArray.writeUnsignedInt( value.composite0 );
-            byteArray.writeUnsignedInt( value.composite1 );
+            _byteArray.position = _writerIndex;
+            _byteArray.writeUnsignedInt( value.composite0 );
+            _byteArray.writeUnsignedInt( value.composite1 );
             _writerIndex += 8;
         }
 
@@ -296,28 +301,28 @@ package com.github.tengi.client.buffer
 
         public function writeFloat( value:Number ):void
         {
-            byteArray.position = _writerIndex;
-            byteArray.writeFloat( value );
+            _byteArray.position = _writerIndex;
+            _byteArray.writeFloat( value );
             _writerIndex += 4;
         }
 
         public function writeDouble( value:Number ):void
         {
-            byteArray.position = _writerIndex;
-            byteArray.writeDouble( value );
+            _byteArray.position = _writerIndex;
+            _byteArray.writeDouble( value );
             _writerIndex += 8;
         }
 
         public function writeString( value:String ):void
         {
-            byteArray.position = _writerIndex;
-            byteArray.writeUTF( value );
-            _writerIndex += (byteArray.position - _writerIndex);
+            _byteArray.position = _writerIndex;
+            _byteArray.writeUTF( value );
+            _writerIndex += (_byteArray.position - _writerIndex);
         }
 
         public function writeUniqueId( value:UniqueId ):void
         {
-            byteArray.position = _writerIndex;
+            _byteArray.position = _writerIndex;
             value.writeStream( this );
             _writerIndex += 16;
         }
@@ -330,6 +335,22 @@ package com.github.tengi.client.buffer
         public function set writerIndex( writerIndex:int ):void
         {
             _writerIndex = writerIndex;
+        }
+
+        function get byteArray():ByteArray
+        {
+            return _byteArray;
+        }
+
+        function set byteArray( byteArray:ByteArray ):void
+        {
+            this._byteArray = byteArray;
+
+            if ( this._byteArray != null )
+            {
+                this._writerIndex = byteArray.length;
+                this._byteArray.endian = Endian.BIG_ENDIAN;
+            }
         }
 
     }

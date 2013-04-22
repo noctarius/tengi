@@ -1,4 +1,5 @@
 package com.github.tengi;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -33,13 +34,13 @@ public class UniqueId
     private final byte[] data = new byte[16];
 
     @Override
-    public void readStream( MemoryBuffer memoryBuffer )
+    public void readStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
     {
         memoryBuffer.readBytes( data, 0, 16 );
     }
 
     @Override
-    public void writeStream( MemoryBuffer memoryBuffer )
+    public void writeStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
     {
         memoryBuffer.writeBytes( data, 0, 16 );
     }
@@ -73,7 +74,7 @@ public class UniqueId
         throws Exception
     {
         UniqueId uniqueId = new UniqueId();
-        uniqueId.readStream( memoryBuffer );
+        uniqueId.readStream( memoryBuffer, null );
         return uniqueId;
     }
 

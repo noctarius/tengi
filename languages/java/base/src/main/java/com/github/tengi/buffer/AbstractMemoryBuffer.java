@@ -1,4 +1,5 @@
 package com.github.tengi.buffer;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -451,7 +452,7 @@ public abstract class AbstractMemoryBuffer
     {
         try
         {
-            uniqueId.writeStream( this );
+            uniqueId.writeStream( this, null );
         }
         catch ( Exception e )
         {
@@ -479,8 +480,8 @@ public abstract class AbstractMemoryBuffer
         }
         if ( offset >= maxCapacity() )
         {
-            throw new IndexOutOfBoundsException(
-                String.format( "Offset %s is higher than maximum legal index ", offset, ( maxCapacity() - 1 ) ) );
+            throw new IndexOutOfBoundsException( String.format( "Offset %s is higher than maximum legal index ",
+                                                                offset, ( maxCapacity() - 1 ) ) );
         }
     }
 

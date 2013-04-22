@@ -1,4 +1,5 @@
 package com.github.tengi.service;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -30,20 +31,20 @@ import com.github.tengi.transport.polling.PollingMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
-public class ServiceManager
+public class ServiceManager<M extends Message>
 {
 
     private final SerializationFactory serializationFactory;
 
-    private final Service service;
+    private final Service<M> service;
 
-    public ServiceManager( Service service, SerializationFactory serializationFactory )
+    public ServiceManager( Service<M> service, SerializationFactory serializationFactory )
     {
         this.service = service;
         this.serializationFactory = serializationFactory;
     }
 
-    private void call( MemoryBuffer memoryBuffer, Connection connection )
+    void call( MemoryBuffer memoryBuffer, Connection connection )
     {
         byte frameType = memoryBuffer.readByte();
         if ( frameType == ConnectionConstants.DATA_TYPE_MESSAGE )
@@ -76,9 +77,10 @@ public class ServiceManager
         }
     }
 
+    @SuppressWarnings( "unchecked" )
     private void call( Message request, Connection connection )
     {
-        service.call( request, connection );
+        service.call( (M) request, connection );
     }
 
     private void call( MemoryBuffer request, Streamable metadata, Connection connection )

@@ -1,4 +1,5 @@
 package com.github.tengi.buffer;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,7 +20,6 @@ package com.github.tengi.buffer;
  */
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.UnsafeByteBuf;
 
 import java.nio.ByteOrder;
 
@@ -27,7 +27,7 @@ public class ByteBufMemoryBuffer
     extends AbstractMemoryBuffer
 {
 
-    private final ByteBuf buffer;
+    final ByteBuf buffer;
 
     public ByteBufMemoryBuffer( ByteBuf buffer )
     {
@@ -74,10 +74,7 @@ public class ByteBufMemoryBuffer
     @Override
     public void free()
     {
-        if ( buffer.isDirect() && buffer instanceof UnsafeByteBuf )
-        {
-            ( (UnsafeByteBuf) buffer ).free();
-        }
+        buffer.release();
     }
 
     @Override

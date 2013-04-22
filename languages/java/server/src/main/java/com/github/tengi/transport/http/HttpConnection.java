@@ -1,4 +1,5 @@
 package com.github.tengi.transport.http;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -98,7 +99,7 @@ public class HttpConnection
             {
                 rawBuffer.writeByte( (byte) 1 );
                 rawBuffer.writeShort( serializationFactory.getClassIdentifier( metadata ) );
-                metadata.writeStream( rawBuffer );
+                metadata.writeStream( rawBuffer, serializationFactory );
             }
 
             rawBuffer.writeBuffer( memoryBuffer, 0, memoryBuffer.writerIndex() );

@@ -1,4 +1,5 @@
 package com.github.tengi;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -37,7 +38,7 @@ public class Entity
         return "[entityId=" + entityId + ", " + "parentEntityId=" + parentEntityId + "]";
     }
 
-    public void writeStream( MemoryBuffer memoryBuffer )
+    public void writeStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
     {
         memoryBuffer.writeInt( entityId );
         memoryBuffer.writeInt( parentEntityId );
@@ -45,7 +46,7 @@ public class Entity
         memoryBuffer.writeInt( version );
     }
 
-    public void readStream( MemoryBuffer memoryBuffer )
+    public void readStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
     {
         this.entityId = memoryBuffer.readInt();
         this.parentEntityId = memoryBuffer.readInt();

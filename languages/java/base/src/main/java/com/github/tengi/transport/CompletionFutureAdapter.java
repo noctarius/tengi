@@ -1,4 +1,5 @@
 package com.github.tengi.transport;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,10 +21,13 @@ package com.github.tengi.transport;
 
 import com.github.tengi.CompletionFuture;
 import com.github.tengi.Connection;
+import com.github.tengi.Streamable;
+
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 
-class CompletionFutureAdapter<T> implements ChannelFutureListener
+class CompletionFutureAdapter<T extends Streamable>
+    implements ChannelFutureListener
 {
 
     private final CompletionFuture<T> completionFuture;
@@ -49,7 +53,7 @@ class CompletionFutureAdapter<T> implements ChannelFutureListener
         }
         else
         {
-            completionFuture.onFailure( future.cause(), connection );
+            completionFuture.onFailure( future.cause(), message, connection );
         }
     }
 

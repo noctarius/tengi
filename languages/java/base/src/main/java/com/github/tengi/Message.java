@@ -1,4 +1,5 @@
 package com.github.tengi;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,6 +22,7 @@ package com.github.tengi;
 import com.github.tengi.buffer.MemoryBuffer;
 
 public class Message
+    implements Streamable
 {
 
     public static final byte MESSAGE_TYPE_DEFAULT = 0;
@@ -61,6 +63,7 @@ public class Message
         return "Message [messageId=" + messageId + ", body=" + ( body != null ? body.toString() : "null" ) + "]";
     }
 
+    @Override
     public void readStream( MemoryBuffer memoryBuffer )
     {
         this.messageId = new UniqueId();
@@ -73,6 +76,7 @@ public class Message
         }
     }
 
+    @Override
     public void writeStream( MemoryBuffer memoryBuffer )
     {
         messageId.writeStream( memoryBuffer );

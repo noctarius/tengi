@@ -1,4 +1,5 @@
 package com.github.tengi.buffer;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -22,9 +23,9 @@ public interface MemoryBuffer
     extends ReadableMemoryBuffer, WritableMemoryBuffer
 {
 
-    long capacity();
+    int capacity();
 
-    long maxCapacity();
+    int maxCapacity();
 
     boolean growing();
 

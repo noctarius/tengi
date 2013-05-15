@@ -24,18 +24,22 @@ import io.netty.buffer.ByteBuf;
 
 import java.nio.ByteBuffer;
 
-class ByteBufMemoryBuffer
+public class ByteBufMemoryBuffer
     extends AbstractMemoryBuffer
 {
 
     private ByteBuf byteBuffer;
 
-    ByteBuf getByteBuffer()
+    protected ByteBufMemoryBuffer()
+    {
+    }
+
+    protected ByteBuf getByteBuffer()
     {
         return byteBuffer;
     }
 
-    ByteBufMemoryBuffer setByteBuffer( ByteBuf byteBuffer )
+    protected ByteBufMemoryBuffer setByteBuffer( ByteBuf byteBuffer )
     {
         this.byteBuffer = byteBuffer;
         return this;
@@ -48,7 +52,7 @@ class ByteBufMemoryBuffer
     }
 
     @Override
-    public long readableBytes()
+    public int readableBytes()
     {
         return byteBuffer.readableBytes();
     }
@@ -96,7 +100,7 @@ class ByteBufMemoryBuffer
     }
 
     @Override
-    public long readBuffer( WritableMemoryBuffer memoryBuffer )
+    public int readBuffer( WritableMemoryBuffer memoryBuffer )
     {
         if ( memoryBuffer instanceof ByteBufMemoryBuffer )
         {
@@ -107,8 +111,8 @@ class ByteBufMemoryBuffer
             return buffer.readerIndex() - pos;
         }
 
-        long writableBytes = memoryBuffer.writableBytes();
-        byte[] data = new byte[(int) writableBytes];
+        int writableBytes = memoryBuffer.writableBytes();
+        byte[] data = new byte[writableBytes];
         byteBuffer.readBytes( data );
         memoryBuffer.writeBytes( data );
         readerIndex += writableBytes;
@@ -116,7 +120,7 @@ class ByteBufMemoryBuffer
     }
 
     @Override
-    public long readBuffer( WritableMemoryBuffer memoryBuffer, long offset, long length )
+    public int readBuffer( WritableMemoryBuffer memoryBuffer, int offset, int length )
     {
         if ( memoryBuffer instanceof ByteBufMemoryBuffer )
         {
@@ -127,8 +131,8 @@ class ByteBufMemoryBuffer
             return buffer.readerIndex() - pos;
         }
 
-        long writableBytes = memoryBuffer.writableBytes();
-        byte[] data = new byte[(int) writableBytes];
+        int writableBytes = memoryBuffer.writableBytes();
+        byte[] data = new byte[writableBytes];
         byteBuffer.readBytes( data );
         memoryBuffer.writeBytes( data );
         readerIndex += writableBytes;
@@ -186,44 +190,36 @@ class ByteBufMemoryBuffer
         }
         else
         {
-            long readableBytes = memoryBuffer.readableBytes();
-            byte[] bytes = new byte[(int) readableBytes];
-            memoryBuffer.readBytes( bytes, 0, (int) readableBytes );
-            this.byteBuffer.writeBytes( bytes );
-            writerIndex += readableBytes;
+            super.writeBuffer( memoryBuffer );
         }
     }
 
     @Override
-    public void writeBuffer( ReadableMemoryBuffer memoryBuffer, long offset, long length )
+    public void writeBuffer( ReadableMemoryBuffer memoryBuffer, int offset, int length )
     {
         if ( memoryBuffer instanceof ByteBufMemoryBuffer )
         {
             ByteBufMemoryBuffer buffer = (ByteBufMemoryBuffer) memoryBuffer;
             int pos = buffer.byteBuffer.readerIndex();
-            buffer.byteBuffer.readerIndex( (int) offset );
-            this.byteBuffer.readBytes( buffer.byteBuffer, (int) length );
+            buffer.byteBuffer.readerIndex( offset );
+            this.byteBuffer.readBytes( buffer.byteBuffer, length );
             buffer.byteBuffer.readerIndex( pos );
+            writerIndex += length;
         }
         else
         {
-            long pos = memoryBuffer.readerIndex();
-            memoryBuffer.readerIndex( offset );
-            byte[] bytes = new byte[(int) pos];
-            memoryBuffer.readBytes( bytes, 0, (int) length );
-            this.byteBuffer.writeBytes( bytes );
+            super.writeBuffer( memoryBuffer, offset, length );
         }
-        writerIndex += length;
     }
 
     @Override
-    public long capacity()
+    public int capacity()
     {
         return byteBuffer.capacity();
     }
 
     @Override
-    public long maxCapacity()
+    public int maxCapacity()
     {
         return byteBuffer.maxCapacity();
     }

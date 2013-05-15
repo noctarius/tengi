@@ -27,7 +27,7 @@ public interface Connection
 
     <T extends Message> void sendMessage( T message, CompletionFuture<T> completionFuture );
 
-    <T extends Streamable> void sendRawData( MemoryBuffer memoryBuffer, T metadata,
+    <T extends Streamable> void sendRawData( MemoryBuffer rawBuffer, T metadata,
                                              CompletionFuture<T> completionFuture );
 
     void setMessageListener( MessageListener messageListener );

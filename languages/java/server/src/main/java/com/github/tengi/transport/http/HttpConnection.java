@@ -1,4 +1,5 @@
 package com.github.tengi.transport.http;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,35 +19,33 @@ package com.github.tengi.transport.http;
  * under the License.
  */
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+
 import com.github.tengi.CompletionFuture;
-import com.github.tengi.ConnectionConstants;
 import com.github.tengi.Message;
-import com.github.tengi.MessageListener;
-import com.github.tengi.transport.polling.PollingConnection;
 import com.github.tengi.SerializationFactory;
 import com.github.tengi.Streamable;
 import com.github.tengi.TransportType;
-import com.github.tengi.UniqueId;
-import com.github.tengi.buffer.ByteBufMemoryBuffer;
 import com.github.tengi.buffer.MemoryBuffer;
+import com.github.tengi.buffer.MemoryBufferPool;
 import com.github.tengi.service.messagecache.MessageQueue;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
+import com.github.tengi.transport.AbstractChannelConnection;
+import com.github.tengi.transport.polling.PollingConnection;
 
 public class HttpConnection
+    extends AbstractChannelConnection
     implements PollingConnection
 {
 
-    private final SerializationFactory serializationFactory;
-
     private final MessageQueue messageQueue;
 
-    private MessageListener messageListener = null;
-
-    public HttpConnection( SerializationFactory serializationFactory )
+    public HttpConnection( Channel channel, MemoryBufferPool memoryBufferPool, SerializationFactory serializationFactory )
     {
-        this.serializationFactory = serializationFactory;
-        this.messageQueue = new MessageQueue( this, serializationFactory );
+        super( channel, memoryBufferPool, serializationFactory );
+        this.messageQueue = new MessageQueue( this, serializationFactory, memoryBufferPool );
     }
 
     @Override
@@ -58,13 +57,11 @@ public class HttpConnection
     @Override
     public <T extends Message> void sendMessage( T message, CompletionFuture<T> completionFuture )
     {
+        ByteBuf buffer = getByteBuf( 100 );
+        MemoryBuffer memoryBuffer = memoryBufferPool.pop( buffer );
         try
         {
-            ByteBuf buffer = Unpooled.directBuffer( 100 );
-            MemoryBuffer memoryBuffer = new ByteBufMemoryBuffer( buffer );
-            memoryBuffer.writeByte( ConnectionConstants.DATA_TYPE_MESSAGE );
-            Message.write( memoryBuffer, message );
-
+            prepareMessageBuffer( message, memoryBuffer );
             messageQueue.push( memoryBuffer );
 
             if ( completionFuture != null )
@@ -74,6 +71,7 @@ public class HttpConnection
         }
         catch ( Exception e )
         {
+            memoryBufferPool.push( memoryBuffer );
             if ( completionFuture != null )
             {
                 completionFuture.onFailure( e, message, this );
@@ -82,28 +80,15 @@ public class HttpConnection
     }
 
     @Override
-    public <T extends Streamable> void sendRawData( MemoryBuffer memoryBuffer, T metadata,
+    public <T extends Streamable> void sendRawData( MemoryBuffer rawBuffer, T metadata,
                                                     CompletionFuture<T> completionFuture )
     {
+        ByteBuf buffer = getByteBuf( rawBuffer.writerIndex() + 20 );
+        MemoryBuffer memoryBuffer = memoryBufferPool.pop( buffer );
         try
         {
-            ByteBuf buffer = Unpooled.directBuffer( (int) ( memoryBuffer.writerIndex() + 20 ) );
-            MemoryBuffer rawBuffer = new ByteBufMemoryBuffer( buffer );
-            rawBuffer.writeByte( ConnectionConstants.DATA_TYPE_RAW );
-            if ( metadata == null )
-            {
-                rawBuffer.writeByte( (byte) 0 );
-            }
-            else
-            {
-                rawBuffer.writeByte( (byte) 1 );
-                rawBuffer.writeShort( serializationFactory.getClassIdentifier( metadata ) );
-                metadata.writeStream( rawBuffer );
-            }
-
-            rawBuffer.writeBuffer( memoryBuffer, 0, memoryBuffer.writerIndex() );
-
-            messageQueue.push( memoryBuffer );
+            prepareMessageBuffer( rawBuffer, metadata, memoryBuffer );
+            messageQueue.push( rawBuffer );
 
             if ( completionFuture != null )
             {
@@ -112,6 +97,7 @@ public class HttpConnection
         }
         catch ( Exception e )
         {
+            memoryBufferPool.push( rawBuffer );
             if ( completionFuture != null )
             {
                 completionFuture.onFailure( e, null, this );
@@ -120,27 +106,11 @@ public class HttpConnection
     }
 
     @Override
-    public Message pollResponses( int lastUpdateId )
+    public void sendPollResponses( int lastUpdateId )
     {
-        return messageQueue.snapshot( lastUpdateId );
-    }
-
-    @Override
-    public void setMessageListener( MessageListener messageListener )
-    {
-        this.messageListener = messageListener;
-    }
-
-    @Override
-    public void clearMessageListener()
-    {
-        messageListener = null;
-    }
-
-    @Override
-    public Message prepareMessage( Streamable body )
-    {
-        return new Message( serializationFactory, this, body, UniqueId.randomUniqueId(), Message.MESSAGE_TYPE_DEFAULT );
+        Message longPollingResponse = messageQueue.snapshot( lastUpdateId );
+        ChannelFuture future = getUnderlyingChannel().write( longPollingResponse );
+        future.addListener( ChannelFutureListener.CLOSE );
     }
 
     @Override

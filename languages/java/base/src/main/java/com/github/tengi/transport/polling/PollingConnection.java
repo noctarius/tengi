@@ -1,4 +1,5 @@
 package com.github.tengi.transport.polling;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,12 +20,11 @@ package com.github.tengi.transport.polling;
  */
 
 import com.github.tengi.Connection;
-import com.github.tengi.Message;
 
 public interface PollingConnection
     extends Connection
 {
 
-    Message pollResponses( int lastUpdateId );
+    void sendPollResponses( int lastUpdateId );
 
 }

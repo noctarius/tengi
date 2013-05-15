@@ -19,29 +19,25 @@ package com.github.tengi.transport;
  * under the License.
  */
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInboundMessageHandlerAdapter;
 
 import com.github.tengi.CompletionFuture;
-import com.github.tengi.Connection;
 import com.github.tengi.Message;
-import com.github.tengi.MessageListener;
+import com.github.tengi.SerializationFactory;
 import com.github.tengi.Streamable;
 import com.github.tengi.TransportType;
 import com.github.tengi.buffer.MemoryBuffer;
+import com.github.tengi.buffer.MemoryBufferPool;
 
 public class WebsocketConnection
-    implements Connection
+    extends AbstractChannelConnection
 {
 
-    private final Channel channel;
-
-    private ChannelInboundMessageHandlerAdapter messageListener = null;
-
-    WebsocketConnection( Channel channel )
+    WebsocketConnection( Channel channel, MemoryBufferPool memoryBufferPool, SerializationFactory serializationFactory )
     {
-        this.channel = channel;
+        super( channel, memoryBufferPool, serializationFactory );
     }
 
     @Override
@@ -53,42 +49,62 @@ public class WebsocketConnection
     @Override
     public <T extends Message> void sendMessage( T message, CompletionFuture<T> completionFuture )
     {
-        ChannelFuture channelFuture = channel.write( message );
+        ByteBuf buffer = getByteBuf( 100 );
+        MemoryBuffer memoryBuffer = memoryBufferPool.pop( buffer );
+        try
+        {
+            prepareMessageBuffer( message, memoryBuffer );
+            getUnderlyingChannel().write( buffer );
+
+            if ( completionFuture != null )
+            {
+                completionFuture.onSuccess( message, this );
+            }
+        }
+        catch ( Exception e )
+        {
+            memoryBufferPool.push( memoryBuffer );
+            if ( completionFuture != null )
+            {
+                completionFuture.onFailure( e, message, this );
+            }
+        }
+
+        ChannelFuture channelFuture = getUnderlyingChannel().write( message );
         channelFuture.addListener( new CompletionFutureAdapter<T>( completionFuture, message, this ) );
     }
 
     @Override
-    public <T extends Streamable> void sendRawData( MemoryBuffer memoryBuffer, final T metadata,
+    public <T extends Streamable> void sendRawData( MemoryBuffer rawBuffer, final T metadata,
                                                     final CompletionFuture<T> completionFuture )
     {
-        ChannelFuture channelFuture = channel.write( memoryBuffer );
-        channelFuture.addListener( new CompletionFutureAdapter<T>( completionFuture, metadata, this ) );
-    }
+        ByteBuf buffer = getByteBuf( rawBuffer.writerIndex() + 20 );
+        MemoryBuffer memoryBuffer = memoryBufferPool.pop( buffer );
+        try
+        {
+            prepareMessageBuffer( rawBuffer, metadata, memoryBuffer );
+            getUnderlyingChannel().write( buffer );
 
-    @Override
-    public void setMessageListener( MessageListener messageListener )
-    {
-        this.messageListener = new MessageListenerAdapter( messageListener, this );
-    }
-
-    @Override
-    public void clearMessageListener()
-    {
-        messageListener = null;
-    }
-
-    @Override
-    public Message prepareMessage( Streamable body )
-    {
-        // TODO Auto-generated method stub
-        return null;
+            if ( completionFuture != null )
+            {
+                completionFuture.onSuccess( null, this );
+            }
+        }
+        catch ( Exception e )
+        {
+            memoryBufferPool.push( rawBuffer );
+            if ( completionFuture != null )
+            {
+                completionFuture.onFailure( e, null, this );
+            }
+        }
     }
 
     @Override
     public void close()
     {
         // TODO Auto-generated method stub
-        
+
     }
 
 }

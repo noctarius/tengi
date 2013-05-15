@@ -1,4 +1,5 @@
 package com.github.tengi.service;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,81 +20,53 @@ package com.github.tengi.service;
  */
 
 import com.github.tengi.Connection;
-import com.github.tengi.ConnectionConstants;
 import com.github.tengi.Message;
-import com.github.tengi.SerializationFactory;
+import com.github.tengi.MessageListener;
 import com.github.tengi.Streamable;
-import com.github.tengi.buffer.ByteBufMemoryBuffer;
 import com.github.tengi.buffer.MemoryBuffer;
 import com.github.tengi.transport.polling.PollingConnection;
 import com.github.tengi.transport.polling.PollingMessage;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 
 public class ServiceManager
+    implements MessageListener
 {
 
-    private final SerializationFactory serializationFactory;
+    private final Service<Message> service;
 
-    private final Service service;
-
-    public ServiceManager( Service service, SerializationFactory serializationFactory )
+    public ServiceManager( Service<Message> service )
     {
         this.service = service;
-        this.serializationFactory = serializationFactory;
     }
 
-    private void call( MemoryBuffer memoryBuffer, Connection connection )
+    @Override
+    public void messageReceived( Message message, Connection connection )
     {
-        byte frameType = memoryBuffer.readByte();
-        if ( frameType == ConnectionConstants.DATA_TYPE_MESSAGE )
+        if ( message instanceof PollingMessage )
         {
-            Message message = Message.read( memoryBuffer, serializationFactory, connection );
-            if ( message instanceof PollingMessage )
+            if ( connection.getTransportType().isPolling() )
             {
-                longPolling( (PollingMessage) message, connection );
+                throw new IllegalArgumentException( "Given connection is not a PollingConnection "
+                    + "but LongPolling request arrived" );
             }
-            else
-            {
-                call( message, connection );
-            }
+
+            longPolling( (PollingMessage) message, connection );
         }
-        else if ( frameType == ConnectionConstants.DATA_TYPE_RAW )
+        else
         {
-            Streamable metadata = null;
-            if ( memoryBuffer.readByte() == 1 )
-            {
-                short classId = memoryBuffer.readShort();
-                metadata = serializationFactory.instantiate( classId );
-            }
-
-            int length = memoryBuffer.readInt();
-            ByteBuf buffer = Unpooled.buffer( length );
-            MemoryBuffer rawBuffer = new ByteBufMemoryBuffer( buffer );
-            memoryBuffer.readBuffer( rawBuffer, 0, length );
-
-            call( rawBuffer, metadata, connection );
+            service.call( message, connection );
         }
     }
 
-    private void call( Message request, Connection connection )
-    {
-        service.call( request, connection );
-    }
-
-    private void call( MemoryBuffer request, Streamable metadata, Connection connection )
+    @Override
+    public void rawDataReceived( MemoryBuffer request, Streamable metadata, Connection connection )
     {
         service.call( request, metadata, connection );
     }
 
     private void longPolling( PollingMessage request, Connection connection )
     {
-        if ( connection.getTransportType().isPolling() )
-        {
-            PollingConnection pollingConnection = (PollingConnection) connection;
-            Message response = pollingConnection.pollResponses( request.getLastUpdateId() );
-            connection.sendMessage( response, null );
-        }
+        PollingConnection pollingConnection = (PollingConnection) connection;
+        pollingConnection.sendPollResponses( request.getLastUpdateId() );
     }
 
 }

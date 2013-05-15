@@ -1,4 +1,5 @@
 package com.github.tengi.service.messagecache;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -23,6 +24,7 @@ import com.github.tengi.Message;
 import com.github.tengi.SerializationFactory;
 import com.github.tengi.UniqueId;
 import com.github.tengi.buffer.MemoryBuffer;
+import com.github.tengi.buffer.MemoryBufferPool;
 
 import java.util.Deque;
 import java.util.Iterator;
@@ -38,14 +40,18 @@ public class MessageQueue
 
     private final SerializationFactory serializationFactory;
 
+    private final MemoryBufferPool memoryBufferPool;
+
     private final AtomicInteger updateId = new AtomicInteger( 0 );
 
     private final Connection connection;
 
-    public MessageQueue( Connection connection, SerializationFactory serializationFactory )
+    public MessageQueue( Connection connection, SerializationFactory serializationFactory,
+                         MemoryBufferPool memoryBufferPool )
     {
         this.connection = connection;
         this.serializationFactory = serializationFactory;
+        this.memoryBufferPool = memoryBufferPool;
     }
 
     public int size()
@@ -89,6 +95,7 @@ public class MessageQueue
             {
                 iterator.remove();
                 cachedMessage.memoryBuffer.release();
+                memoryBufferPool.push( cachedMessage.memoryBuffer );
             }
         }
 

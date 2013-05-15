@@ -22,13 +22,13 @@ package com.github.tengi.client.transport.http
     import com.github.tengi.client.ConnectionConstants;
     import com.github.tengi.client.LongPollingRequestFactory;
     import com.github.tengi.client.Message;
-    import com.github.tengi.client.MessageListener;
     import com.github.tengi.client.SerializationFactory;
     import com.github.tengi.client.Streamable;
     import com.github.tengi.client.TransportType;
     import com.github.tengi.client.UniqueId;
     import com.github.tengi.client.buffer.MemoryBuffer;
     import com.github.tengi.client.buffer.MemoryBufferPool;
+    import com.github.tengi.client.transport.AbstractConnection;
     import com.github.tengi.client.transport.polling.PollingMessage;
 
     import flash.errors.IOError;
@@ -48,19 +48,15 @@ package com.github.tengi.client.transport.http
     import flash.utils.Timer;
     import flash.utils.getTimer;
 
-    public class HttpConnection implements Connection
+    public class HttpConnection extends AbstractConnection implements Connection
     {
 
         private const requests:Dictionary = new Dictionary();
 
         private const longPollingUrlLoader:URLLoader = new URLLoader();
 
-        private var messageListener:MessageListener = null;
-
         private var longPollingRequestFactory:LongPollingRequestFactory = null;
 
-        private var serializationFactory:SerializationFactory;
-        private var memoryBufferPool:MemoryBufferPool;
         private var contentType:String;
         private var contextPath:String;
         private var host:String;
@@ -77,8 +73,8 @@ package com.github.tengi.client.transport.http
         public function HttpConnection( host:String, port:int, contextPath:String, ssl:Boolean, contentType:String,
                                         memoryBufferPool:MemoryBufferPool, serializationFactory:SerializationFactory )
         {
-            this.serializationFactory = serializationFactory;
-            this.memoryBufferPool = memoryBufferPool;
+            super( memoryBufferPool, serializationFactory );
+
             this.contentType = contentType;
             this.contextPath = contextPath;
             this.host = host;
@@ -109,22 +105,10 @@ package com.github.tengi.client.transport.http
                 }
 
                 var output:ByteArray = new ByteArray();
-                var memoryBuffer:MemoryBuffer = memoryBufferPool.pop( output );
-                memoryBuffer.writeByte( ConnectionConstants.DATA_TYPE_MESSAGE );
-                Message.write( memoryBuffer, message );
-                memoryBufferPool.push( memoryBuffer );
+                createMessageFrame( message, output );
 
-                var request:URLRequest = new URLRequest( url );
-                request.method = URLRequestMethod.POST;
-                request.contentType = contentType;
-                request.data = output;
-
-                var urlLoader:URLLoader = new URLLoader();
-                urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
-                urlLoader.addEventListener( Event.COMPLETE, callCompleteListener );
-                urlLoader.addEventListener( SecurityErrorEvent.SECURITY_ERROR, callSecurityErrorHandler );
-                urlLoader.addEventListener( HTTPStatusEvent.HTTP_RESPONSE_STATUS, callHttpStatusHandler );
-                urlLoader.addEventListener( IOErrorEvent.IO_ERROR, callIoErrorHandler );
+                var request:URLRequest = createURLRequest( output );
+                var urlLoader:URLLoader = createURLLoader();
 
                 var requestMapper:RequestMapper = new RequestMapper();
                 requests[urlLoader] = requestMapper;
@@ -151,34 +135,10 @@ package com.github.tengi.client.transport.http
             try
             {
                 var output:ByteArray = new ByteArray();
-                var memoryBuffer:MemoryBuffer = memoryBufferPool.pop( output );
-                memoryBuffer.writeByte( ConnectionConstants.DATA_TYPE_RAW );
+                createRawDataFrame( memoryBuffer, metadata, output );
 
-                if ( metadata == null )
-                {
-                    memoryBuffer.writeByte( 0 );
-                }
-                else
-                {
-                    memoryBuffer.writeByte( 1 );
-                    memoryBuffer.writeShort( serializationFactory.getClassIdentifier( metadata ) );
-                    metadata.writeStream( memoryBuffer );
-                }
-
-                memoryBuffer.writeBytes( memoryBuffer, 0, memoryBuffer.writerIndex );
-                memoryBufferPool.push( memoryBuffer );
-
-                var request:URLRequest = new URLRequest( url );
-                request.method = URLRequestMethod.POST;
-                request.contentType = contentType;
-                request.data = output;
-
-                var urlLoader:URLLoader = new URLLoader();
-                urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
-                urlLoader.addEventListener( Event.COMPLETE, callCompleteListener );
-                urlLoader.addEventListener( SecurityErrorEvent.SECURITY_ERROR, callSecurityErrorHandler );
-                urlLoader.addEventListener( HTTPStatusEvent.HTTP_RESPONSE_STATUS, callHttpStatusHandler );
-                urlLoader.addEventListener( IOErrorEvent.IO_ERROR, callIoErrorHandler );
+                var request:URLRequest = createURLRequest( output );
+                var urlLoader:URLLoader = createURLLoader();
 
                 var requestMapper:RequestMapper = new RequestMapper();
                 requests[urlLoader] = requestMapper;
@@ -212,16 +172,6 @@ package com.github.tengi.client.transport.http
             }
 
             this.longPollingRequestFactory = longPollingRequestFactory;
-        }
-
-        public function setMessageListener( messageListener:MessageListener ):void
-        {
-            this.messageListener = messageListener;
-        }
-
-        public function clearMessageListener():void
-        {
-            messageListener = null;
         }
 
         public function prepareMessage( body:Streamable, longPolling:Boolean = false ):Message
@@ -260,15 +210,39 @@ package com.github.tengi.client.transport.http
 
             var output:ByteArray = new ByteArray();
             var memoryBuffer:MemoryBuffer = memoryBufferPool.pop( output );
-            Message.write( memoryBuffer, message );
-            memoryBufferPool.push( memoryBuffer );
+            try
+            {
+                Message.write( memoryBuffer, message );
+            }
+            finally
+            {
+                memoryBufferPool.push( memoryBuffer );
+            }
 
+            var request:URLRequest = createURLRequest( output );
+            longPollingUrlLoader.load( request );
+        }
+
+        private function createURLRequest( byteArray:ByteArray ):URLRequest
+        {
             var request:URLRequest = new URLRequest( url );
             request.method = URLRequestMethod.POST;
             request.contentType = contentType;
-            request.data = output;
+            request.data = byteArray;
 
-            longPollingUrlLoader.load( request );
+            return request;
+        }
+
+        private function createURLLoader():URLLoader
+        {
+            var urlLoader:URLLoader = new URLLoader();
+            urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
+            urlLoader.addEventListener( Event.COMPLETE, callCompleteListener );
+            urlLoader.addEventListener( SecurityErrorEvent.SECURITY_ERROR, callSecurityErrorHandler );
+            urlLoader.addEventListener( HTTPStatusEvent.HTTP_RESPONSE_STATUS, callHttpStatusHandler );
+            urlLoader.addEventListener( IOErrorEvent.IO_ERROR, callIoErrorHandler );
+
+            return urlLoader;
         }
 
         private function longPollingCompleteListener( event:Event ):void
@@ -364,40 +338,45 @@ package com.github.tengi.client.transport.http
 
         private function handleMessage( data:ByteArray ):void
         {
+            var length:int = data.readInt();
+            if ( length > data.length )
+            {
+                throw new IOError( "Not enough data" );
+            }
+
             var memoryBuffer:MemoryBuffer = memoryBufferPool.pop( data );
-
-            var dataType:int = memoryBuffer.readByte();
-            if ( dataType == ConnectionConstants.DATA_TYPE_MESSAGE )
+            try
             {
-                var message:Message = Message.read( memoryBuffer, serializationFactory, this );
-
-                requests[message.messageId] = null;
-
-                if ( messageListener != null )
+                var dataType:int = memoryBuffer.readByte();
+                if ( dataType == ConnectionConstants.DATA_TYPE_MESSAGE )
                 {
-                    messageListener.messageReceived( message, this );
+                    var message:Message = Message.read( memoryBuffer, serializationFactory, this );
+
+                    requests[message.messageId] = null;
+
+                    if ( messageListener != null )
+                    {
+                        messageListener.messageReceived( message, this );
+                    }
+                }
+                else if ( dataType == ConnectionConstants.DATA_TYPE_RAW )
+                {
+                    var metadata:Streamable = readNullableObject( memoryBuffer );
+
+                    var length:int = memoryBuffer.readInt();
+                    var data:ByteArray = new ByteArray();
+                    memoryBuffer.readBytes( data, 0, length );
+
+                    if ( messageListener != null )
+                    {
+                        messageListener.rawDataReceived( new MemoryBuffer( data ), metadata, this );
+                    }
                 }
             }
-            else if ( dataType == ConnectionConstants.DATA_TYPE_RAW )
+            finally
             {
-                var metadata:Streamable = null;
-                if ( memoryBuffer.readByte() == 1 )
-                {
-                    var classId:int = memoryBuffer.readShort();
-                    metadata = serializationFactory.instantiate( classId );
-                    metadata.readStream( memoryBuffer );
-                }
-
-                var length:int = memoryBuffer.readInt();
-                var data:ByteArray = new ByteArray();
-                memoryBuffer.readBytes( data, 0, length );
-
-                if ( messageListener != null )
-                {
-                    messageListener.dataReceived( new MemoryBuffer( data ), metadata, this );
-                }
+                memoryBufferPool.push( memoryBuffer );
             }
-            memoryBufferPool.push( memoryBuffer );
         }
 
     }

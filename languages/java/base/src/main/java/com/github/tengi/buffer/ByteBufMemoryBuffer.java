@@ -1,4 +1,5 @@
 package com.github.tengi.buffer;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,51 +19,213 @@ package com.github.tengi.buffer;
  * under the License.
  */
 
+import io.netty.buffer.AbstractReferenceCountedByteBuf;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.UnsafeByteBuf;
 
-import java.nio.ByteOrder;
+import java.nio.ByteBuffer;
 
-public class ByteBufMemoryBuffer
+class ByteBufMemoryBuffer
     extends AbstractMemoryBuffer
 {
 
-    private final ByteBuf buffer;
+    private ByteBuf byteBuffer;
 
-    public ByteBufMemoryBuffer( ByteBuf buffer )
+    ByteBuf getByteBuffer()
     {
-        this.buffer = buffer;
-        this.buffer.order( ByteOrder.BIG_ENDIAN );
+        return byteBuffer;
+    }
+
+    ByteBufMemoryBuffer setByteBuffer( ByteBuf byteBuffer )
+    {
+        this.byteBuffer = byteBuffer;
+        return this;
     }
 
     @Override
-    protected void writeByte( long offset, byte value )
+    public boolean readable()
     {
-        int position = buffer.writerIndex();
-        buffer.writerIndex( (int) offset );
-        buffer.writeByte( value );
-        buffer.writerIndex( position );
+        return byteBuffer.isReadable();
     }
 
     @Override
-    protected byte readByte( long offset )
+    public long readableBytes()
     {
-        int position = buffer.readerIndex();
-        byte value = buffer.readByte();
-        buffer.readerIndex( position );
-        return value;
+        return byteBuffer.readableBytes();
+    }
+
+    @Override
+    public int readBytes( byte[] bytes )
+    {
+        byteBuffer.readBytes( bytes );
+        readerIndex += bytes.length;
+        return bytes.length;
+    }
+
+    @Override
+    public int readBytes( byte[] bytes, int offset, int length )
+    {
+        byteBuffer.readBytes( bytes, offset, length );
+        readerIndex += length;
+        return length;
+    }
+
+    @Override
+    public int readBuffer( ByteBuffer byteBuffer )
+    {
+        int pos = byteBuffer.position();
+        this.byteBuffer.readBytes( byteBuffer );
+        readerIndex += ( byteBuffer.position() - pos );
+        return byteBuffer.position() - pos;
+    }
+
+    @Override
+    public int readBuffer( ByteBuffer byteBuffer, int offset, int length )
+    {
+        if ( byteBuffer.hasArray() )
+        {
+            this.byteBuffer.readBytes( byteBuffer.array(), offset, length );
+            readerIndex += length;
+            return length;
+        }
+
+        byte[] data = new byte[length];
+        this.byteBuffer.readBytes( data );
+        byteBuffer.put( data, offset, length );
+        readerIndex += length;
+        return length;
+    }
+
+    @Override
+    public long readBuffer( WritableMemoryBuffer memoryBuffer )
+    {
+        if ( memoryBuffer instanceof ByteBufMemoryBuffer )
+        {
+            ByteBuf buffer = ( (ByteBufMemoryBuffer) memoryBuffer ).byteBuffer;
+            int pos = buffer.readerIndex();
+            byteBuffer.readBytes( buffer );
+            readerIndex += ( buffer.readerIndex() - pos );
+            return buffer.readerIndex() - pos;
+        }
+
+        long writableBytes = memoryBuffer.writableBytes();
+        byte[] data = new byte[(int) writableBytes];
+        byteBuffer.readBytes( data );
+        memoryBuffer.writeBytes( data );
+        readerIndex += writableBytes;
+        return writableBytes;
+    }
+
+    @Override
+    public long readBuffer( WritableMemoryBuffer memoryBuffer, long offset, long length )
+    {
+        if ( memoryBuffer instanceof ByteBufMemoryBuffer )
+        {
+            ByteBuf buffer = ( (ByteBufMemoryBuffer) memoryBuffer ).byteBuffer;
+            int pos = buffer.readerIndex();
+            byteBuffer.readBytes( buffer );
+            readerIndex += ( buffer.readerIndex() - pos );
+            return buffer.readerIndex() - pos;
+        }
+
+        long writableBytes = memoryBuffer.writableBytes();
+        byte[] data = new byte[(int) writableBytes];
+        byteBuffer.readBytes( data );
+        memoryBuffer.writeBytes( data );
+        readerIndex += writableBytes;
+        return writableBytes;
+    }
+
+    @Override
+    public void writeBytes( byte[] bytes )
+    {
+        byteBuffer.writeBytes( bytes );
+        writerIndex += bytes.length;
+    }
+
+    @Override
+    public void writeBytes( byte[] bytes, int offset, int length )
+    {
+        byteBuffer.writeBytes( bytes, offset, length );
+        writerIndex += length;
+    }
+
+    @Override
+    public void writeBuffer( ByteBuffer byteBuffer )
+    {
+        int length = byteBuffer.remaining();
+        this.byteBuffer.writeBytes( byteBuffer );
+        writerIndex += length;
+    }
+
+    @Override
+    public void writeBuffer( ByteBuffer byteBuffer, int offset, int length )
+    {
+        if ( byteBuffer.hasArray() )
+        {
+            this.byteBuffer.writeBytes( byteBuffer.array(), offset, length );
+            writerIndex += length;
+        }
+        else
+        {
+            byte[] data = new byte[length];
+            byteBuffer.get( data, offset, length );
+            this.byteBuffer.writeBytes( data );
+            writerIndex += length;
+        }
+    }
+
+    @Override
+    public void writeBuffer( ReadableMemoryBuffer memoryBuffer )
+    {
+        if ( memoryBuffer instanceof ByteBufMemoryBuffer )
+        {
+            ByteBufMemoryBuffer buffer = (ByteBufMemoryBuffer) memoryBuffer;
+            long readableBytes = buffer.byteBuffer.readableBytes();
+            this.byteBuffer.readBytes( buffer.byteBuffer );
+            writerIndex += readableBytes;
+        }
+        else
+        {
+            long readableBytes = memoryBuffer.readableBytes();
+            byte[] bytes = new byte[(int) readableBytes];
+            memoryBuffer.readBytes( bytes, 0, (int) readableBytes );
+            this.byteBuffer.writeBytes( bytes );
+            writerIndex += readableBytes;
+        }
+    }
+
+    @Override
+    public void writeBuffer( ReadableMemoryBuffer memoryBuffer, long offset, long length )
+    {
+        if ( memoryBuffer instanceof ByteBufMemoryBuffer )
+        {
+            ByteBufMemoryBuffer buffer = (ByteBufMemoryBuffer) memoryBuffer;
+            int pos = buffer.byteBuffer.readerIndex();
+            buffer.byteBuffer.readerIndex( (int) offset );
+            this.byteBuffer.readBytes( buffer.byteBuffer, (int) length );
+            buffer.byteBuffer.readerIndex( pos );
+        }
+        else
+        {
+            long pos = memoryBuffer.readerIndex();
+            memoryBuffer.readerIndex( offset );
+            byte[] bytes = new byte[(int) pos];
+            memoryBuffer.readBytes( bytes, 0, (int) length );
+            this.byteBuffer.writeBytes( bytes );
+        }
+        writerIndex += length;
     }
 
     @Override
     public long capacity()
     {
-        return buffer.capacity();
+        return byteBuffer.capacity();
     }
 
     @Override
     public long maxCapacity()
     {
-        return Integer.MAX_VALUE;
+        return byteBuffer.maxCapacity();
     }
 
     @Override
@@ -74,22 +237,37 @@ public class ByteBufMemoryBuffer
     @Override
     public void free()
     {
-        if ( buffer.isDirect() && buffer instanceof UnsafeByteBuf )
+        if ( byteBuffer instanceof AbstractReferenceCountedByteBuf )
         {
-            ( (UnsafeByteBuf) buffer ).free();
+            // Force a releasing of the underlying ByteBuf
+            AbstractReferenceCountedByteBuf byteBuf = (AbstractReferenceCountedByteBuf) byteBuffer;
+            byteBuf.release( byteBuf.refCnt() );
         }
-    }
-
-    @Override
-    public void clear()
-    {
-        super.clear();
-        buffer.clear();
     }
 
     @Override
     public MemoryBuffer duplicate()
     {
-        return new ByteBufMemoryBuffer( buffer.duplicate() );
+        return new ByteBufMemoryBuffer().setByteBuffer( byteBuffer.duplicate() );
     }
+
+    @Override
+    protected void writeByte( long offset, byte value )
+    {
+        int pos = byteBuffer.writerIndex();
+        byteBuffer.writerIndex( (int) offset );
+        byteBuffer.writeByte( value );
+        byteBuffer.writerIndex( pos );
+    }
+
+    @Override
+    protected byte readByte( long offset )
+    {
+        int pos = byteBuffer.readerIndex();
+        byteBuffer.readerIndex( (int) offset );
+        byte value = byteBuffer.readByte();
+        byteBuffer.readerIndex( pos );
+        return value;
+    }
+
 }

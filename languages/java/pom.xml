@@ -6,9 +6,18 @@
   <packaging>pom</packaging>
   <version>0.0.1-SNAPSHOT</version>
   <name>tengi: Java Reactor</name>
-
   <modules>
-	<module>base</module>
-	<module>server</module>
+    <module>base</module>
+    <module>server</module>
   </modules>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-all</artifactId>
+        <version>4.0.0.CR2</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 </project>

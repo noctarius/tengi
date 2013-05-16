@@ -17,6 +17,11 @@
     </dependency>
 
     <dependency>
+      <groupId>org.eclipse.jetty.npn</groupId>
+      <artifactId>npn-api</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>com.github.tengi</groupId>
       <artifactId>tengi-java-base</artifactId>
       <version>${project.version}</version>

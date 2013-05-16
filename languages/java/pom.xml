@@ -6,10 +6,15 @@
   <packaging>pom</packaging>
   <version>0.0.1-SNAPSHOT</version>
   <name>tengi: Java Reactor</name>
+
   <modules>
     <module>base</module>
     <module>server</module>
   </modules>
+
+  <properties>
+    <npn.version>8.1.2.v20120308</npn.version>
+  </properties>
 
   <dependencyManagement>
     <dependencies>
@@ -17,6 +22,18 @@
         <groupId>io.netty</groupId>
         <artifactId>netty-all</artifactId>
         <version>4.0.0.CR2</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.eclipse.jetty.npn</groupId>
+        <artifactId>npn-api</artifactId>
+        <version>${npn.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mortbay.jetty.npn</groupId>
+        <artifactId>npn-boot</artifactId>
+        <version>${npn.version}</version>
+        <scope>provided</scope>
       </dependency>
 
       <dependency>

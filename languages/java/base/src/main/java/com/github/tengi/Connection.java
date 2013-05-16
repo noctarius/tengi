@@ -1,4 +1,5 @@
 package com.github.tengi;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -23,12 +24,13 @@ import com.github.tengi.buffer.MemoryBuffer;
 public interface Connection
 {
 
+    UniqueId getConnectionId();
+
     TransportType getTransportType();
 
     <T extends Message> void sendMessage( T message, CompletionFuture<T> completionFuture );
 
-    <T extends Streamable> void sendRawData( MemoryBuffer rawBuffer, T metadata,
-                                             CompletionFuture<T> completionFuture );
+    <T extends Streamable> void sendRawData( MemoryBuffer rawBuffer, T metadata, CompletionFuture<T> completionFuture );
 
     void setMessageListener( MessageListener messageListener );
 

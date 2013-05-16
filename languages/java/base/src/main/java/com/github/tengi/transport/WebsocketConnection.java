@@ -28,6 +28,7 @@ import com.github.tengi.Message;
 import com.github.tengi.SerializationFactory;
 import com.github.tengi.Streamable;
 import com.github.tengi.TransportType;
+import com.github.tengi.UniqueId;
 import com.github.tengi.buffer.MemoryBuffer;
 import com.github.tengi.buffer.MemoryBufferPool;
 
@@ -35,9 +36,10 @@ public class WebsocketConnection
     extends AbstractChannelConnection
 {
 
-    WebsocketConnection( Channel channel, MemoryBufferPool memoryBufferPool, SerializationFactory serializationFactory )
+    WebsocketConnection( UniqueId connectionId, Channel channel, MemoryBufferPool memoryBufferPool,
+                         SerializationFactory serializationFactory )
     {
-        super( channel, memoryBufferPool, serializationFactory );
+        super( connectionId, channel, memoryBufferPool, serializationFactory );
     }
 
     @Override

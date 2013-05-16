@@ -18,7 +18,7 @@ public abstract class TengiChannelInitializer
         initializeTengiPipeline( channel.pipeline() );
     }
 
-    private void initializeTengiPipeline( ChannelPipeline channelPipeline )
+    protected void initializeTengiPipeline( ChannelPipeline channelPipeline )
     {
         channelPipeline.addLast( new LengthFieldBasedFrameDecoder( Integer.MAX_VALUE, 0, 4, -4, 4 ) );
         channelPipeline.addLast( new LengthFieldPrepender( 4, true ) );

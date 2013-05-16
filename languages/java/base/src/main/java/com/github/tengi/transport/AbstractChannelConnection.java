@@ -1,11 +1,10 @@
 package com.github.tengi.transport;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.MessageBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.MessageToMessageDecoder;
+import io.netty.channel.ChannelInboundMessageHandlerAdapter;
 
 import com.github.tengi.Connection;
 import com.github.tengi.ConnectionConstants;
@@ -22,27 +21,41 @@ public abstract class AbstractChannelConnection
     implements Connection
 {
 
+    private final ChannelInboundMessageHandlerAdapter<ByteBuf> messageDecoder = new TengiMemoryBufferDecoder();
+
     protected final SerializationFactory serializationFactory;
 
     protected final MemoryBufferPool memoryBufferPool;
+
+    private final UniqueId connectionId;
 
     private final Channel channel;
 
     private volatile MessageListener messageListener = null;
 
-    protected AbstractChannelConnection( Channel channel, MemoryBufferPool memoryBufferPool,
+    protected AbstractChannelConnection( UniqueId connectionId, Channel channel, MemoryBufferPool memoryBufferPool,
                                          SerializationFactory serializationFactory )
     {
         this.serializationFactory = serializationFactory;
         this.memoryBufferPool = memoryBufferPool;
+        this.connectionId = connectionId;
         this.channel = channel;
-
-        channel.pipeline().addLast( new TengiMemoryBufferDecoder() );
     }
 
     public Channel getUnderlyingChannel()
     {
         return channel;
+    }
+
+    public ChannelInboundMessageHandlerAdapter<ByteBuf> getMessageDecoder()
+    {
+        return messageDecoder;
+    }
+
+    @Override
+    public UniqueId getConnectionId()
+    {
+        return connectionId;
     }
 
     @Override
@@ -109,13 +122,13 @@ public abstract class AbstractChannelConnection
     }
 
     private class TengiMemoryBufferDecoder
-        extends MessageToMessageDecoder<ByteBuf>
+        extends ChannelInboundMessageHandlerAdapter<ByteBuf>
     {
 
         private final Connection connection = AbstractChannelConnection.this;
 
         @Override
-        protected void decode( ChannelHandlerContext ctx, ByteBuf msg, MessageBuf<Object> out )
+        public void messageReceived( ChannelHandlerContext ctx, ByteBuf msg )
             throws Exception
         {
             MemoryBuffer memoryBuffer = memoryBufferPool.pop( msg );

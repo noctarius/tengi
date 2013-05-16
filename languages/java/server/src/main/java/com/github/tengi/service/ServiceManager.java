@@ -66,7 +66,7 @@ public class ServiceManager
     private void longPolling( PollingMessage request, Connection connection )
     {
         PollingConnection pollingConnection = (PollingConnection) connection;
-        pollingConnection.sendPollResponses( request.getLastUpdateId() );
+        pollingConnection.sendPollResponses( pollingConnection.getPollingChannel(), request.getLastUpdateId() );
     }
 
 }

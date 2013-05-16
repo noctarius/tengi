@@ -29,6 +29,7 @@ import com.github.tengi.Message;
 import com.github.tengi.SerializationFactory;
 import com.github.tengi.Streamable;
 import com.github.tengi.TransportType;
+import com.github.tengi.UniqueId;
 import com.github.tengi.buffer.MemoryBuffer;
 import com.github.tengi.buffer.MemoryBufferPool;
 import com.github.tengi.service.messagecache.MessageQueue;
@@ -42,10 +43,31 @@ public class HttpConnection
 
     private final MessageQueue messageQueue;
 
-    public HttpConnection( Channel channel, MemoryBufferPool memoryBufferPool, SerializationFactory serializationFactory )
+    private volatile Channel pollingChannel;
+
+    public HttpConnection( UniqueId connectionId, MemoryBufferPool memoryBufferPool,
+                           SerializationFactory serializationFactory )
     {
-        super( channel, memoryBufferPool, serializationFactory );
+        super( connectionId, null, memoryBufferPool, serializationFactory );
         this.messageQueue = new MessageQueue( this, serializationFactory, memoryBufferPool );
+    }
+
+    @Override
+    public void setPollingChannel( Channel pollingChannel )
+    {
+        this.pollingChannel = pollingChannel;
+    }
+
+    @Override
+    public Channel getPollingChannel()
+    {
+        return pollingChannel;
+    }
+
+    @Override
+    public Channel getUnderlyingChannel()
+    {
+        return pollingChannel;
     }
 
     @Override
@@ -106,10 +128,10 @@ public class HttpConnection
     }
 
     @Override
-    public void sendPollResponses( int lastUpdateId )
+    public void sendPollResponses( Channel channel, int lastUpdateId )
     {
         Message longPollingResponse = messageQueue.snapshot( lastUpdateId );
-        ChannelFuture future = getUnderlyingChannel().write( longPollingResponse );
+        ChannelFuture future = channel.write( longPollingResponse );
         future.addListener( ChannelFutureListener.CLOSE );
     }
 

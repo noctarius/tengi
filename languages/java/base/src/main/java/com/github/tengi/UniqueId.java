@@ -117,4 +117,15 @@ public class UniqueId
         return uniqueId;
     }
 
+    public static UniqueId fromByteArray( byte[] byteArray )
+    {
+        if ( byteArray.length != 16 )
+        {
+            throw new IllegalArgumentException( "bytearray is " + byteArray.length + " bytes long, expected 16 bytes" );
+        }
+        UniqueId uniqueId = new UniqueId();
+        System.arraycopy( byteArray, 0, uniqueId.data, 0, 16 );
+        return uniqueId;
+    }
+
 }

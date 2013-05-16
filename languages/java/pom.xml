@@ -23,6 +23,11 @@
         <artifactId>netty-all</artifactId>
         <version>4.0.0.CR2</version>
       </dependency>
+      <dependency>
+        <groupId>com.barchart.udt</groupId>
+        <artifactId>barchart-udt-core</artifactId>
+        <version>2.2.6</version>
+      </dependency>
 
       <dependency>
         <groupId>org.eclipse.jetty.npn</groupId>

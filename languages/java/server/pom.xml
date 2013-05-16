@@ -15,6 +15,10 @@
       <groupId>io.netty</groupId>
       <artifactId>netty-all</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.barchart.udt</groupId>
+      <artifactId>barchart-udt-core</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.eclipse.jetty.npn</groupId>

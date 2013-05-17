@@ -22,12 +22,15 @@ package com.github.tengi.client
 
     import flash.events.IEventDispatcher;
 
-    public interface Connection extends IEventDispatcher
+    public interface ClientConnection extends IEventDispatcher
     {
 
         function getTransportType():TransportType;
 
         function sendMessage( message:Message, success:Function = null, failure:Function = null ):void;
+
+        function sendLinkedMessage( message:Message, linkedCallback:*, bubbles:Boolean = false, success:Function = null,
+                                    failure:Function = null ):void
 
         function sendRawData( memoryBuffer:MemoryBuffer, metadata:Streamable = null, success:Function = null,
                               failure:Function = null ):void;

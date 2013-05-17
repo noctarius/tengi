@@ -34,7 +34,7 @@ package com.github.tengi.client
 
     public class ConnectionManager extends EventDispatcher
     {
-        private const connections:Vector.<Connection> = new Vector.<Connection>();
+        private const connections:Vector.<ClientConnection> = new Vector.<ClientConnection>();
 
         private var serializationFactory:SerializationFactory;
         private var memoryBufferPool:MemoryBufferPool;
@@ -48,15 +48,15 @@ package com.github.tengi.client
             this.serializationFactory = serializationFactory;
         }
 
-        public function createHttpConnection( configuration:ConnectionConfiguration ):Connection
+        public function createHttpConnection( configuration:ConnectionConfiguration ):ClientConnection
         {
-            var connection:Connection = new HttpConnection( configuration, contentType, memoryBufferPool,
+            var connection:ClientConnection = new HttpConnection( configuration, contentType, memoryBufferPool,
                                                             serializationFactory );
             connections.push( connection );
             return connection;
         }
 
-        public function createTcpConnection( configuration:ConnectionConfiguration ):Connection
+        public function createTcpConnection( configuration:ConnectionConfiguration ):ClientConnection
         {
             return null;
         }
@@ -64,7 +64,7 @@ package com.github.tengi.client
         public function createConnection( configuration:ConnectionConfiguration,
                                           connectionListener:ConnectionListener = null ):void
         {
-            var connection:Connection = createHttpConnection( configuration );
+            var connection:ClientConnection = createHttpConnection( configuration );
 
             if ( connectionListener != null )
             {

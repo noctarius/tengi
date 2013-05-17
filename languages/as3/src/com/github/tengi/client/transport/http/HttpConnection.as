@@ -18,7 +18,7 @@
  */
 package com.github.tengi.client.transport.http
 {
-    import com.github.tengi.client.Connection;
+    import com.github.tengi.client.ClientConnection;
     import com.github.tengi.client.ConnectionConfiguration;
     import com.github.tengi.client.ConnectionConstants;
     import com.github.tengi.client.LongPollingRequestFactory;
@@ -52,7 +52,7 @@ package com.github.tengi.client.transport.http
     import flash.utils.Timer;
     import flash.utils.getTimer;
 
-    public class HttpConnection extends AbstractConnection implements Connection
+    public class HttpConnection extends AbstractConnection implements ClientConnection
     {
 
         private const requests:Dictionary = new Dictionary();
@@ -77,7 +77,7 @@ package com.github.tengi.client.transport.http
         public function HttpConnection( configuration:ConnectionConfiguration, contentType:String,
                                         memoryBufferPool:MemoryBufferPool, serializationFactory:SerializationFactory )
         {
-            super( memoryBufferPool, serializationFactory );
+            super( this, memoryBufferPool, serializationFactory );
 
             this.contentType = contentType;
             this.contextPath = configuration.httpContext;
@@ -97,6 +97,13 @@ package com.github.tengi.client.transport.http
         public function getTransportType():TransportType
         {
             return TransportType.HTTP_LONG_POLLING;
+        }
+
+        public function sendLinkedMessage( message:Message, linkedCallback:*, bubbles:Boolean = false,
+                                           success:Function = null, failure:Function = null ):void
+        {
+            registerLinkedMessage( message, linkedCallback, bubbles );
+            sendMessage( message, success, failure );
         }
 
         public function sendMessage( message:Message, success:Function = null, failure:Function = null ):void
@@ -358,12 +365,15 @@ package com.github.tengi.client.transport.http
 
                     requests[message.messageId] = null;
 
-                    if ( messageListener != null )
+                    if (notifyLinkedMessage(message))
                     {
-                        messageListener.messageReceived( message, this );
-                    }
+                        if ( messageListener != null )
+                        {
+                            messageListener.messageReceived( message, this );
+                        }
 
-                    dispatchEvent( new MessageReceivedEvent( ConnectionEvents.MESSAGE_RECEIVED, message ) );
+                        dispatchEvent( new MessageReceivedEvent( ConnectionEvents.MESSAGE_RECEIVED, message ) );
+                    }
                 }
                 else if ( dataType == ConnectionConstants.DATA_TYPE_RAW )
                 {

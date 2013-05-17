@@ -18,10 +18,12 @@
  */
 package com.github.tengi.client
 {
-    public interface LongPollingRequestFactory
+    public interface LinkedMessageCallback
     {
 
-        function prepareLongPollingRequest( connection:ClientConnection ):Streamable;
+        function onLinkedMessageResponse( request:Message, response:Message, connection:ClientConnection ):void;
+
+        function onLinkedMessageTimeout( request:Message, connection:ClientConnection ):void;
 
     }
 }

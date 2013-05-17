@@ -18,7 +18,7 @@
  */
 package com.github.tengi.client.transport.polling
 {
-    import com.github.tengi.client.Connection;
+    import com.github.tengi.client.ClientConnection;
     import com.github.tengi.client.Message;
     import com.github.tengi.client.SerializationFactory;
     import com.github.tengi.client.UniqueId;
@@ -29,7 +29,7 @@ package com.github.tengi.client.transport.polling
 
         private var _lastUpdateId:int;
 
-        public function PollingMessage( serializationFactory:SerializationFactory, connection:Connection,
+        public function PollingMessage( serializationFactory:SerializationFactory, connection:ClientConnection,
                                         messageId:UniqueId = null, lastUpdateId = -1 )
         {
             super( serializationFactory, connection, null, messageId, Message.MESSAGE_TYPE_LONG_POLLING );

@@ -22,13 +22,13 @@ package com.github.tengi.client
     public interface ConnectionListener
     {
 
-        function onHandshake( connection:Connection ):void;
+        function onHandshake( connection:ClientConnection ):void;
 
-        function onConnect( connection:Connection ):void;
+        function onConnect( connection:ClientConnection ):void;
 
-        function onClose( connection:Connection ):void;
+        function onClose( connection:ClientConnection ):void;
 
-        function onReconnect( connection:Connection ):void;
+        function onReconnect( connection:ClientConnection ):void;
 
     }
 }

@@ -18,23 +18,23 @@
  */
 package com.github.tengi.client.transport.events
 {
-    import com.github.tengi.client.Connection;
+    import com.github.tengi.client.ClientConnection;
 
     import flash.events.Event;
 
     public class ConnectionEstablishedEvent extends Event
     {
 
-        private var _connection:Connection;
+        private var _connection:ClientConnection;
 
-        public function ConnectionEstablishedEvent( connection:Connection, type:String, bubbles:Boolean = false,
+        public function ConnectionEstablishedEvent( connection:ClientConnection, type:String, bubbles:Boolean = false,
                                                     cancelable:Boolean = false )
         {
             super( type, bubbles, cancelable );
             this._connection = connection;
         }
 
-        public function get connection():Connection
+        public function get connection():ClientConnection
         {
             return _connection;
         }

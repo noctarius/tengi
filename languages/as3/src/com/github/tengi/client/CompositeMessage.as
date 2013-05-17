@@ -28,7 +28,7 @@ package com.github.tengi.client
 
         private var _messages:Vector.<Message>;
 
-        public function CompositeMessage( serializationFactory:SerializationFactory, connection:Connection,
+        public function CompositeMessage( serializationFactory:SerializationFactory, connection:ClientConnection,
                                           messages:Vector.<Message> = null, messageId:UniqueId = null )
         {
             super( serializationFactory, connection, null, messageId, Message.MESSAGE_TYPE_COMPOSITE );

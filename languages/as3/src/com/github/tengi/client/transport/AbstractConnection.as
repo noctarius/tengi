@@ -18,7 +18,9 @@
  */
 package com.github.tengi.client.transport
 {
+    import com.github.tengi.client.ClientConnection;
     import com.github.tengi.client.ConnectionConstants;
+    import com.github.tengi.client.LinkedMessageCallback;
     import com.github.tengi.client.Message;
     import com.github.tengi.client.MessageListener;
     import com.github.tengi.client.SerializationFactory;
@@ -28,6 +30,7 @@ package com.github.tengi.client.transport
 
     import flash.events.EventDispatcher;
     import flash.utils.ByteArray;
+    import flash.utils.Dictionary;
 
     /**
      * Dispatched whenever a message is received that was read from the underlying stream.
@@ -50,11 +53,16 @@ package com.github.tengi.client.transport
 
         private var _memoryBufferPool:MemoryBufferPool;
 
+        private var _connection:ClientConnection;
+
         private var _messageListener:MessageListener = null;
 
-        public function AbstractConnection( memoryBufferPool:MemoryBufferPool,
+        private const _linkedMessages:Dictionary = new Dictionary();
+
+        public function AbstractConnection( connection:ClientConnection, memoryBufferPool:MemoryBufferPool,
                                             serializationFactory:SerializationFactory )
         {
+            this._connection = connection;
             this._serializationFactory = serializationFactory;
             this._memoryBufferPool = memoryBufferPool;
         }
@@ -77,6 +85,39 @@ package com.github.tengi.client.transport
         public function clearMessageListener():void
         {
             this._messageListener = null;
+        }
+
+        protected function registerLinkedMessage( message:Message, linkedCallback:*, bubbles:Boolean ):void
+        {
+            if ( !(linkedCallback is Function) && !(linkedCallback is LinkedMessageCallback) )
+            {
+                throw new ArgumentError( "linkedCallback is not of type Function or LinkedMessageCallback" );
+            }
+
+            _linkedMessages[message.messageId] = new LinkedMessageHolder( message, linkedCallback, bubbles );
+        }
+
+        protected function notifyLinkedMessage( response:Message ):Boolean
+        {
+            var holder:LinkedMessageHolder = _linkedMessages[response.messageId];
+            if ( holder == null )
+            {
+                return true;
+            }
+
+            delete _linkedMessages[response.messageId];
+            var linkedCallback:* = holder.linkedCallback;
+            if ( linkedCallback is Function )
+            {
+                (linkedCallback as Function)( holder.request, response, _connection );
+            }
+            else
+            {
+                (linkedCallback as LinkedMessageCallback).onLinkedMessageResponse( holder.request, response,
+                                                                                   _connection );
+            }
+
+            return holder.bubbles;
         }
 
         protected function get messageListener():MessageListener
@@ -156,5 +197,38 @@ package com.github.tengi.client.transport
             return null;
         }
 
+    }
+}
+
+import com.github.tengi.client.Message;
+
+internal class LinkedMessageHolder
+{
+    private var _request:Message;
+
+    private var _linkedCallback:*;
+
+    private var _bubbles:Boolean;
+
+    function LinkedMessageHolder( request:Message, linkedCallback:*, bubbles:Boolean )
+    {
+        this._request = request;
+        this._linkedCallback = linkedCallback;
+        this._bubbles = bubbles;
+    }
+
+    public function get request():Message
+    {
+        return _request;
+    }
+
+    public function get linkedCallback():*
+    {
+        return _linkedCallback;
+    }
+
+    public function get bubbles():Boolean
+    {
+        return _bubbles;
     }
 }

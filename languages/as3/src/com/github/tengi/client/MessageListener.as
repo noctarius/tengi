@@ -23,9 +23,9 @@ package com.github.tengi.client
     public interface MessageListener
     {
 
-        function messageReceived( message:Message, connection:Connection ):void;
+        function messageReceived( message:Message, connection:ClientConnection ):void;
 
-        function rawDataReceived( memoryBuffer:MemoryBuffer, metadata:Streamable, connection:Connection ):void;
+        function rawDataReceived( memoryBuffer:MemoryBuffer, metadata:Streamable, connection:ClientConnection ):void;
 
     }
 }

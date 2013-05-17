@@ -23,9 +23,11 @@ package com.github.tengi.client
     public interface Streamable
     {
 
-        function readStream( memoryBuffer : MemoryBuffer ) : void;
+        function readStream( memoryBuffer:MemoryBuffer ):void;
 
-        function writeStream( memoryBuffer : MemoryBuffer ) : void;
+        function writeStream( memoryBuffer:MemoryBuffer ):void;
+
+        function toString():String;
 
     }
 }

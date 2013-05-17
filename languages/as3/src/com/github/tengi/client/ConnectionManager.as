@@ -19,9 +19,20 @@
 package com.github.tengi.client
 {
     import com.github.tengi.client.buffer.MemoryBufferPool;
+    import com.github.tengi.client.transport.events.ConnectionEstablishedEvent;
+    import com.github.tengi.client.transport.events.ConnectionEvents;
     import com.github.tengi.client.transport.http.HttpConnection;
 
-    public class ConnectionManager
+    import flash.events.EventDispatcher;
+
+    /**
+     * Dispatched when a valid transportation type was selected and connection using this transport was established.
+     *
+     * @eventType com.github.tengi.client.transport.events.ConnectionEstablishedEvent
+     */
+    [Event(name="CONNECTION_ESTABLISHED", type="com.github.tengi.client.transport.events.ConnectionEstablishedEvent")]
+
+    public class ConnectionManager extends EventDispatcher
     {
         private const connections:Vector.<Connection> = new Vector.<Connection>();
 
@@ -37,22 +48,30 @@ package com.github.tengi.client
             this.serializationFactory = serializationFactory;
         }
 
-        public function createHttpConnection( host:String, port:int, contextPath:String, ssl:Boolean ):Connection
+        public function createHttpConnection( configuration:ConnectionConfiguration ):Connection
         {
-            var connection:Connection = new HttpConnection( host, port, contextPath, ssl, contentType, memoryBufferPool,
+            var connection:Connection = new HttpConnection( configuration, contentType, memoryBufferPool,
                                                             serializationFactory );
             connections.push( connection );
             return connection;
         }
 
-        public function createTcpConnection( host:String, port:int ):Connection
+        public function createTcpConnection( configuration:ConnectionConfiguration ):Connection
         {
             return null;
         }
 
-        public function createConnection( host:String, port:int, contextPath:String, ssl:Boolean ):Connection
+        public function createConnection( configuration:ConnectionConfiguration,
+                                          connectionListener:ConnectionListener = null ):void
         {
-            return createHttpConnection( host, port, contextPath, ssl );
+            var connection:Connection = createHttpConnection( configuration );
+
+            if ( connectionListener != null )
+            {
+                connectionListener.onConnect( connection );
+            }
+
+            dispatchEvent( new ConnectionEstablishedEvent( connection, ConnectionEvents.CONNECTION_ESTABLISHED ) );
         }
 
     }

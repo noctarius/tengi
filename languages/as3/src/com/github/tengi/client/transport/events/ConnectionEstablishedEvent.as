@@ -18,17 +18,30 @@
  */
 package com.github.tengi.client.transport.events
 {
-    public class ConnectionEvents
+    import com.github.tengi.client.Connection;
+
+    import flash.events.Event;
+
+    public class ConnectionEstablishedEvent extends Event
     {
 
-        public static const MESSAGE_RECEIVED:String = "onMessageReceived";
+        private var _connection:Connection;
 
-        public static const RAWDATA_RECEIVED:String = "onRawDataReceived";
-
-        public static const CONNECTION_ESTABLISHED:String = "onConnectionEstablished";
-
-        function ConnectionEvents()
+        public function ConnectionEstablishedEvent( connection:Connection, type:String, bubbles:Boolean = false,
+                                                    cancelable:Boolean = false )
         {
+            super( type, bubbles, cancelable );
+            this._connection = connection;
+        }
+
+        public function get connection():Connection
+        {
+            return _connection;
+        }
+
+        public override function clone():Event
+        {
+            return new ConnectionEstablishedEvent( connection, type, bubbles, cancelable );
         }
     }
 }

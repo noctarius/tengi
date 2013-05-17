@@ -1,4 +1,5 @@
 package com.github.tengi;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,16 +22,12 @@ package com.github.tengi;
 public interface ConnectionListener
 {
 
-    void onHandshake(Connection connection);
+    void onHandshake( Connection connection );
 
-    void onConnect(Connection connection);
+    void onConnect( Connection connection );
 
-    void onClose(Connection connection);
+    void onClose( Connection connection );
 
-    void onReconnect(Connection connection);
-
-    void onSend(Connection connection, Message message);
-
-    void onArrival(Connection connection, Message message);
+    void onReconnect( Connection connection );
 
 }

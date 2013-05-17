@@ -19,6 +19,7 @@
 package com.github.tengi.client.transport.http
 {
     import com.github.tengi.client.Connection;
+    import com.github.tengi.client.ConnectionConfiguration;
     import com.github.tengi.client.ConnectionConstants;
     import com.github.tengi.client.LongPollingRequestFactory;
     import com.github.tengi.client.Message;
@@ -73,16 +74,16 @@ package com.github.tengi.client.transport.http
 
         private var lastLongPollTime = getTimer();
 
-        public function HttpConnection( host:String, port:int, contextPath:String, ssl:Boolean, contentType:String,
+        public function HttpConnection( configuration:ConnectionConfiguration, contentType:String,
                                         memoryBufferPool:MemoryBufferPool, serializationFactory:SerializationFactory )
         {
             super( memoryBufferPool, serializationFactory );
 
             this.contentType = contentType;
-            this.contextPath = contextPath;
-            this.host = host;
-            this.port = port;
-            this.ssl = ssl;
+            this.contextPath = configuration.httpContext;
+            this.host = configuration.host;
+            this.port = configuration.port;
+            this.ssl = configuration.ssl;
 
             url = (ssl ? "https://" : "http://") + host + ":" + port + "/" + contextPath;
 

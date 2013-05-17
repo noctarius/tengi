@@ -20,7 +20,9 @@ package com.github.tengi.client
 {
     import com.github.tengi.client.buffer.MemoryBuffer;
 
-    public interface Connection
+    import flash.events.IEventDispatcher;
+
+    public interface Connection extends IEventDispatcher
     {
 
         function getTransportType():TransportType;

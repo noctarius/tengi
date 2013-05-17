@@ -29,6 +29,9 @@ package com.github.tengi.client.transport.http
     import com.github.tengi.client.buffer.MemoryBuffer;
     import com.github.tengi.client.buffer.MemoryBufferPool;
     import com.github.tengi.client.transport.AbstractConnection;
+    import com.github.tengi.client.transport.events.ConnectionEvents;
+    import com.github.tengi.client.transport.events.MessageReceivedEvent;
+    import com.github.tengi.client.transport.events.RawDataReceivedEvent;
     import com.github.tengi.client.transport.polling.PollingMessage;
 
     import flash.errors.IOError;
@@ -358,6 +361,8 @@ package com.github.tengi.client.transport.http
                     {
                         messageListener.messageReceived( message, this );
                     }
+
+                    dispatchEvent( new MessageReceivedEvent( ConnectionEvents.MESSAGE_RECEIVED, message ) );
                 }
                 else if ( dataType == ConnectionConstants.DATA_TYPE_RAW )
                 {
@@ -367,10 +372,13 @@ package com.github.tengi.client.transport.http
                     var data:ByteArray = new ByteArray();
                     memoryBuffer.readBytes( data, 0, length );
 
+                    var rawBuffer:MemoryBuffer = new MemoryBuffer( data );
                     if ( messageListener != null )
                     {
-                        messageListener.rawDataReceived( new MemoryBuffer( data ), metadata, this );
+                        messageListener.rawDataReceived( rawBuffer, metadata, this );
                     }
+
+                    dispatchEvent( new RawDataReceivedEvent( ConnectionEvents.RAWDATA_RECEIVED, rawBuffer, metadata ) );
                 }
             }
             finally

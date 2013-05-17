@@ -19,11 +19,20 @@
 package com.github.tengi.client
 {
     import com.github.tengi.client.buffer.MemoryBufferPool;
+    import com.github.tengi.client.lang.util.Console;
     import com.github.tengi.client.transport.events.ConnectionEstablishedEvent;
     import com.github.tengi.client.transport.events.ConnectionEvents;
     import com.github.tengi.client.transport.http.HttpConnection;
 
     import flash.events.EventDispatcher;
+    import flash.events.HTTPStatusEvent;
+    import flash.events.IOErrorEvent;
+    import flash.events.SecurityErrorEvent;
+    import flash.net.URLLoader;
+    import flash.net.URLLoaderDataFormat;
+    import flash.net.URLRequest;
+    import flash.net.URLRequestHeader;
+    import flash.net.URLRequestMethod;
 
     /**
      * Dispatched when a valid transportation type was selected and connection using this transport was established.
@@ -51,7 +60,7 @@ package com.github.tengi.client
         public function createHttpConnection( configuration:ConnectionConfiguration ):ClientConnection
         {
             var connection:ClientConnection = new HttpConnection( configuration, contentType, memoryBufferPool,
-                                                            serializationFactory );
+                                                                  serializationFactory );
             connections.push( connection );
             return connection;
         }
@@ -64,6 +73,20 @@ package com.github.tengi.client
         public function createConnection( configuration:ConnectionConfiguration,
                                           connectionListener:ConnectionListener = null ):void
         {
+            var connectionId:UniqueId = UniqueId.randomUniqueId();
+            var header:URLRequestHeader = new URLRequestHeader( ConnectionConstants.HTTP_HEADER_NAME_CONNECTIONID,
+                                                                connectionId.toString() );
+
+            var request:URLRequest = new URLRequest();
+            request.method = URLRequestMethod.HEAD;
+            request.requestHeaders.push( header );
+
+            var urlLoader:URLLoader = new URLLoader();
+            urlLoader.dataFormat = URLLoaderDataFormat.TEXT;
+            urlLoader.addEventListener( SecurityErrorEvent.SECURITY_ERROR, securityErrorHandler );
+            urlLoader.addEventListener( HTTPStatusEvent.HTTP_RESPONSE_STATUS, httpStatusHandler );
+            urlLoader.addEventListener( IOErrorEvent.IO_ERROR, ioErrorHandler );
+
             var connection:ClientConnection = createHttpConnection( configuration );
 
             if ( connectionListener != null )
@@ -72,6 +95,28 @@ package com.github.tengi.client
             }
 
             dispatchEvent( new ConnectionEstablishedEvent( connection, ConnectionEvents.CONNECTION_ESTABLISHED ) );
+        }
+
+        private function httpStatusHandler( event:HTTPStatusEvent ):void
+        {
+            for each ( var header:URLRequestHeader  in event.responseHeaders )
+            {
+                if ( header.name == ConnectionConstants.HTTP_HEADER_NAME_SUPPORTED_TRANSPORT_TYPES )
+                {
+                    var transports:Array = header.value.split( "," );
+
+                }
+            }
+        }
+
+        private function securityErrorHandler( event:SecurityErrorEvent ):void
+        {
+            Console.log( "securityErrorHandler: " + event );
+        }
+
+        private function ioErrorHandler( event:IOErrorEvent ):void
+        {
+            Console.log( "ioErrorHandler: " + event );
         }
 
     }

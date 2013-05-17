@@ -33,7 +33,7 @@ package com.github.tengi.client.buffer
             }
         }
 
-        public function pop( byteArray:ByteArray )
+        public function pop( byteArray:ByteArray ):MemoryBuffer
         {
             if ( memoryBufferPool.length > 0 )
             {
@@ -45,7 +45,7 @@ package com.github.tengi.client.buffer
             return new MemoryBuffer( byteArray );
         }
 
-        public function push( memoryBuffer:MemoryBuffer )
+        public function push( memoryBuffer:MemoryBuffer ):void
         {
             if ( memoryBuffer is MemoryBufferAdapter )
             {

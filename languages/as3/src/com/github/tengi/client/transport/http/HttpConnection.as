@@ -29,6 +29,7 @@ package com.github.tengi.client.transport.http
     import com.github.tengi.client.UniqueId;
     import com.github.tengi.client.buffer.MemoryBuffer;
     import com.github.tengi.client.buffer.MemoryBufferPool;
+    import com.github.tengi.client.lang.util.Console;
     import com.github.tengi.client.transport.AbstractConnection;
     import com.github.tengi.client.transport.events.ConnectionEvents;
     import com.github.tengi.client.transport.events.MessageReceivedEvent;
@@ -41,7 +42,6 @@ package com.github.tengi.client.transport.http
     import flash.events.IOErrorEvent;
     import flash.events.SecurityErrorEvent;
     import flash.events.TimerEvent;
-    import flash.external.ExternalInterface;
     import flash.net.URLLoader;
     import flash.net.URLLoaderDataFormat;
     import flash.net.URLRequest;
@@ -72,7 +72,7 @@ package com.github.tengi.client.transport.http
 
         private var closed:Boolean = false;
 
-        private var lastLongPollTime = getTimer();
+        private var lastLongPollTime:Number = getTimer();
 
         public function HttpConnection( configuration:ConnectionConfiguration, contentType:String,
                                         memoryBufferPool:MemoryBufferPool, serializationFactory:SerializationFactory )
@@ -267,7 +267,7 @@ package com.github.tengi.client.transport.http
 
         private function longPollingSecurityErrorHandler( event:SecurityErrorEvent ):void
         {
-            log( "longPollingSecurityErrorHandler: " + event );
+            Console.log( "longPollingSecurityErrorHandler: " + event );
 
             lastLongPollTime = getTimer();
             startLongPollingCycle();
@@ -277,7 +277,7 @@ package com.github.tengi.client.transport.http
         {
             if ( event.status != 200 )
             {
-                log( "longPollingHttpStatusHandler: " + event );
+                Console.log( "longPollingHttpStatusHandler: " + event );
                 lastLongPollTime = getTimer();
                 startLongPollingCycle();
             }
@@ -285,7 +285,7 @@ package com.github.tengi.client.transport.http
 
         private function longPollingIoErrorHandler( event:IOErrorEvent ):void
         {
-            log( "longPollingIoErrorHandler: " + event );
+            Console.log( "longPollingIoErrorHandler: " + event );
 
             lastLongPollTime = getTimer();
             startLongPollingCycle();
@@ -301,7 +301,7 @@ package com.github.tengi.client.transport.http
             {
                 for each ( var header:URLRequestHeader in requestMapper.responseHeaders )
                 {
-                    log( header.name + " = " + header.value );
+                    Console.log( header.name + " = " + header.value );
                     if ( "Content-Type" == header.name && contentType != header.value )
                     {
                         throw new IOError( "Illegal content-type received: " + header.value );
@@ -315,7 +315,7 @@ package com.github.tengi.client.transport.http
 
         private function callSecurityErrorHandler( event:SecurityErrorEvent ):void
         {
-            log( "callSecurityErrorHandler: " + event );
+            Console.log( "callSecurityErrorHandler: " + event );
             delete requests[event.target];
         }
 
@@ -323,7 +323,7 @@ package com.github.tengi.client.transport.http
         {
             if ( event.status != 200 )
             {
-                log( "callHttpStatusHandler: " + event );
+                Console.log( "callHttpStatusHandler: " + event );
             }
 
             var requestMapper:RequestMapper = requests[event.target as URLLoader];
@@ -333,18 +333,13 @@ package com.github.tengi.client.transport.http
 
         private function callIoErrorHandler( event:IOErrorEvent ):void
         {
-            log( "callIoErrorHandler: " + event );
+            Console.log( "callIoErrorHandler: " + event );
             delete requests[event.target];
         }
 
         private function longPollingTimerFinished( event:TimerEvent ):void
         {
             startLongPollingCycle();
-        }
-
-        public function log( message:String ):void
-        {
-            ExternalInterface.call( "console.log", message );
         }
 
         private function handleMessage( data:ByteArray ):void
@@ -365,7 +360,7 @@ package com.github.tengi.client.transport.http
 
                     requests[message.messageId] = null;
 
-                    if (notifyLinkedMessage(message))
+                    if ( notifyLinkedMessage( message ) )
                     {
                         if ( messageListener != null )
                         {
@@ -379,9 +374,9 @@ package com.github.tengi.client.transport.http
                 {
                     var metadata:Streamable = readNullableObject( memoryBuffer );
 
-                    var length:int = memoryBuffer.readInt();
+                    var bufferLength:int = memoryBuffer.readInt();
                     var data:ByteArray = new ByteArray();
-                    memoryBuffer.readBytes( data, 0, length );
+                    memoryBuffer.readBytes( data, 0, bufferLength );
 
                     var rawBuffer:MemoryBuffer = new MemoryBuffer( data );
                     if ( messageListener != null )

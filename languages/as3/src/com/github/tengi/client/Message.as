@@ -79,7 +79,7 @@ package com.github.tengi.client
             else
             {
                 memoryBuffer.writeByte( 1 );
-                var classId = _serializationFactory.getClassIdentifier( _body );
+                var classId:int = _serializationFactory.getClassIdentifier( _body );
                 memoryBuffer.writeShort( classId );
                 _body.writeStream( memoryBuffer );
             }
@@ -124,7 +124,7 @@ package com.github.tengi.client
             return message;
         }
 
-        public static function write( memoryBuffer:MemoryBuffer, message:Message )
+        public static function write( memoryBuffer:MemoryBuffer, message:Message ):void
         {
             memoryBuffer.writeByte( message._type );
             message.writeStream( memoryBuffer );

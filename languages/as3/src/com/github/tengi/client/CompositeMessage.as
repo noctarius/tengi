@@ -65,7 +65,7 @@ package com.github.tengi.client
 
         public function retrieveMessage( index:int ):Message
         {
-            var count = messageCount;
+            var count:int = messageCount;
             if ( index >= count )
             {
                 throw new IllegalArgumentError( "index is out of range, max message index is " + (count - 1) );

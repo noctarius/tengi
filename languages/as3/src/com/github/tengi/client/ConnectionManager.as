@@ -44,7 +44,8 @@ package com.github.tengi.client
     /**
      * The ConnectionManager is used to create gameserver connections using a {@link com.github.tengi.client.ConnectionConfiguration} object.
      * Using {@link #createConnection()} the ConnectionManager queries the server supported {@link com.github.tengi.client.TransportType}s and a suggested order to try them one by one to find best matching transport and creates a {@link com.github.tengi.client.ClientConnection} using this transport.
-     */ public class ConnectionManager extends EventDispatcher
+     */
+    public class ConnectionManager extends EventDispatcher
     {
         private const connections:Vector.<ClientConnection> = new Vector.<ClientConnection>();
 

@@ -1,4 +1,5 @@
 package com.github.tengi;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -68,6 +69,10 @@ public class ConnectionManager
 
     private final AtomicBoolean shutdown = new AtomicBoolean();
 
+    private final SerializationFactory serializationFactory;
+
+    private final ConnectionListener connectionListener;
+
     private final ServerBootstrap tcpServerBootstrap;
 
     private final Bootstrap udpServerBootstrap;
@@ -82,20 +87,23 @@ public class ConnectionManager
 
     private final SSLEngine sslEngine;
 
-    public ConnectionManager()
+    public ConnectionManager( ConnectionListener connectionListener, SerializationFactory serializationFactory )
         throws NoSuchAlgorithmException
     {
-        sslContext = SSLContext.getDefault();
-        sslEngine = sslContext.createSSLEngine();
+        this.connectionListener = connectionListener;
+        this.serializationFactory = serializationFactory;
+
+        this.sslContext = SSLContext.getDefault();
+        this.sslEngine = sslContext.createSSLEngine();
         NextProtoNego.put( sslEngine, new NGNServerProvider() );
 
-        tcpAcceptorGroup = buildEventLoopGroup( 4, "TCP-Acceptor" );
-        tcpProcessorGroup = buildEventLoopGroup( 20, "TCP-Processor" );
+        this.tcpAcceptorGroup = buildEventLoopGroup( 4, "TCP-Acceptor" );
+        this.tcpProcessorGroup = buildEventLoopGroup( 20, "TCP-Processor" );
 
-        udpProcessorGroup = buildEventLoopGroup( 10, "UDP-Processor", NioUdtProvider.MESSAGE_PROVIDER );
+        this.udpProcessorGroup = buildEventLoopGroup( 10, "UDP-Processor", NioUdtProvider.MESSAGE_PROVIDER );
 
-        tcpServerBootstrap = buildTcpSocket( tcpAcceptorGroup, tcpProcessorGroup );
-        udpServerBootstrap = buildUdpSocket( udpProcessorGroup );
+        this.tcpServerBootstrap = buildTcpSocket( tcpAcceptorGroup, tcpProcessorGroup );
+        this.udpServerBootstrap = buildUdpSocket( udpProcessorGroup );
     }
 
     public void bind( int port, InetAddress[] addresses )

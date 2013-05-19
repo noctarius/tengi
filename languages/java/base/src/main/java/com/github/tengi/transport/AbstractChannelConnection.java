@@ -1,4 +1,5 @@
 package com.github.tengi.transport;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -24,6 +25,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundMessageHandlerAdapter;
 
+import com.github.tengi.CompletionFuture;
 import com.github.tengi.Connection;
 import com.github.tengi.ConnectionConstants;
 import com.github.tengi.Message;
@@ -58,6 +60,32 @@ public abstract class AbstractChannelConnection
         this.memoryBufferPool = memoryBufferPool;
         this.connectionId = connectionId;
         this.channel = channel;
+    }
+
+    @Override
+    @SuppressWarnings( "unchecked" )
+    public <T extends Message> void sendObject( Streamable body, CompletionFuture<T> completionFuture )
+    {
+        Message message = prepareMessage( body );
+        sendMessage( (T) message, completionFuture );
+    }
+
+    @Override
+    public <T extends Message> void sendMessage( T message )
+    {
+        sendMessage( message, null );
+    }
+
+    @Override
+    public <T extends Message> void sendObject( Streamable body )
+    {
+        sendObject( body, null );
+    }
+
+    @Override
+    public <T extends Streamable> void sendRawData( MemoryBuffer rawBuffer, T metadata )
+    {
+        sendRawData( rawBuffer, metadata, null );
     }
 
     public Channel getUnderlyingChannel()

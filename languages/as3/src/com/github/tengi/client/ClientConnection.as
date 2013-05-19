@@ -48,6 +48,51 @@ package com.github.tengi.client
          * - message : {@link com.github.tengi.client.Message} The message that was send
          * - connection : ClientConnection This connection
          *
+         * @param body The streamable object to be send
+         * @param success An optional success callback function
+         * @param failure An optional failure callback function
+         */
+        function sendObject( body:Streamable, success:Function = null, failure:Function = null ):void;
+
+        /**
+         * Sends a message frame to the gameserver and registers a specialized callback function for handling the gameservers response.
+         * linkedCallback can be of two different types. Either of type {@link com.github.tengi.client.LinkedMessageCallback} or a Function type with following parameter signature:
+         * - request : {@link com.github.tengi.client.Message} The message that was send
+         * - response : {@link com.github.tengi.client.Message} The gameservers response
+         * - connection : ClientConnection This connection
+         *
+         * success and failure are optional callback functions that could be used to getting informed of corresponding events.
+         *
+         * For success the following parameters are required:
+         * - message : {@link com.github.tengi.client.Message} The message that was send
+         * - connection : ClientConnection This connection
+         *
+         * For failure the following parameters are required:
+         * - error : {@link Error} The thrown error
+         * - message : {@link com.github.tengi.client.Message} The message that was send
+         * - connection : ClientConnection This connection
+         *
+         *
+         * @param body The streamable object to be send
+         * @param linkedCallback The callback object to be invoked on receiving gameservers response
+         * @param bubbles Defines if the event should be bubbled as normal arrival event to registered {@link com.github.tengi.client.MessageListener}
+         * @param success An optional success callback function
+         * @param failure An optional failure callback function
+         */
+        function sendLinkedObject( body:Streamable, linkedCallback:*, bubbles:Boolean = false, success:Function = null,
+                                   failure:Function = null ):void
+
+        /**
+         * Sends a message frame to the gameserver. success and failure are optional callback functions that could be used to getting informed of corresponding events.
+         * For success the following parameters are required:
+         * - message : {@link com.github.tengi.client.Message} The message that was send
+         * - connection : ClientConnection This connection
+         *
+         * For failure the following parameters are required:
+         * - error : {@link Error} The thrown error
+         * - message : {@link com.github.tengi.client.Message} The message that was send
+         * - connection : ClientConnection This connection
+         *
          * @param message The message object to be send
          * @param success An optional success callback function
          * @param failure An optional failure callback function

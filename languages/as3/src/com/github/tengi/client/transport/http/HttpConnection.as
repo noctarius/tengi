@@ -106,6 +106,19 @@ package com.github.tengi.client.transport.http
             sendMessage( message, success, failure );
         }
 
+        public function sendObject( body:Streamable, success:Function = null, failure:Function = null ):void
+        {
+            var message:Message = prepareMessage( body );
+            sendMessage( message, success, failure );
+        }
+
+        public function sendLinkedObject( body:Streamable, linkedCallback:*, bubbles:Boolean = false,
+                                          success:Function = null, failure:Function = null ):void
+        {
+            var message:Message = prepareMessage( body );
+            sendLinkedMessage( message, linkedCallback, bubbles, success, failure );
+        }
+
         public function sendMessage( message:Message, success:Function = null, failure:Function = null ):void
         {
             try

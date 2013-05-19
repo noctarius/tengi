@@ -1,4 +1,5 @@
 package com.github.tengi;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -27,7 +28,15 @@ public interface Connection
 
     TransportType getTransportType();
 
+    <T extends Message> void sendObject( Streamable body );
+
+    <T extends Message> void sendObject( Streamable body, CompletionFuture<T> completionFuture );
+
+    <T extends Message> void sendMessage( T message );
+
     <T extends Message> void sendMessage( T message, CompletionFuture<T> completionFuture );
+
+    <T extends Streamable> void sendRawData( MemoryBuffer rawBuffer, T metadata );
 
     <T extends Streamable> void sendRawData( MemoryBuffer rawBuffer, T metadata, CompletionFuture<T> completionFuture );
 

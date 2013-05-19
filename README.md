@@ -7,6 +7,7 @@ Short example with ActionScript client and Java server
 =====
 
 *ActionScript:*
+
     package com.github.tengi
     {
         import com.github.tengi.client.ClientConnection;
@@ -140,6 +141,7 @@ Short example with ActionScript client and Java server
     }
 
 *Java:*
+
     package com.github.tengi;
     
     import java.net.Inet4Address;

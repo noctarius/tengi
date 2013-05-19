@@ -165,7 +165,7 @@ Short example with ActionScript client and Java server
             throws Exception
         {
             // Listen on port 80 for IPv4 / IPv6 connections with different TCP protocols and reliable UDP
-            ConnectionManager connectionManager = new ConnectionManager( this, new MyProtocol() );
+            ConnectionManager connectionManager = new ConnectionManager( "binary/tengi", this, new MyProtocol() );
             connectionManager.bind( 80,
                                     new InetAddress[] { Inet4Address.getByName( "localhost" ),
                                         Inet6Address.getByName( "localhost" ) } );

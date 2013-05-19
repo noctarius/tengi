@@ -73,6 +73,8 @@ public class ConnectionManager
 
     private final ConnectionListener connectionListener;
 
+    private final String contentType;
+
     private final ServerBootstrap tcpServerBootstrap;
 
     private final Bootstrap udpServerBootstrap;
@@ -87,11 +89,13 @@ public class ConnectionManager
 
     private final SSLEngine sslEngine;
 
-    public ConnectionManager( ConnectionListener connectionListener, SerializationFactory serializationFactory )
+    public ConnectionManager( String contentType, ConnectionListener connectionListener,
+                              SerializationFactory serializationFactory )
         throws NoSuchAlgorithmException
     {
         this.connectionListener = connectionListener;
         this.serializationFactory = serializationFactory;
+        this.contentType = contentType;
 
         this.sslContext = SSLContext.getDefault();
         this.sslEngine = sslContext.createSSLEngine();

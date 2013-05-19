@@ -32,20 +32,6 @@ package com.github.tengi.client.transport
     import flash.utils.ByteArray;
     import flash.utils.Dictionary;
 
-    /**
-     * Dispatched whenever a message is received that was read from the underlying stream.
-     *
-     * @eventType com.github.tengi.client.transport.events.MessageReceivedEvent
-     */
-    [Event(name="MESSAGE_RECEIVED", type="com.github.tengi.client.transport.events.MessageReceivedEvent")]
-
-    /**
-     * Dispatched whenever a rawdata frame is received that was read from the underlying stream.
-     * Possible an additional Streamable object is available as directly usable metadata.
-     *
-     * @eventType com.github.tengi.client.transport.events.RawDataReceivedEvent
-     */
-    [Event(name="RAWDATA_REVEIVED", type="com.github.tengi.client.transport.events.RawDataReceivedEvent")]
     public class AbstractConnection extends EventDispatcher
     {
 

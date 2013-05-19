@@ -23,6 +23,21 @@ package com.github.tengi.client
     import flash.events.IEventDispatcher;
 
     /**
+     * Dispatched whenever a message is received that was read from the underlying stream.
+     *
+     * @eventType com.github.tengi.client.transport.events.MessageReceivedEvent
+     */
+    [Event(name="MESSAGE_RECEIVED", type="com.github.tengi.client.transport.events.MessageReceivedEvent")]
+
+    /**
+     * Dispatched whenever a rawdata frame is received that was read from the underlying stream.
+     * Possible an additional Streamable object is available as directly usable metadata.
+     *
+     * @eventType com.github.tengi.client.transport.events.RawDataReceivedEvent
+     */
+    [Event(name="RAWDATA_REVEIVED", type="com.github.tengi.client.transport.events.RawDataReceivedEvent")]
+
+    /**
      * A ClientConnection represents a connection to the configured gameserver(s).
      * It is capable of sending rawdata as well as message frames.
      * The underlying, typically automatically selected {@link com.github.tengi.client.TransportType} is exposed by the {@link #getTransportType()} method.

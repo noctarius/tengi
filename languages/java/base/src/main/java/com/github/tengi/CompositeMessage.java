@@ -1,4 +1,5 @@
 package com.github.tengi;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -31,15 +32,14 @@ public class CompositeMessage
 
     private List<Message> messages;
 
-    public CompositeMessage( SerializationFactory serializationFactory, Connection connection )
+    public CompositeMessage( Connection connection )
     {
-        super( serializationFactory, connection, Message.MESSAGE_TYPE_COMPOSITE );
+        super( connection, Message.MESSAGE_TYPE_COMPOSITE );
     }
 
-    public CompositeMessage( SerializationFactory serializationFactory, Connection connection, List<Message> messages,
-                             UniqueId messageId )
+    public CompositeMessage( Connection connection, List<Message> messages, UniqueId messageId )
     {
-        super( serializationFactory, connection, null, messageId, Message.MESSAGE_TYPE_COMPOSITE );
+        super( connection, null, messageId, Message.MESSAGE_TYPE_COMPOSITE );
         this.messages = new ArrayList<>( messages );
     }
 
@@ -48,6 +48,7 @@ public class CompositeMessage
         return (short) ( messages == null ? 0 : messages.size() );
     }
 
+    @SuppressWarnings( "unchecked" )
     public <T extends Message> T retrieveMessage( short index )
     {
         if ( index >= messages.size() )
@@ -58,9 +59,9 @@ public class CompositeMessage
     }
 
     @Override
-    public void readStream( MemoryBuffer memoryBuffer )
+    public void readStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
     {
-        super.readStream( memoryBuffer );
+        super.readStream( memoryBuffer, serializationFactory );
 
         short length = memoryBuffer.readShort();
         messages = new ArrayList<>( length );
@@ -71,13 +72,13 @@ public class CompositeMessage
     }
 
     @Override
-    public void writeStream( MemoryBuffer memoryBuffer )
+    public void writeStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
     {
-        super.writeStream( memoryBuffer );
+        super.writeStream( memoryBuffer, serializationFactory );
         memoryBuffer.writeShort( (short) messages.size() );
         for ( int i = 0; i < messages.size(); i++ )
         {
-            messages.get( i ).writeStream( memoryBuffer );
+            messages.get( i ).writeStream( memoryBuffer, serializationFactory );
         }
     }
 

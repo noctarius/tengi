@@ -33,7 +33,7 @@ package com.github.tengi.client
 
         protected var _serializationFactory:SerializationFactory;
 
-        protected var _connection:Connection;
+        protected var _connection:ClientConnection;
 
         private var _body:Streamable;
 
@@ -41,7 +41,7 @@ package com.github.tengi.client
 
         private var _type:int = MESSAGE_TYPE_DEFAULT;
 
-        public function Message( serializationFactory:SerializationFactory, connection:Connection,
+        public function Message( serializationFactory:SerializationFactory, connection:ClientConnection,
                                  body:Streamable = null, messageId:UniqueId = null, type:int = 0 )
         {
             this._serializationFactory = serializationFactory;
@@ -80,13 +80,13 @@ package com.github.tengi.client
             else
             {
                 memoryBuffer.writeByte( 1 );
-                var classId = _serializationFactory.getClassIdentifier( _body );
+                var classId:int = _serializationFactory.getClassIdentifier( _body );
                 memoryBuffer.writeShort( classId );
                 _body.writeStream( memoryBuffer );
             }
         }
 
-        public function get connection():Connection
+        public function get connection():ClientConnection
         {
             return _connection;
         }
@@ -107,7 +107,7 @@ package com.github.tengi.client
         }
 
         public static function read( memoryBuffer:MemoryBuffer, serializationFactory:SerializationFactory,
-                                     connection:Connection ):Message
+                                     connection:ClientConnection ):Message
         {
             var type:int = memoryBuffer.readByte();
 
@@ -125,7 +125,7 @@ package com.github.tengi.client
             return message;
         }
 
-        public static function write( memoryBuffer:MemoryBuffer, message:Message )
+        public static function write( memoryBuffer:MemoryBuffer, message:Message ):void
         {
             memoryBuffer.writeByte( message._type );
             message.writeStream( memoryBuffer );

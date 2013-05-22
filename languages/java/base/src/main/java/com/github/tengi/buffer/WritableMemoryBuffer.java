@@ -22,13 +22,12 @@ import com.github.tengi.UniqueId;
 
 import java.nio.ByteBuffer;
 
-
 public interface WritableMemoryBuffer
 {
 
     boolean writable();
 
-    long writableBytes();
+    int writableBytes();
 
     void writeBytes( byte[] bytes );
 
@@ -40,7 +39,7 @@ public interface WritableMemoryBuffer
 
     void writeBuffer( ReadableMemoryBuffer memoryBuffer );
 
-    void writeBuffer( ReadableMemoryBuffer memoryBuffer, long offset, long length );
+    void writeBuffer( ReadableMemoryBuffer memoryBuffer, int offset, int length );
 
     void writeBoolean( boolean value );
 
@@ -68,8 +67,8 @@ public interface WritableMemoryBuffer
 
     void writeUniqueId( UniqueId uniqueId );
 
-    long writerIndex();
+    int writerIndex();
 
-    void writerIndex( long writerIndex );
+    void writerIndex( int writerIndex );
 
 }

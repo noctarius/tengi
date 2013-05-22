@@ -1,4 +1,5 @@
 package com.github.tengi;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -25,6 +26,6 @@ public interface MessageListener
 
     void messageReceived( Message message, Connection connection );
 
-    void messageReceived( MemoryBuffer memoryBuffer );
+    void rawDataReceived( MemoryBuffer rawBuffer, Streamable metadata, Connection connection );
 
 }

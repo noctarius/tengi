@@ -21,33 +21,51 @@ package com.github.tengi;
 
 public enum TransportType
 {
-    BioTcpSocket,
-    NioTcpSocket,
-    BioUdpSocket,
-    NioUdpSocket,
-    MemoryChannel,
-    HttpPolling( true ),
-    HttpLongPolling( true ),
-    WebSocket,
-    SPDY,
-    SCTP,
-    SSL_PROXY;
+    BioTcpSocket( "tengi-tcp" ),
+    NioTcpSocket( "tengi-tcp" ),
+    BioUdpSocket( "tengi-udp" ),
+    NioUdpSocket( "tengi-udp" ),
+    HttpPolling( "tengi-http-polling", true ),
+    HttpLongPolling( "tengi-http-longpolling", true ),
+    WebSocket( "tengi-websocket" ),
+    SPDY( "tengi-spdy" ),
+    SCTP( "tengi-sctp" );
 
-    private boolean polling;
+    private final boolean polling;
 
-    private TransportType()
+    private final String transport;
+
+    private TransportType( String transport )
     {
-        this( false );
+        this( transport, false );
     }
 
-    private TransportType( boolean polling )
+    private TransportType( String transport, boolean polling )
     {
         this.polling = polling;
+        this.transport = transport;
+    }
+
+    public String getTransport()
+    {
+        return transport;
     }
 
     public boolean isPolling()
     {
         return polling;
+    }
+
+    public static TransportType byTransport( String transport )
+    {
+        for ( TransportType transportType : values() )
+        {
+            if ( transportType.getTransport().equals( transport ) )
+            {
+                return transportType;
+            }
+        }
+        return null;
     }
 
 }

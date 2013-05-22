@@ -18,29 +18,22 @@
  */
 package com.github.tengi.client
 {
-    import com.github.tengi.client.buffer.MemoryBuffer;
-
-    public interface Connection
+    public class SimpleConnectionListener implements ConnectionListener
     {
+        public function onHandshake( connection:ClientConnection ):void
+        {
+        }
 
-        function getTransportType():TransportType;
+        public function onConnect( connection:ClientConnection ):void
+        {
+        }
 
-        function sendMessage( message:Message, success:Function = null, failure:Function = null ):void;
+        public function onClose( connection:ClientConnection ):void
+        {
+        }
 
-        function sendRawData( memoryBuffer:MemoryBuffer, metadata:Streamable = null, success:Function = null,
-                              failure:Function = null ):void;
-
-        function setMessageListener( messageListener:MessageListener ):void;
-
-        function clearMessageListener():void;
-
-        function registerLongPollingRequestFactory( longPollingRequestFactory:LongPollingRequestFactory ):void;
-
-        function startLongPollingCycle():void;
-
-        function prepareMessage( body:Streamable, longPolling:Boolean = false ):Message;
-
-        function close():void;
-
+        public function onReconnect( connection:ClientConnection ):void
+        {
+        }
     }
 }

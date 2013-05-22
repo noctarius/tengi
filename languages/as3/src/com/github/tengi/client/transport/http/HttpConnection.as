@@ -18,17 +18,22 @@
  */
 package com.github.tengi.client.transport.http
 {
-    import com.github.tengi.client.Connection;
+    import com.github.tengi.client.ClientConnection;
+    import com.github.tengi.client.ConnectionConfiguration;
     import com.github.tengi.client.ConnectionConstants;
     import com.github.tengi.client.LongPollingRequestFactory;
     import com.github.tengi.client.Message;
-    import com.github.tengi.client.MessageListener;
     import com.github.tengi.client.SerializationFactory;
     import com.github.tengi.client.Streamable;
     import com.github.tengi.client.TransportType;
     import com.github.tengi.client.UniqueId;
     import com.github.tengi.client.buffer.MemoryBuffer;
     import com.github.tengi.client.buffer.MemoryBufferPool;
+    import com.github.tengi.client.lang.util.Console;
+    import com.github.tengi.client.transport.AbstractConnection;
+    import com.github.tengi.client.transport.events.ConnectionEvents;
+    import com.github.tengi.client.transport.events.MessageReceivedEvent;
+    import com.github.tengi.client.transport.events.RawDataReceivedEvent;
     import com.github.tengi.client.transport.polling.PollingMessage;
 
     import flash.errors.IOError;
@@ -37,7 +42,6 @@ package com.github.tengi.client.transport.http
     import flash.events.IOErrorEvent;
     import flash.events.SecurityErrorEvent;
     import flash.events.TimerEvent;
-    import flash.external.ExternalInterface;
     import flash.net.URLLoader;
     import flash.net.URLLoaderDataFormat;
     import flash.net.URLRequest;
@@ -48,19 +52,15 @@ package com.github.tengi.client.transport.http
     import flash.utils.Timer;
     import flash.utils.getTimer;
 
-    public class HttpConnection implements Connection
+    public class HttpConnection extends AbstractConnection implements ClientConnection
     {
 
         private const requests:Dictionary = new Dictionary();
 
         private const longPollingUrlLoader:URLLoader = new URLLoader();
 
-        private var messageListener:MessageListener = null;
-
         private var longPollingRequestFactory:LongPollingRequestFactory = null;
 
-        private var serializationFactory:SerializationFactory;
-        private var memoryBufferPool:MemoryBufferPool;
         private var contentType:String;
         private var contextPath:String;
         private var host:String;
@@ -72,18 +72,18 @@ package com.github.tengi.client.transport.http
 
         private var closed:Boolean = false;
 
-        private var lastLongPollTime = getTimer();
+        private var lastLongPollTime:Number = getTimer();
 
-        public function HttpConnection( host:String, port:int, contextPath:String, ssl:Boolean, contentType:String,
+        public function HttpConnection( configuration:ConnectionConfiguration, contentType:String,
                                         memoryBufferPool:MemoryBufferPool, serializationFactory:SerializationFactory )
         {
-            this.serializationFactory = serializationFactory;
-            this.memoryBufferPool = memoryBufferPool;
+            super( this, memoryBufferPool, serializationFactory );
+
             this.contentType = contentType;
-            this.contextPath = contextPath;
-            this.host = host;
-            this.port = port;
-            this.ssl = ssl;
+            this.contextPath = configuration.httpContext;
+            this.host = configuration.host;
+            this.port = configuration.port;
+            this.ssl = configuration.ssl;
 
             url = (ssl ? "https://" : "http://") + host + ":" + port + "/" + contextPath;
 
@@ -99,6 +99,26 @@ package com.github.tengi.client.transport.http
             return TransportType.HTTP_LONG_POLLING;
         }
 
+        public function sendLinkedMessage( message:Message, linkedCallback:*, bubbles:Boolean = false,
+                                           success:Function = null, failure:Function = null ):void
+        {
+            registerLinkedMessage( message, linkedCallback, bubbles );
+            sendMessage( message, success, failure );
+        }
+
+        public function sendObject( body:Streamable, success:Function = null, failure:Function = null ):void
+        {
+            var message:Message = prepareMessage( body );
+            sendMessage( message, success, failure );
+        }
+
+        public function sendLinkedObject( body:Streamable, linkedCallback:*, bubbles:Boolean = false,
+                                          success:Function = null, failure:Function = null ):void
+        {
+            var message:Message = prepareMessage( body );
+            sendLinkedMessage( message, linkedCallback, bubbles, success, failure );
+        }
+
         public function sendMessage( message:Message, success:Function = null, failure:Function = null ):void
         {
             try
@@ -109,22 +129,10 @@ package com.github.tengi.client.transport.http
                 }
 
                 var output:ByteArray = new ByteArray();
-                var memoryBuffer:MemoryBuffer = memoryBufferPool.pop( output );
-                memoryBuffer.writeByte( ConnectionConstants.DATA_TYPE_MESSAGE );
-                Message.write( memoryBuffer, message );
-                memoryBufferPool.push( memoryBuffer );
+                createMessageFrame( message, output );
 
-                var request:URLRequest = new URLRequest( url );
-                request.method = URLRequestMethod.POST;
-                request.contentType = contentType;
-                request.data = output;
-
-                var urlLoader:URLLoader = new URLLoader();
-                urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
-                urlLoader.addEventListener( Event.COMPLETE, callCompleteListener );
-                urlLoader.addEventListener( SecurityErrorEvent.SECURITY_ERROR, callSecurityErrorHandler );
-                urlLoader.addEventListener( HTTPStatusEvent.HTTP_RESPONSE_STATUS, callHttpStatusHandler );
-                urlLoader.addEventListener( IOErrorEvent.IO_ERROR, callIoErrorHandler );
+                var request:URLRequest = createURLRequest( output );
+                var urlLoader:URLLoader = createURLLoader();
 
                 var requestMapper:RequestMapper = new RequestMapper();
                 requests[urlLoader] = requestMapper;
@@ -151,34 +159,10 @@ package com.github.tengi.client.transport.http
             try
             {
                 var output:ByteArray = new ByteArray();
-                var memoryBuffer:MemoryBuffer = memoryBufferPool.pop( output );
-                memoryBuffer.writeByte( ConnectionConstants.DATA_TYPE_RAW );
+                createRawDataFrame( memoryBuffer, metadata, output );
 
-                if ( metadata == null )
-                {
-                    memoryBuffer.writeByte( 0 );
-                }
-                else
-                {
-                    memoryBuffer.writeByte( 1 );
-                    memoryBuffer.writeShort( serializationFactory.getClassIdentifier( metadata ) );
-                    metadata.writeStream( memoryBuffer );
-                }
-
-                memoryBuffer.writeBytes( memoryBuffer, 0, memoryBuffer.writerIndex );
-                memoryBufferPool.push( memoryBuffer );
-
-                var request:URLRequest = new URLRequest( url );
-                request.method = URLRequestMethod.POST;
-                request.contentType = contentType;
-                request.data = output;
-
-                var urlLoader:URLLoader = new URLLoader();
-                urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
-                urlLoader.addEventListener( Event.COMPLETE, callCompleteListener );
-                urlLoader.addEventListener( SecurityErrorEvent.SECURITY_ERROR, callSecurityErrorHandler );
-                urlLoader.addEventListener( HTTPStatusEvent.HTTP_RESPONSE_STATUS, callHttpStatusHandler );
-                urlLoader.addEventListener( IOErrorEvent.IO_ERROR, callIoErrorHandler );
+                var request:URLRequest = createURLRequest( output );
+                var urlLoader:URLLoader = createURLLoader();
 
                 var requestMapper:RequestMapper = new RequestMapper();
                 requests[urlLoader] = requestMapper;
@@ -212,16 +196,6 @@ package com.github.tengi.client.transport.http
             }
 
             this.longPollingRequestFactory = longPollingRequestFactory;
-        }
-
-        public function setMessageListener( messageListener:MessageListener ):void
-        {
-            this.messageListener = messageListener;
-        }
-
-        public function clearMessageListener():void
-        {
-            messageListener = null;
         }
 
         public function prepareMessage( body:Streamable, longPolling:Boolean = false ):Message
@@ -260,15 +234,39 @@ package com.github.tengi.client.transport.http
 
             var output:ByteArray = new ByteArray();
             var memoryBuffer:MemoryBuffer = memoryBufferPool.pop( output );
-            Message.write( memoryBuffer, message );
-            memoryBufferPool.push( memoryBuffer );
+            try
+            {
+                Message.write( memoryBuffer, message );
+            }
+            finally
+            {
+                memoryBufferPool.push( memoryBuffer );
+            }
 
+            var request:URLRequest = createURLRequest( output );
+            longPollingUrlLoader.load( request );
+        }
+
+        private function createURLRequest( byteArray:ByteArray ):URLRequest
+        {
             var request:URLRequest = new URLRequest( url );
             request.method = URLRequestMethod.POST;
             request.contentType = contentType;
-            request.data = output;
+            request.data = byteArray;
 
-            longPollingUrlLoader.load( request );
+            return request;
+        }
+
+        private function createURLLoader():URLLoader
+        {
+            var urlLoader:URLLoader = new URLLoader();
+            urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
+            urlLoader.addEventListener( Event.COMPLETE, callCompleteListener );
+            urlLoader.addEventListener( SecurityErrorEvent.SECURITY_ERROR, callSecurityErrorHandler );
+            urlLoader.addEventListener( HTTPStatusEvent.HTTP_RESPONSE_STATUS, callHttpStatusHandler );
+            urlLoader.addEventListener( IOErrorEvent.IO_ERROR, callIoErrorHandler );
+
+            return urlLoader;
         }
 
         private function longPollingCompleteListener( event:Event ):void
@@ -282,7 +280,7 @@ package com.github.tengi.client.transport.http
 
         private function longPollingSecurityErrorHandler( event:SecurityErrorEvent ):void
         {
-            log( "longPollingSecurityErrorHandler: " + event );
+            Console.log( "longPollingSecurityErrorHandler: " + event );
 
             lastLongPollTime = getTimer();
             startLongPollingCycle();
@@ -292,7 +290,7 @@ package com.github.tengi.client.transport.http
         {
             if ( event.status != 200 )
             {
-                log( "longPollingHttpStatusHandler: " + event );
+                Console.log( "longPollingHttpStatusHandler: " + event );
                 lastLongPollTime = getTimer();
                 startLongPollingCycle();
             }
@@ -300,7 +298,7 @@ package com.github.tengi.client.transport.http
 
         private function longPollingIoErrorHandler( event:IOErrorEvent ):void
         {
-            log( "longPollingIoErrorHandler: " + event );
+            Console.log( "longPollingIoErrorHandler: " + event );
 
             lastLongPollTime = getTimer();
             startLongPollingCycle();
@@ -316,7 +314,7 @@ package com.github.tengi.client.transport.http
             {
                 for each ( var header:URLRequestHeader in requestMapper.responseHeaders )
                 {
-                    log( header.name + " = " + header.value );
+                    Console.log( header.name + " = " + header.value );
                     if ( "Content-Type" == header.name && contentType != header.value )
                     {
                         throw new IOError( "Illegal content-type received: " + header.value );
@@ -330,7 +328,7 @@ package com.github.tengi.client.transport.http
 
         private function callSecurityErrorHandler( event:SecurityErrorEvent ):void
         {
-            log( "callSecurityErrorHandler: " + event );
+            Console.log( "callSecurityErrorHandler: " + event );
             delete requests[event.target];
         }
 
@@ -338,7 +336,7 @@ package com.github.tengi.client.transport.http
         {
             if ( event.status != 200 )
             {
-                log( "callHttpStatusHandler: " + event );
+                Console.log( "callHttpStatusHandler: " + event );
             }
 
             var requestMapper:RequestMapper = requests[event.target as URLLoader];
@@ -348,7 +346,7 @@ package com.github.tengi.client.transport.http
 
         private function callIoErrorHandler( event:IOErrorEvent ):void
         {
-            log( "callIoErrorHandler: " + event );
+            Console.log( "callIoErrorHandler: " + event );
             delete requests[event.target];
         }
 
@@ -357,47 +355,55 @@ package com.github.tengi.client.transport.http
             startLongPollingCycle();
         }
 
-        public function log( message:String ):void
-        {
-            ExternalInterface.call( "console.log", message );
-        }
-
         private function handleMessage( data:ByteArray ):void
         {
+            var length:int = data.readInt();
+            if ( length > data.length )
+            {
+                throw new IOError( "Not enough data" );
+            }
+
             var memoryBuffer:MemoryBuffer = memoryBufferPool.pop( data );
-
-            var dataType:int = memoryBuffer.readByte();
-            if ( dataType == ConnectionConstants.DATA_TYPE_MESSAGE )
+            try
             {
-                var message:Message = Message.read( memoryBuffer, serializationFactory, this );
-
-                requests[message.messageId] = null;
-
-                if ( messageListener != null )
+                var dataType:int = memoryBuffer.readByte();
+                if ( dataType == ConnectionConstants.DATA_TYPE_MESSAGE )
                 {
-                    messageListener.messageReceived( message, this );
+                    var message:Message = Message.read( memoryBuffer, serializationFactory, this );
+
+                    requests[message.messageId] = null;
+
+                    if ( notifyLinkedMessage( message ) )
+                    {
+                        if ( messageListener != null )
+                        {
+                            messageListener.messageReceived( message, this );
+                        }
+
+                        dispatchEvent( new MessageReceivedEvent( ConnectionEvents.MESSAGE_RECEIVED, message ) );
+                    }
+                }
+                else if ( dataType == ConnectionConstants.DATA_TYPE_RAW )
+                {
+                    var metadata:Streamable = readNullableObject( memoryBuffer );
+
+                    var bufferLength:int = memoryBuffer.readInt();
+                    var data:ByteArray = new ByteArray();
+                    memoryBuffer.readBytes( data, 0, bufferLength );
+
+                    var rawBuffer:MemoryBuffer = new MemoryBuffer( data );
+                    if ( messageListener != null )
+                    {
+                        messageListener.rawDataReceived( rawBuffer, metadata, this );
+                    }
+
+                    dispatchEvent( new RawDataReceivedEvent( ConnectionEvents.RAWDATA_RECEIVED, rawBuffer, metadata ) );
                 }
             }
-            else if ( dataType == ConnectionConstants.DATA_TYPE_RAW )
+            finally
             {
-                var metadata:Streamable = null;
-                if ( memoryBuffer.readByte() == 1 )
-                {
-                    var classId:int = memoryBuffer.readShort();
-                    metadata = serializationFactory.instantiate( classId );
-                    metadata.readStream( memoryBuffer );
-                }
-
-                var length:int = memoryBuffer.readInt();
-                var data:ByteArray = new ByteArray();
-                memoryBuffer.readBytes( data, 0, length );
-
-                if ( messageListener != null )
-                {
-                    messageListener.dataReceived( new MemoryBuffer( data ), metadata, this );
-                }
+                memoryBufferPool.push( memoryBuffer );
             }
-            memoryBufferPool.push( memoryBuffer );
         }
 
     }

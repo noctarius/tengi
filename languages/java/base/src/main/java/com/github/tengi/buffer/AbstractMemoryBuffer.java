@@ -26,6 +26,7 @@ import com.github.tengi.utils.UnsafeUtil;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 
+@SuppressWarnings( "restriction" )
 public abstract class AbstractMemoryBuffer
     implements MemoryBuffer
 {
@@ -51,9 +52,9 @@ public abstract class AbstractMemoryBuffer
 
     private volatile int lockCounter = 0;
 
-    protected long writerIndex = 0;
+    protected int writerIndex = 0;
 
-    protected long readerIndex = 0;
+    protected int readerIndex = 0;
 
     @Override
     public void lock()
@@ -122,7 +123,7 @@ public abstract class AbstractMemoryBuffer
     }
 
     @Override
-    public long readableBytes()
+    public int readableBytes()
     {
         return writerIndex() - readerIndex();
     }
@@ -158,7 +159,7 @@ public abstract class AbstractMemoryBuffer
     @Override
     public int readBuffer( ByteBuffer byteBuffer )
     {
-        int remaining = Math.min( byteBuffer.remaining(), (int) readableBytes() );
+        int remaining = Math.min( byteBuffer.remaining(), readableBytes() );
         return readBuffer( byteBuffer, byteBuffer.position(), remaining );
     }
 
@@ -180,14 +181,14 @@ public abstract class AbstractMemoryBuffer
     }
 
     @Override
-    public long readBuffer( WritableMemoryBuffer memoryBuffer )
+    public int readBuffer( WritableMemoryBuffer memoryBuffer )
     {
-        long remaining = Math.min( memoryBuffer.writableBytes(), readableBytes() );
+        int remaining = Math.min( memoryBuffer.writableBytes(), readableBytes() );
         return readBuffer( memoryBuffer, memoryBuffer.writerIndex(), remaining );
     }
 
     @Override
-    public long readBuffer( WritableMemoryBuffer memoryBuffer, long offset, long length )
+    public int readBuffer( WritableMemoryBuffer memoryBuffer, int offset, int length )
     {
         if ( memoryBuffer instanceof AbstractMemoryBuffer )
         {
@@ -199,9 +200,9 @@ public abstract class AbstractMemoryBuffer
         }
         else
         {
-            long mark = memoryBuffer.writerIndex();
+            int mark = memoryBuffer.writerIndex();
             memoryBuffer.writerIndex( offset );
-            for ( long pos = offset; pos < offset + length; pos++ )
+            for ( int pos = offset; pos < offset + length; pos++ )
             {
                 memoryBuffer.writeByte( readByte() );
             }
@@ -284,13 +285,13 @@ public abstract class AbstractMemoryBuffer
     }
 
     @Override
-    public long readerIndex()
+    public int readerIndex()
     {
         return readerIndex;
     }
 
     @Override
-    public void readerIndex( long readerIndex )
+    public void readerIndex( int readerIndex )
     {
         this.readerIndex = readerIndex;
     }
@@ -314,7 +315,7 @@ public abstract class AbstractMemoryBuffer
     }
 
     @Override
-    public long writableBytes()
+    public int writableBytes()
     {
         return maxCapacity() - writerIndex();
     }
@@ -337,7 +338,7 @@ public abstract class AbstractMemoryBuffer
     @Override
     public void writeBuffer( ByteBuffer byteBuffer )
     {
-        int remaining = Math.min( byteBuffer.remaining(), (int) writableBytes() );
+        int remaining = Math.min( byteBuffer.remaining(), writableBytes() );
         writeBuffer( byteBuffer, byteBuffer.position(), remaining );
     }
 
@@ -360,12 +361,12 @@ public abstract class AbstractMemoryBuffer
     @Override
     public void writeBuffer( ReadableMemoryBuffer memoryBuffer )
     {
-        long remaining = Math.min( memoryBuffer.readableBytes(), writableBytes() );
+        int remaining = Math.min( memoryBuffer.readableBytes(), writableBytes() );
         writeBuffer( memoryBuffer, memoryBuffer.readerIndex(), remaining );
     }
 
     @Override
-    public void writeBuffer( ReadableMemoryBuffer memoryBuffer, long offset, long length )
+    public void writeBuffer( ReadableMemoryBuffer memoryBuffer, int offset, int length )
     {
         if ( memoryBuffer instanceof AbstractMemoryBuffer )
         {
@@ -377,9 +378,9 @@ public abstract class AbstractMemoryBuffer
         }
         else
         {
-            long mark = memoryBuffer.readerIndex();
+            int mark = memoryBuffer.readerIndex();
             memoryBuffer.readerIndex( offset );
-            for ( long pos = offset; pos < offset + length; pos++ )
+            for ( int pos = offset; pos < offset + length; pos++ )
             {
                 writeByte( memoryBuffer.readByte() );
             }
@@ -461,13 +462,13 @@ public abstract class AbstractMemoryBuffer
     }
 
     @Override
-    public long writerIndex()
+    public int writerIndex()
     {
         return writerIndex;
     }
 
     @Override
-    public void writerIndex( long writerIndex )
+    public void writerIndex( int writerIndex )
     {
         this.writerIndex = writerIndex;
     }

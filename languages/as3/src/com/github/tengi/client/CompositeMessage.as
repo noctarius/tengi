@@ -28,7 +28,7 @@ package com.github.tengi.client
 
         private var _messages:Vector.<Message>;
 
-        public function CompositeMessage( serializationFactory:SerializationFactory, connection:Connection,
+        public function CompositeMessage( serializationFactory:SerializationFactory, connection:ClientConnection,
                                           messages:Vector.<Message> = null, messageId:UniqueId = null )
         {
             super( serializationFactory, connection, null, messageId, Message.MESSAGE_TYPE_COMPOSITE );
@@ -65,7 +65,7 @@ package com.github.tengi.client
 
         public function retrieveMessage( index:int ):Message
         {
-            var count = messageCount;
+            var count:int = messageCount;
             if ( index >= count )
             {
                 throw new IllegalArgumentError( "index is out of range, max message index is " + (count - 1) );

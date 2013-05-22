@@ -21,77 +21,52 @@ package com.github.tengi.transport.websocket;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInboundMessageHandlerAdapter;
 
 import com.github.tengi.CompletionFuture;
-import com.github.tengi.Connection;
 import com.github.tengi.Message;
-import com.github.tengi.MessageListener;
 import com.github.tengi.SerializationFactory;
 import com.github.tengi.Streamable;
 import com.github.tengi.TransportType;
 import com.github.tengi.UniqueId;
 import com.github.tengi.buffer.MemoryBuffer;
+import com.github.tengi.buffer.MemoryBufferPool;
+import com.github.tengi.transport.AbstractChannelConnection;
 
-public class WebsocketConnection implements Connection
+public class WebsocketConnection
+    extends AbstractChannelConnection
 {
 
-	private final UniqueId uniqueId = UniqueId.randomUniqueId();
+    public WebsocketConnection( UniqueId connectionId, Channel channel, MemoryBufferPool memoryBufferPool,
+                                SerializationFactory serializationFactory )
+    {
+        super( connectionId, channel, memoryBufferPool, serializationFactory );
+    }
 
-	private final SerializationFactory serializationFactory;
+    @Override
+    public TransportType getTransportType()
+    {
+        return TransportType.WebSocket;
+    }
 
-	private final Channel channel;
+    @Override
+    public <T extends Message> void sendMessage( T message, CompletionFuture<T> completionFuture )
+    {
+        ChannelFuture channelFuture = getUnderlyingChannel().write( message );
+        channelFuture.addListener( new CompletionFutureAdapter<T>( completionFuture, message, this ) );
+    }
 
-	private ChannelInboundMessageHandlerAdapter messageListener = null;
+    @Override
+    public <T extends Streamable> void sendRawData( MemoryBuffer memoryBuffer, final T metadata,
+                                                    final CompletionFuture<T> completionFuture )
+    {
+        ChannelFuture channelFuture = getUnderlyingChannel().write( memoryBuffer );
+        channelFuture.addListener( new CompletionFutureAdapter<T>( completionFuture, metadata, this ) );
+    }
 
-	WebsocketConnection(Channel channel, SerializationFactory serializationFactory)
-	{
-		this.channel = channel;
-		this.serializationFactory = serializationFactory;
-	}
-
-	@Override
-	public TransportType getTransportType()
-	{
-		return TransportType.WebSocket;
-	}
-
-	@Override
-	public <T extends Message> void sendMessage(T message, CompletionFuture<T> completionFuture)
-	{
-		ChannelFuture channelFuture = channel.write(message);
-		channelFuture.addListener(new CompletionFutureAdapter<T>(completionFuture, message, this));
-	}
-
-	@Override
-	public <T extends Streamable> void sendRawData(MemoryBuffer memoryBuffer, final T metadata, final CompletionFuture<T> completionFuture)
-	{
-		ChannelFuture channelFuture = channel.write(memoryBuffer);
-		channelFuture.addListener(new CompletionFutureAdapter<T>(completionFuture, metadata, this));
-	}
-
-	@Override
-	public void setMessageListener(MessageListener messageListener)
-	{
-		this.messageListener = new MessageListenerAdapter(messageListener, this);
-	}
-
-	@Override
-	public void clearMessageListener()
-	{
-		messageListener = null;
-	}
-
-	@Override
-	public Message prepareMessage(Streamable body)
-	{
-		return new Message(serializationFactory, this, body, UniqueId.randomUniqueId(), Message.MESSAGE_TYPE_DEFAULT);
-	}
-
-	@Override
-	public void close()
-	{
-		channel.close();
-	}
+    @Override
+    public void close()
+    {
+        getUnderlyingChannel().close();
+    }
 
 }

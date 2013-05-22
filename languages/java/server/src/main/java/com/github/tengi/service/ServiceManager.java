@@ -20,82 +20,55 @@ package com.github.tengi.service;
  */
 
 import com.github.tengi.Connection;
-import com.github.tengi.ConnectionConstants;
 import com.github.tengi.Message;
+import com.github.tengi.MessageListener;
 import com.github.tengi.SerializationFactory;
 import com.github.tengi.Streamable;
-import com.github.tengi.buffer.ByteBufMemoryBuffer;
 import com.github.tengi.buffer.MemoryBuffer;
 import com.github.tengi.transport.polling.PollingConnection;
 import com.github.tengi.transport.polling.PollingMessage;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 
 public class ServiceManager<M extends Message>
+    implements MessageListener
 {
-
-    private final SerializationFactory serializationFactory;
 
     private final Service<M> service;
 
     public ServiceManager( Service<M> service, SerializationFactory serializationFactory )
     {
         this.service = service;
-        this.serializationFactory = serializationFactory;
     }
 
-    void call( MemoryBuffer memoryBuffer, Connection connection )
-    {
-        byte frameType = memoryBuffer.readByte();
-        if ( frameType == ConnectionConstants.DATA_TYPE_MESSAGE )
-        {
-            Message message = Message.read( memoryBuffer, serializationFactory, connection );
-            if ( message instanceof PollingMessage )
-            {
-                longPolling( (PollingMessage) message, connection );
-            }
-            else
-            {
-                call( message, connection );
-            }
-        }
-        else if ( frameType == ConnectionConstants.DATA_TYPE_RAW )
-        {
-            Streamable metadata = null;
-            if ( memoryBuffer.readByte() == 1 )
-            {
-                short classId = memoryBuffer.readShort();
-                metadata = serializationFactory.instantiate( classId );
-            }
-
-            int length = memoryBuffer.readInt();
-            ByteBuf buffer = Unpooled.buffer( length );
-            MemoryBuffer rawBuffer = new ByteBufMemoryBuffer( buffer );
-            memoryBuffer.readBuffer( rawBuffer, 0, length );
-
-            call( rawBuffer, metadata, connection );
-        }
-    }
-
+    @Override
     @SuppressWarnings( "unchecked" )
-    private void call( Message request, Connection connection )
+    public void messageReceived( Message message, Connection connection )
     {
-        service.call( (M) request, connection );
+        if ( message instanceof PollingMessage )
+        {
+            if ( connection.getTransportType().isPolling() )
+            {
+                throw new IllegalArgumentException( "Given connection is not a PollingConnection "
+                    + "but LongPolling request arrived" );
+            }
+
+            longPolling( (PollingMessage) message, connection );
+        }
+        else
+        {
+            service.call( (M) message, connection );
+        }
     }
 
-    private void call( MemoryBuffer request, Streamable metadata, Connection connection )
+    @Override
+    public void rawDataReceived( MemoryBuffer request, Streamable metadata, Connection connection )
     {
         service.call( request, metadata, connection );
     }
 
     private void longPolling( PollingMessage request, Connection connection )
     {
-        if ( connection.getTransportType().isPolling() )
-        {
-            PollingConnection pollingConnection = (PollingConnection) connection;
-            Message response = pollingConnection.pollResponses( request.getLastUpdateId() );
-            connection.sendMessage( response, null );
-        }
+        PollingConnection pollingConnection = (PollingConnection) connection;
+        pollingConnection.sendPollResponses( pollingConnection.getPollingChannel(), request.getLastUpdateId() );
     }
 
 }

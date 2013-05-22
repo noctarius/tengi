@@ -88,6 +88,7 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  * @since 1.5
  */
 
+@SuppressWarnings( { "serial", "unchecked", "rawtypes", "restriction", "unused" } )
 public class NonBlockingHashMapLong<TypeV>
     extends AbstractMap<Long, TypeV>
     implements ConcurrentMap<Long, TypeV>, Serializable

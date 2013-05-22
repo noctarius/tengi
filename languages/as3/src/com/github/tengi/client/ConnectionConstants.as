@@ -28,5 +28,11 @@ package com.github.tengi.client
 
         public static const DATA_TYPE_RAW:int = 2;
 
+        public static const HTTP_HEADER_NAME_CONNECTIONID:String = "XX-tengi-connection-id";
+
+        public static const HTTP_HEADER_NAME_SUPPORTED_TRANSPORT_TYPES:String = "XX-tengi-transport-types";
+
+        public static const HTTP_HEADER_NAME_TRANSPORT_TYPE:String = "XX-tengi-transport-type";
+
     }
 }

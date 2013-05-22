@@ -22,6 +22,7 @@ package com.github.tengi;
 import com.github.tengi.buffer.MemoryBuffer;
 
 public class Message
+    implements Streamable
 {
 
     public static final byte MESSAGE_TYPE_DEFAULT = 0;
@@ -40,17 +41,14 @@ public class Message
 
     private byte type = MESSAGE_TYPE_DEFAULT;
 
-    public Message( SerializationFactory serializationFactory, Connection connection, byte type )
+    public Message( Connection connection, byte type )
     {
-        this.serializationFactory = serializationFactory;
         this.connection = connection;
         this.type = type;
     }
 
-    public Message( SerializationFactory serializationFactory, Connection connection, Streamable body,
-                    UniqueId messageId, byte type )
+    public Message( Connection connection, Streamable body, UniqueId messageId, byte type )
     {
-        this.serializationFactory = serializationFactory;
         this.connection = connection;
         this.messageId = messageId != null ? messageId : UniqueId.randomUniqueId();
         this.body = body;
@@ -62,7 +60,8 @@ public class Message
         return "Message [messageId=" + messageId + ", body=" + ( body != null ? body.toString() : "null" ) + "]";
     }
 
-    public void readStream( MemoryBuffer memoryBuffer )
+    @Override
+    public void readStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
     {
         this.messageId = new UniqueId();
         this.messageId.readStream( memoryBuffer, serializationFactory );
@@ -74,7 +73,8 @@ public class Message
         }
     }
 
-    public void writeStream( MemoryBuffer memoryBuffer )
+    @Override
+    public void writeStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
     {
         messageId.writeStream( memoryBuffer, serializationFactory );
         if ( body == null )
@@ -118,20 +118,20 @@ public class Message
         Message message;
         if ( type == MESSAGE_TYPE_COMPOSITE )
         {
-            message = new CompositeMessage( serializationFactory, connection );
+            message = new CompositeMessage( connection );
         }
         else
         {
-            message = new Message( serializationFactory, connection, type );
+            message = new Message( connection, type );
         }
-        message.readStream( memoryBuffer );
+        message.readStream( memoryBuffer, serializationFactory );
         return message;
     }
 
-    public static void write( MemoryBuffer memoryBuffer, Message message )
+    public static void write( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory, Message message )
     {
         memoryBuffer.writeByte( message.type );
-        message.writeStream( memoryBuffer );
+        message.writeStream( memoryBuffer, serializationFactory );
     }
 
 }

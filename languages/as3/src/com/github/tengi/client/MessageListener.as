@@ -20,12 +20,21 @@ package com.github.tengi.client
 {
     import com.github.tengi.client.buffer.MemoryBuffer;
 
+    /**
+     * This interface defines the listener for arriving gameserver frames. It needs to be registered to a {@link com.github.tengi.client.ClientConnection}.
+     */
     public interface MessageListener
     {
 
-        function messageReceived( message:Message, connection:Connection ):void;
+        /**
+         *
+         *
+         * @param message
+         * @param connection
+         */
+        function messageReceived( message:Message, connection:ClientConnection ):void;
 
-        function dataReceived( memoryBuffer:MemoryBuffer, metadata:Streamable, connection:Connection ):void;
+        function rawDataReceived( memoryBuffer:MemoryBuffer, metadata:Streamable, connection:ClientConnection ):void;
 
     }
 }

@@ -22,9 +22,9 @@ public interface MemoryBuffer
     extends ReadableMemoryBuffer, WritableMemoryBuffer
 {
 
-    long capacity();
+    int capacity();
 
-    long maxCapacity();
+    int maxCapacity();
 
     boolean growing();
 

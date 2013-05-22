@@ -19,11 +19,35 @@
 package com.github.tengi.client
 {
     import com.github.tengi.client.buffer.MemoryBufferPool;
+    import com.github.tengi.client.lang.util.Console;
+    import com.github.tengi.client.transport.events.ConnectionEstablishedEvent;
+    import com.github.tengi.client.transport.events.ConnectionEvents;
     import com.github.tengi.client.transport.http.HttpConnection;
 
-    public class ConnectionManager
+    import flash.events.EventDispatcher;
+    import flash.events.HTTPStatusEvent;
+    import flash.events.IOErrorEvent;
+    import flash.events.SecurityErrorEvent;
+    import flash.net.URLLoader;
+    import flash.net.URLLoaderDataFormat;
+    import flash.net.URLRequest;
+    import flash.net.URLRequestHeader;
+    import flash.net.URLRequestMethod;
+
+    /**
+     * Dispatched when a valid transportation type was selected and connection using this transport was established.
+     *
+     * @eventType com.github.tengi.client.transport.events.ConnectionEstablishedEvent
+     */
+    [Event(name="CONNECTION_ESTABLISHED", type="com.github.tengi.client.transport.events.ConnectionEstablishedEvent")]
+
+    /**
+     * The ConnectionManager is used to create gameserver connections using a {@link com.github.tengi.client.ConnectionConfiguration} object.
+     * Using {@link #createConnection()} the ConnectionManager queries the server supported {@link com.github.tengi.client.TransportType}s and a suggested order to try them one by one to find best matching transport and creates a {@link com.github.tengi.client.ClientConnection} using this transport.
+     */
+    public class ConnectionManager extends EventDispatcher
     {
-        private const connections:Vector.<Connection> = new Vector.<Connection>();
+        private const connections:Vector.<ClientConnection> = new Vector.<ClientConnection>();
 
         private var serializationFactory:SerializationFactory;
         private var memoryBufferPool:MemoryBufferPool;
@@ -37,22 +61,66 @@ package com.github.tengi.client
             this.serializationFactory = serializationFactory;
         }
 
-        public function createHttpConnection( host:String, port:int, contextPath:String, ssl:Boolean ):Connection
+        public function createHttpConnection( configuration:ConnectionConfiguration ):ClientConnection
         {
-            var connection:Connection = new HttpConnection( host, port, contextPath, ssl, contentType, memoryBufferPool,
-                                                            serializationFactory );
+            var connection:ClientConnection = new HttpConnection( configuration, contentType, memoryBufferPool,
+                                                                  serializationFactory );
             connections.push( connection );
             return connection;
         }
 
-        public function createTcpConnection( host:String, port:int ):Connection
+        public function createTcpConnection( configuration:ConnectionConfiguration ):ClientConnection
         {
             return null;
         }
 
-        public function createConnection( host:String, port:int, contextPath:String, ssl:Boolean ):Connection
+        public function createConnection( configuration:ConnectionConfiguration,
+                                          connectionListener:ConnectionListener = null ):void
         {
-            return createHttpConnection( host, port, contextPath, ssl );
+            var connectionId:UniqueId = UniqueId.randomUniqueId();
+            var header:URLRequestHeader = new URLRequestHeader( ConnectionConstants.HTTP_HEADER_NAME_CONNECTIONID,
+                                                                connectionId.toString() );
+
+            var request:URLRequest = new URLRequest();
+            request.method = URLRequestMethod.HEAD;
+            request.requestHeaders.push( header );
+
+            var urlLoader:URLLoader = new URLLoader();
+            urlLoader.dataFormat = URLLoaderDataFormat.TEXT;
+            urlLoader.addEventListener( SecurityErrorEvent.SECURITY_ERROR, securityErrorHandler );
+            urlLoader.addEventListener( HTTPStatusEvent.HTTP_RESPONSE_STATUS, httpStatusHandler );
+            urlLoader.addEventListener( IOErrorEvent.IO_ERROR, ioErrorHandler );
+
+            var connection:ClientConnection = createHttpConnection( configuration );
+
+            if ( connectionListener != null )
+            {
+                connectionListener.onConnect( connection );
+            }
+
+            dispatchEvent( new ConnectionEstablishedEvent( connection, ConnectionEvents.CONNECTION_ESTABLISHED ) );
+        }
+
+        private function httpStatusHandler( event:HTTPStatusEvent ):void
+        {
+            for each ( var header:URLRequestHeader  in event.responseHeaders )
+            {
+                if ( header.name == ConnectionConstants.HTTP_HEADER_NAME_SUPPORTED_TRANSPORT_TYPES )
+                {
+                    var transports:Array = header.value.split( "," );
+
+                }
+            }
+        }
+
+        private function securityErrorHandler( event:SecurityErrorEvent ):void
+        {
+            Console.log( "securityErrorHandler: " + event );
+        }
+
+        private function ioErrorHandler( event:IOErrorEvent ):void
+        {
+            Console.log( "ioErrorHandler: " + event );
         }
 
     }

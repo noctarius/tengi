@@ -21,7 +21,7 @@ package com.github.tengi.client
     public interface LongPollingRequestFactory
     {
 
-        function prepareLongPollingRequest( connection:Connection ):Streamable;
+        function prepareLongPollingRequest( connection:ClientConnection ):Streamable;
 
     }
 }

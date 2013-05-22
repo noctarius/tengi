@@ -23,6 +23,7 @@ import com.fasterxml.uuid.impl.UUIDUtil;
 import com.github.tengi.buffer.MemoryBuffer;
 import com.github.tengi.utils.ConcurrentUuidUtil;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 public class UniqueId
@@ -43,6 +44,30 @@ public class UniqueId
     public void writeStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
     {
         memoryBuffer.writeBytes( data, 0, 16 );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + Arrays.hashCode( data );
+        return result;
+    }
+
+    @Override
+    public boolean equals( Object obj )
+    {
+        if ( this == obj )
+            return true;
+        if ( obj == null )
+            return false;
+        if ( getClass() != obj.getClass() )
+            return false;
+        UniqueId other = (UniqueId) obj;
+        if ( !Arrays.equals( data, other.data ) )
+            return false;
+        return true;
     }
 
     @Override
@@ -75,6 +100,31 @@ public class UniqueId
     {
         UniqueId uniqueId = new UniqueId();
         uniqueId.readStream( memoryBuffer, null );
+        return uniqueId;
+    }
+
+    public static UniqueId fromString( String value )
+    {
+        String cleaned = value.replace( "-", "" );
+        char[] characters = cleaned.toCharArray();
+
+        int index = 0;
+        UniqueId uniqueId = new UniqueId();
+        for ( int i = 0; i < characters.length; i++ )
+        {
+            uniqueId.data[index++] = Integer.decode( "0x" + characters[i++] + characters[i] ).byteValue();
+        }
+        return uniqueId;
+    }
+
+    public static UniqueId fromByteArray( byte[] byteArray )
+    {
+        if ( byteArray.length != 16 )
+        {
+            throw new IllegalArgumentException( "bytearray is " + byteArray.length + " bytes long, expected 16 bytes" );
+        }
+        UniqueId uniqueId = new UniqueId();
+        System.arraycopy( byteArray, 0, uniqueId.data, 0, 16 );
         return uniqueId;
     }
 

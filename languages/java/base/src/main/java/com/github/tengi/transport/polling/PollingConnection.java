@@ -18,13 +18,18 @@ package com.github.tengi.transport.polling;
  * under the License.
  */
 
+import io.netty.channel.Channel;
+
 import com.github.tengi.Connection;
-import com.github.tengi.Message;
 
 public interface PollingConnection
     extends Connection
 {
 
-    Message pollResponses( int lastUpdateId );
+    void sendPollResponses( Channel channel, int lastUpdateId );
+
+    Channel getPollingChannel();
+
+    void setPollingChannel( Channel channel );
 
 }

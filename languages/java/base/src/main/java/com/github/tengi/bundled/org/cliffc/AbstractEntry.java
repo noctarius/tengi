@@ -8,15 +8,16 @@ package com.github.tengi.bundled.org.cliffc;
 import java.util.Map;
 
 /**
- * A simple implementation of {@link java.util.Map.Entry}.
- * Does not implement {@link java.util.Map.Entry.setValue}, that is done by users of the class.
- *
+ * A simple implementation of {@link java.util.Map.Entry}. Does not implement {@link java.util.Map.Entry.setValue}, that
+ * is done by users of the class.
+ * 
  * @param <TypeK> the type of keys maintained by this map
  * @param <TypeV> the type of mapped values
  * @author Cliff Click
  * @since 1.5
  */
 
+@SuppressWarnings( "rawtypes" )
 abstract class AbstractEntry<TypeK, TypeV>
     implements Map.Entry<TypeK, TypeV>
 {
@@ -92,4 +93,3 @@ abstract class AbstractEntry<TypeK, TypeV>
         return ( o1 == null ? o2 == null : o1.equals( o2 ) );
     }
 }
-

@@ -20,8 +20,8 @@ package com.github.tengi.transport;
  */
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundMessageHandlerAdapter;
 
@@ -119,13 +119,41 @@ public abstract class AbstractChannelConnection
     @Override
     public Message prepareMessage( Streamable body )
     {
-        return new Message( serializationFactory, this, body, UniqueId.randomUniqueId(), Message.MESSAGE_TYPE_DEFAULT );
+        return new Message( this, body, UniqueId.randomUniqueId(), Message.MESSAGE_TYPE_DEFAULT );
+    }
+
+    protected ChannelFuture writeMemoryBuffer( MemoryBuffer memoryBuffer )
+    {
+        ByteBuf byteBuf = null;
+        if ( memoryBuffer instanceof ByteBufMemoryBuffer )
+        {
+            ( (ByteBufMemoryBuffer) memoryBuffer ).getByteBuffer();
+        }
+        else
+        {
+            MemoryBuffer temp = memoryBufferPool.pop( memoryBuffer.readableBytes() );
+            try
+            {
+                temp.writeBuffer( memoryBuffer );
+                byteBuf = ( (ByteBufMemoryBuffer) temp ).getByteBuffer();
+            }
+            finally
+            {
+                memoryBufferPool.push( temp );
+            }
+        }
+
+        if ( byteBuf != null )
+        {
+            return channel.write( byteBuf );
+        }
+        return null;
     }
 
     protected void prepareMessageBuffer( Message message, MemoryBuffer memoryBuffer )
     {
         memoryBuffer.writeByte( ConnectionConstants.DATA_TYPE_MESSAGE );
-        Message.write( memoryBuffer, message );
+        Message.write( memoryBuffer, serializationFactory, message );
     }
 
     protected void prepareMessageBuffer( MemoryBuffer rawBuffer, Streamable metadata, MemoryBuffer memoryBuffer )
@@ -146,7 +174,7 @@ public abstract class AbstractChannelConnection
         {
             memoryBuffer.writeByte( (byte) 1 );
             memoryBuffer.writeShort( serializationFactory.getClassIdentifier( streamable ) );
-            streamable.writeStream( memoryBuffer );
+            streamable.writeStream( memoryBuffer, serializationFactory );
         }
     }
 
@@ -156,15 +184,10 @@ public abstract class AbstractChannelConnection
         if ( memoryBuffer.readByte() == 1 )
         {
             S streamable = (S) serializationFactory.instantiate( memoryBuffer.readShort() );
-            streamable.readStream( memoryBuffer );
+            streamable.readStream( memoryBuffer, serializationFactory );
             return streamable;
         }
         return null;
-    }
-
-    protected ByteBuf getByteBuf( int initialSize )
-    {
-        return Unpooled.directBuffer( initialSize );
     }
 
     private class TengiMemoryBufferDecoder
@@ -177,7 +200,7 @@ public abstract class AbstractChannelConnection
         public void messageReceived( ChannelHandlerContext ctx, ByteBuf msg )
             throws Exception
         {
-            MemoryBuffer memoryBuffer = memoryBufferPool.pop( msg );
+            MemoryBuffer memoryBuffer = memoryBufferPool.wrap( msg );
             try
             {
                 byte frameType = memoryBuffer.readByte();
@@ -214,30 +237,12 @@ public abstract class AbstractChannelConnection
         {
             Streamable metadata = readNullableObject( memoryBuffer );
             int length = memoryBuffer.readInt();
-            ByteBuf rawByteBuf = getByteBuf( length );
-            ByteBufMemoryBuffer rawBuffer = new ByteBufMemoryBufferAdapter().setByteBuffer( rawByteBuf );
+            MemoryBuffer rawBuffer = memoryBufferPool.pop( length );
             rawBuffer.writeBuffer( memoryBuffer, 0, length );
             if ( messageListener != null )
             {
                 messageListener.rawDataReceived( rawBuffer, metadata, connection );
             }
-        }
-    }
-
-    private static class ByteBufMemoryBufferAdapter
-        extends ByteBufMemoryBuffer
-    {
-
-        @Override
-        protected ByteBuf getByteBuffer()
-        {
-            return super.getByteBuffer();
-        }
-
-        @Override
-        protected ByteBufMemoryBuffer setByteBuffer( ByteBuf byteBuffer )
-        {
-            return super.setByteBuffer( byteBuffer );
         }
     }
 

@@ -8,140 +8,142 @@ Short example with ActionScript client and Java server
 
 *ActionScript:*
 
-    package com.github.tengi
-    {
-        import com.github.tengi.client.ClientConnection;
-        import com.github.tengi.client.ConnectionConfiguration;
-        import com.github.tengi.client.ConnectionManager;
-        import com.github.tengi.client.Message;
-        import com.github.tengi.client.MessageListener;
-        import com.github.tengi.client.SimpleConnectionListener;
-        import com.github.tengi.client.Streamable;
-        import com.github.tengi.client.buffer.MemoryBuffer;
-    
-        import flash.errors.IOError;
-    
-        public class ActionScriptExample extends SimpleConnectionListener implements MessageListener
-        {
-            public function ActionScriptExample()
-            {
-				// Configure ConnectionManager, internal MemoryBuffer pool and used protocol
-                var connectionManager:ConnectionManager = new ConnectionManager( "binary/tengi", 20,
-                                                                                 new ExampleProtocol() );
-    
-                var configuration:ConnectionConfiguration = new ConnectionConfiguration();
-                configuration.host = "localhost";
-                configuration.port = 80;
-    
-				// Connect to localhost through best available transporttype
-                connectionManager.createConnection( configuration, this );
-            }
-    
-            override public function onConnect( connection:ClientConnection ):void
-            {
-                var example:Example = new Example();
-                example.value = "From AS3";
-                // Response is received through messageReceived(...)
-                connection.sendObject( example );
-    
-                var linkedExample:Example = new Example();
-                linkedExample.value = "This one has it's own callback";
-                // Response is received in given callback
-                connection.sendLinkedObject( linkedExample,
-                    function ( request:Message, response:Message, connection:ClientConnection ):void
-                    {
-                        var sendExample:Example = request.body as Example;
-                        var receivedExample:Example = response.body as Example;
-                        trace("send=" + sendExample.value + ", received=" + receivedExample.value);
-                    }
-                );
-            }
-    
-            public function messageReceived( message:Message, connection:ClientConnection ):void
-            {
-                var body:Streamable = message.body;
-                if ( body is Example )
-                {
-                    trace( "Received Example::value = " + (body as Example).value );
-                }
-            }
-    
-            public function rawDataReceived( memoryBuffer:MemoryBuffer, metadata:Streamable,
-                                             connection:ClientConnection ):void
-            {
-                throw new IOError( "rawdata are not supported by this protocol :-(" );
-            }
-        }
-    }
-    
-    import com.github.tengi.client.Entity;
-    import com.github.tengi.client.SerializationFactory;
+```as3
+package com.github.tengi
+{
+    import com.github.tengi.client.ClientConnection;
+    import com.github.tengi.client.ConnectionConfiguration;
+    import com.github.tengi.client.ConnectionManager;
+    import com.github.tengi.client.Message;
+    import com.github.tengi.client.MessageListener;
+    import com.github.tengi.client.SimpleConnectionListener;
     import com.github.tengi.client.Streamable;
     import com.github.tengi.client.buffer.MemoryBuffer;
-    
+
     import flash.errors.IOError;
-    
-    internal class ExampleProtocol implements SerializationFactory
+
+    public class ActionScriptExample extends SimpleConnectionListener implements MessageListener
     {
-    
-        public function instantiate( classId:int ):Streamable
+        public function ActionScriptExample()
         {
-            switch ( classId )
+			// Configure ConnectionManager, internal MemoryBuffer pool and used protocol
+            var connectionManager:ConnectionManager = new ConnectionManager( "binary/tengi", 20,
+                                                                             new ExampleProtocol() );
+
+            var configuration:ConnectionConfiguration = new ConnectionConfiguration();
+            configuration.host = "localhost";
+            configuration.port = 80;
+
+			// Connect to localhost through best available transporttype
+            connectionManager.createConnection( configuration, this );
+        }
+
+        override public function onConnect( connection:ClientConnection ):void
+        {
+            var example:Example = new Example();
+            example.value = "From AS3";
+            // Response is received through messageReceived(...)
+            connection.sendObject( example );
+
+            var linkedExample:Example = new Example();
+            linkedExample.value = "This one has it's own callback";
+            // Response is received in given callback
+            connection.sendLinkedObject( linkedExample,
+                function ( request:Message, response:Message, connection:ClientConnection ):void
+                {
+                    var sendExample:Example = request.body as Example;
+                    var receivedExample:Example = response.body as Example;
+                    trace("send=" + sendExample.value + ", received=" + receivedExample.value);
+                }
+            );
+        }
+
+        public function messageReceived( message:Message, connection:ClientConnection ):void
+        {
+            var body:Streamable = message.body;
+            if ( body is Example )
             {
-                case 1:
-                    return new Example();
+                trace( "Received Example::value = " + (body as Example).value );
             }
-            throw new IOError( "Unknown classId" );
         }
-    
-        public function getClassIdentifier( streamable:Streamable ):int
+
+        public function rawDataReceived( memoryBuffer:MemoryBuffer, metadata:Streamable,
+                                         connection:ClientConnection ):void
         {
-            if ( streamable is Example )
-            {
-                return 1;
-            }
-            throw new IOError( "Unknown streamable type" );
-        }
-    
-        public function isEntity( classId:int ):Boolean
-        {
-            return false;
-        }
-    
-        public function readEntity( memoryBuffer:MemoryBuffer, classId:int ):Entity
-        {
-            return null;
+            throw new IOError( "rawdata are not supported by this protocol :-(" );
         }
     }
-    
-    internal class Example implements Streamable
+}
+
+import com.github.tengi.client.Entity;
+import com.github.tengi.client.SerializationFactory;
+import com.github.tengi.client.Streamable;
+import com.github.tengi.client.buffer.MemoryBuffer;
+
+import flash.errors.IOError;
+
+internal class ExampleProtocol implements SerializationFactory
+{
+
+    public function instantiate( classId:int ):Streamable
     {
-    
-        private var _value:String;
-    
-        public function get value():String
+        switch ( classId )
         {
-            return _value;
+            case 1:
+                return new Example();
         }
-    
-        public function set value( value:String ):void
-        {
-            _value = value;
-        }
-    
-        public function readStream( memoryBuffer:MemoryBuffer ):void
-        {
-            memoryBuffer.writeString( _value );
-        }
-    
-        public function writeStream( memoryBuffer:MemoryBuffer ):void
-        {
-            _value = memoryBuffer.readString();
-        }
+        throw new IOError( "Unknown classId" );
     }
 
+    public function getClassIdentifier( streamable:Streamable ):int
+    {
+        if ( streamable is Example )
+        {
+            return 1;
+        }
+        throw new IOError( "Unknown streamable type" );
+    }
+
+    public function isEntity( classId:int ):Boolean
+    {
+        return false;
+    }
+
+    public function readEntity( memoryBuffer:MemoryBuffer, classId:int ):Entity
+    {
+        return null;
+    }
+}
+
+internal class Example implements Streamable
+{
+
+    private var _value:String;
+
+    public function get value():String
+    {
+        return _value;
+    }
+
+    public function set value( value:String ):void
+    {
+        _value = value;
+    }
+
+    public function readStream( memoryBuffer:MemoryBuffer ):void
+    {
+        memoryBuffer.writeString( _value );
+    }
+
+    public function writeStream( memoryBuffer:MemoryBuffer ):void
+    {
+        _value = memoryBuffer.readString();
+    }
+}
+```
 *Java:*
 
+```java
     package com.github.tengi;
     
     import java.net.Inet4Address;
@@ -260,3 +262,4 @@ Short example with ActionScript client and Java server
         }
     
     }
+```

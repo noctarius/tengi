@@ -1,4 +1,5 @@
 package com.github.tengi.buffer;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,6 +19,8 @@ package com.github.tengi.buffer;
  * under the License.
  */
 
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.ByteBuf;
 import nf.fr.eraasoft.pool.ObjectPool;
 import nf.fr.eraasoft.pool.PoolException;
@@ -32,13 +35,37 @@ public class MemoryBufferPool
     private final PoolSettings<MemoryBufferAdapter> poolSettings =
         new PoolSettings<>( new PoolableMemoryBufferObject() );
 
+    private final ByteBufAllocator allocator = new PooledByteBufAllocator( true );
+
     public MemoryBufferPool( int poolSize )
     {
         poolSettings.min( poolSize ).max( 0 );
         memoryBufferPool = poolSettings.pool();
     }
 
-    public MemoryBuffer pop( ByteBuf byteBuffer )
+    public MemoryBuffer pop( int initialSize )
+    {
+        return wrap( allocator.ioBuffer( initialSize ) );
+    }
+
+    public MemoryBuffer pop()
+    {
+        return wrap( allocator.ioBuffer() );
+    }
+
+    public void push( MemoryBuffer memoryBuffer )
+    {
+        if ( memoryBuffer instanceof ByteBufMemoryBuffer )
+        {
+            ( (ByteBufMemoryBuffer) memoryBuffer ).getByteBuffer().release();
+        }
+        if ( memoryBuffer instanceof MemoryBufferAdapter )
+        {
+            memoryBufferPool.returnObj( (MemoryBufferAdapter) memoryBuffer );
+        }
+    }
+
+    public MemoryBuffer wrap( ByteBuf byteBuffer )
     {
         try
         {
@@ -49,14 +76,6 @@ public class MemoryBufferPool
         catch ( PoolException e )
         {
             return new ByteBufMemoryBuffer().setByteBuffer( byteBuffer );
-        }
-    }
-
-    public void push( MemoryBuffer memoryBuffer )
-    {
-        if ( memoryBuffer instanceof MemoryBufferAdapter )
-        {
-            memoryBufferPool.returnObj( (MemoryBufferAdapter) memoryBuffer );
         }
     }
 
@@ -90,6 +109,6 @@ public class MemoryBufferPool
     private class MemoryBufferAdapter
         extends ByteBufMemoryBuffer
     {
-
     }
+
 }

@@ -1,4 +1,5 @@
 package com.github.tengi.service.messagecache;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -33,24 +34,23 @@ class PreserializedCompositeMessage
 
     private List<MemoryBuffer> messages;
 
-    public PreserializedCompositeMessage( SerializationFactory serializationFactory, Connection connection,
-                                          List<MemoryBuffer> messages, UniqueId messageId )
+    public PreserializedCompositeMessage( Connection connection, List<MemoryBuffer> messages, UniqueId messageId )
     {
-        super( serializationFactory, connection, null, messageId, Message.MESSAGE_TYPE_COMPOSITE );
+        super( connection, null, messageId, Message.MESSAGE_TYPE_COMPOSITE );
         this.messages = new ArrayList<>( messages );
     }
 
     @Override
-    public void readStream( MemoryBuffer memoryBuffer )
+    public void readStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
     {
         throw new UnsupportedOperationException(
-            "This type of CompositeMessage is only used for sending preserialized data" );
+                                                 "This type of CompositeMessage is only used for sending preserialized data" );
     }
 
     @Override
-    public void writeStream( MemoryBuffer memoryBuffer )
+    public void writeStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
     {
-        super.writeStream( memoryBuffer );
+        super.writeStream( memoryBuffer, serializationFactory );
         memoryBuffer.writeShort( (short) messages.size() );
         for ( int i = 0; i < messages.size(); i++ )
         {

@@ -1,4 +1,5 @@
 package com.github.tengi.transport.http;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,7 +19,6 @@ package com.github.tengi.transport.http;
  * under the License.
  */
 
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -78,8 +78,7 @@ public class HttpConnection
     @Override
     public <T extends Message> void sendMessage( T message, CompletionFuture<T> completionFuture )
     {
-        ByteBuf buffer = getByteBuf( 100 );
-        MemoryBuffer memoryBuffer = memoryBufferPool.pop( buffer );
+        MemoryBuffer memoryBuffer = memoryBufferPool.pop( 100 );
         try
         {
             prepareMessageBuffer( message, memoryBuffer );
@@ -104,8 +103,7 @@ public class HttpConnection
     public <T extends Streamable> void sendRawData( MemoryBuffer rawBuffer, T metadata,
                                                     CompletionFuture<T> completionFuture )
     {
-        ByteBuf buffer = getByteBuf( rawBuffer.writerIndex() + 20 );
-        MemoryBuffer memoryBuffer = memoryBufferPool.pop( buffer );
+        MemoryBuffer memoryBuffer = memoryBufferPool.pop( rawBuffer.writerIndex() + 20 );
         try
         {
             prepareMessageBuffer( rawBuffer, metadata, memoryBuffer );

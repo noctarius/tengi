@@ -18,6 +18,7 @@
  */
 package com.github.tengi.client.buffer
 {
+
     import flash.utils.ByteArray;
 
     public class MemoryBufferPool
@@ -29,7 +30,7 @@ package com.github.tengi.client.buffer
         {
             for ( var i:int = 0; i < poolSize; i++ )
             {
-                memoryBufferPool.push( new MemoryBufferAdapter() );
+                memoryBufferPool.push( new MemoryBufferAdapter( this ) );
             }
         }
 
@@ -59,7 +60,20 @@ package com.github.tengi.client.buffer
 }
 
 import com.github.tengi.client.buffer.MemoryBuffer;
+import com.github.tengi.client.buffer.MemoryBufferPool;
 
 internal class MemoryBufferAdapter extends MemoryBuffer
 {
+    private var memoryBufferPool:MemoryBufferPool;
+
+    function MemoryBufferAdapter( memoryBufferPool:MemoryBufferPool )
+    {
+        this.memoryBufferPool = memoryBufferPool;
+    }
+
+    override public function free():Boolean
+    {
+        memoryBufferPool.push( this );
+        return true;
+    }
 }

@@ -1,4 +1,5 @@
 package com.github.tengi.transport.polling;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -30,29 +31,28 @@ public class PollingMessage
 
     private int lastUpdateId;
 
-    public PollingMessage( SerializationFactory serializationFactory, Connection connection )
+    public PollingMessage( Connection connection )
     {
-        super( serializationFactory, connection, Message.MESSAGE_TYPE_LONG_POLLING );
+        super( connection, Message.MESSAGE_TYPE_LONG_POLLING );
     }
 
-    public PollingMessage( SerializationFactory serializationFactory, Connection connection, int lastUpdateId,
-                           UniqueId messageId )
+    public PollingMessage( Connection connection, int lastUpdateId, UniqueId messageId )
     {
-        super( serializationFactory, connection, null, messageId, Message.MESSAGE_TYPE_LONG_POLLING );
+        super( connection, null, messageId, Message.MESSAGE_TYPE_LONG_POLLING );
         this.lastUpdateId = lastUpdateId;
     }
 
     @Override
-    public void readStream( MemoryBuffer memoryBuffer )
+    public void readStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
     {
-        super.readStream( memoryBuffer );
+        super.readStream( memoryBuffer, serializationFactory );
         memoryBuffer.writeInt( lastUpdateId );
     }
 
     @Override
-    public void writeStream( MemoryBuffer memoryBuffer )
+    public void writeStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
     {
-        super.writeStream( memoryBuffer );
+        super.writeStream( memoryBuffer, serializationFactory );
         lastUpdateId = memoryBuffer.readInt();
     }
 

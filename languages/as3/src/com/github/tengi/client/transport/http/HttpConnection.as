@@ -212,7 +212,7 @@ package com.github.tengi.client.transport.http
                 return;
             }
 
-            if ( getTimer() - lastLongPollTime < 100 )
+            if ( getTimer() - lastLongPollTime < 500 )
             {
                 var timer:Timer = new Timer( 100, 1 );
                 timer.addEventListener( TimerEvent.TIMER_COMPLETE, longPollingTimerFinished );

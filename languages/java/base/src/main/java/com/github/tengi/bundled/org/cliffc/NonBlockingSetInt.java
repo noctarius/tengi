@@ -40,6 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @since 1.5
  */
 
+@SuppressWarnings( { "restriction", "unused" } )
 public class NonBlockingSetInt
     extends AbstractSet<Integer>
     implements Serializable

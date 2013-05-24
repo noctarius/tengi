@@ -1,4 +1,5 @@
 package com.github.tengi;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -23,8 +24,8 @@ import com.github.tengi.buffer.MemoryBuffer;
 public interface Streamable
 {
 
-    void readStream( MemoryBuffer memoryBuffer );
+    void readStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory );
 
-    void writeStream( MemoryBuffer memoryBuffer );
+    void writeStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory );
 
 }

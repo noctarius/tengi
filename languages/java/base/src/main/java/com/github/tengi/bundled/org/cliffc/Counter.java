@@ -15,6 +15,7 @@ package com.github.tengi.bundled.org.cliffc;
  * @since 1.5
  */
 
+@SuppressWarnings( { "serial" } )
 public class Counter
     extends ConcurrentAutoTable
 {

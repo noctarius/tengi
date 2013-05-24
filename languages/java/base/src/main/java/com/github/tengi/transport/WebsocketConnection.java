@@ -19,7 +19,6 @@ package com.github.tengi.transport;
  * under the License.
  */
 
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 
@@ -51,12 +50,11 @@ public class WebsocketConnection
     @Override
     public <T extends Message> void sendMessage( T message, CompletionFuture<T> completionFuture )
     {
-        ByteBuf buffer = getByteBuf( 100 );
-        MemoryBuffer memoryBuffer = memoryBufferPool.pop( buffer );
+        MemoryBuffer memoryBuffer = memoryBufferPool.pop( 100 );
         try
         {
             prepareMessageBuffer( message, memoryBuffer );
-            getUnderlyingChannel().write( buffer );
+            getUnderlyingChannel().write( memoryBuffer );
 
             if ( completionFuture != null )
             {
@@ -80,12 +78,11 @@ public class WebsocketConnection
     public <T extends Streamable> void sendRawData( MemoryBuffer rawBuffer, final T metadata,
                                                     final CompletionFuture<T> completionFuture )
     {
-        ByteBuf buffer = getByteBuf( rawBuffer.writerIndex() + 20 );
-        MemoryBuffer memoryBuffer = memoryBufferPool.pop( buffer );
+        MemoryBuffer memoryBuffer = memoryBufferPool.pop( rawBuffer.writerIndex() + 20 );
         try
         {
             prepareMessageBuffer( rawBuffer, metadata, memoryBuffer );
-            getUnderlyingChannel().write( buffer );
+            getUnderlyingChannel().write( memoryBuffer );
 
             if ( completionFuture != null )
             {

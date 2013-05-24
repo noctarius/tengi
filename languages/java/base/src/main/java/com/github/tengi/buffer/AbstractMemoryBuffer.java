@@ -1,4 +1,5 @@
 package com.github.tengi.buffer;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -452,7 +453,7 @@ public abstract class AbstractMemoryBuffer
     {
         try
         {
-            uniqueId.writeStream( this );
+            uniqueId.writeStream( this, null );
         }
         catch ( Exception e )
         {

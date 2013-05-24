@@ -4,7 +4,6 @@
   <artifactId>tengi-java-base</artifactId>
   <name>tengi: Java Base API</name>
 
-
   <parent>
     <groupId>com.github.tengi</groupId>
     <artifactId>tengi-java-reactor</artifactId>

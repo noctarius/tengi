@@ -1,4 +1,5 @@
 package com.github.tengi.buffer;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -33,7 +34,7 @@ public class ByteBufMemoryBuffer
     {
     }
 
-    protected ByteBuf getByteBuffer()
+    public ByteBuf getByteBuffer()
     {
         return byteBuffer;
     }

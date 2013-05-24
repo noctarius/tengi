@@ -29,6 +29,7 @@ import java.lang.reflect.Field;
  * {@link java.util.concurrent.atomic.AtomicLongArray}, require extra memory ordering guarantees which are generally not
  * needed in these algorithms and are also expensive on most processors.
  */
+@SuppressWarnings( "restriction" )
 public class UnsafeUtil
 {
     private UnsafeUtil()

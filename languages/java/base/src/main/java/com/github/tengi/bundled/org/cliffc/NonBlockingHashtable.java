@@ -85,6 +85,7 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  * @since 1.5
  */
 
+@SuppressWarnings( { "unchecked", "rawtypes", "restriction", "unused" } )
 public class NonBlockingHashtable<TypeK, TypeV>
     extends Dictionary<TypeK, TypeV>
     implements ConcurrentMap<TypeK, TypeV>, Cloneable, Serializable

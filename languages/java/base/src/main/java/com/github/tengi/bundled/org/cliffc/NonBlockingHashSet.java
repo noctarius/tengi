@@ -20,6 +20,7 @@ import java.util.Set;
  */
 
 
+@SuppressWarnings( { "serial" } )
 public class NonBlockingHashSet<E>
     extends AbstractSet<E>
     implements Serializable

@@ -1,4 +1,5 @@
 package com.github.tengi;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -40,17 +41,14 @@ public class Message
 
     private byte type = MESSAGE_TYPE_DEFAULT;
 
-    public Message( SerializationFactory serializationFactory, Connection connection, byte type )
+    public Message( Connection connection, byte type )
     {
-        this.serializationFactory = serializationFactory;
         this.connection = connection;
         this.type = type;
     }
 
-    public Message( SerializationFactory serializationFactory, Connection connection, Streamable body,
-                    UniqueId messageId, byte type )
+    public Message( Connection connection, Streamable body, UniqueId messageId, byte type )
     {
-        this.serializationFactory = serializationFactory;
         this.connection = connection;
         this.messageId = messageId != null ? messageId : UniqueId.randomUniqueId();
         this.body = body;
@@ -63,22 +61,22 @@ public class Message
     }
 
     @Override
-    public void readStream( MemoryBuffer memoryBuffer )
+    public void readStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
     {
         this.messageId = new UniqueId();
-        this.messageId.readStream( memoryBuffer );
+        this.messageId.readStream( memoryBuffer, serializationFactory );
         if ( memoryBuffer.readByte() == 1 )
         {
             int classId = memoryBuffer.readShort();
             body = serializationFactory.instantiate( classId );
-            body.readStream( memoryBuffer );
+            body.readStream( memoryBuffer, serializationFactory );
         }
     }
 
     @Override
-    public void writeStream( MemoryBuffer memoryBuffer )
+    public void writeStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
     {
-        messageId.writeStream( memoryBuffer );
+        messageId.writeStream( memoryBuffer, serializationFactory );
         if ( body == null )
         {
             memoryBuffer.writeByte( (byte) 0 );
@@ -88,7 +86,7 @@ public class Message
             memoryBuffer.writeByte( (byte) 1 );
             short classId = serializationFactory.getClassIdentifier( body );
             memoryBuffer.writeShort( classId );
-            body.writeStream( memoryBuffer );
+            body.writeStream( memoryBuffer, serializationFactory );
         }
     }
 
@@ -120,20 +118,20 @@ public class Message
         Message message;
         if ( type == MESSAGE_TYPE_COMPOSITE )
         {
-            message = new CompositeMessage( serializationFactory, connection );
+            message = new CompositeMessage( connection );
         }
         else
         {
-            message = new Message( serializationFactory, connection, type );
+            message = new Message( connection, type );
         }
-        message.readStream( memoryBuffer );
+        message.readStream( memoryBuffer, serializationFactory );
         return message;
     }
 
-    public static void write( MemoryBuffer memoryBuffer, Message message )
+    public static void write( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory, Message message )
     {
         memoryBuffer.writeByte( message.type );
-        message.writeStream( memoryBuffer );
+        message.writeStream( memoryBuffer, serializationFactory );
     }
 
 }

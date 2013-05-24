@@ -1,4 +1,5 @@
 package com.github.tengi.service.messagecache;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -37,7 +38,6 @@ public class MessageQueue
 
     private final Deque<CachedMessage> cache = new LinkedBlockingDeque<>();
 
-    private final SerializationFactory serializationFactory;
 
     private final MemoryBufferPool memoryBufferPool;
 
@@ -49,7 +49,6 @@ public class MessageQueue
                          MemoryBufferPool memoryBufferPool )
     {
         this.connection = connection;
-        this.serializationFactory = serializationFactory;
         this.memoryBufferPool = memoryBufferPool;
     }
 
@@ -100,8 +99,7 @@ public class MessageQueue
 
         if ( cachedMessages.size() > 0 )
         {
-            return new PreserializedCompositeMessage( serializationFactory, connection, cachedMessages,
-                                                      UniqueId.randomUniqueId() );
+            return new PreserializedCompositeMessage( connection, cachedMessages, UniqueId.randomUniqueId() );
         }
         return null;
     }

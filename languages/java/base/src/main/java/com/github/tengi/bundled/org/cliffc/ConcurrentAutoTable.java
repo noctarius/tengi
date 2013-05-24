@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  * @since 1.5
  */
 
-
+@SuppressWarnings( { "serial", "restriction", "unused" } )
 public class ConcurrentAutoTable
     implements Serializable
 {

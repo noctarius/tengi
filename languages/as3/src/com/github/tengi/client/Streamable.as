@@ -18,6 +18,7 @@
  */
 package com.github.tengi.client
 {
+
     import com.github.tengi.client.buffer.MemoryBuffer;
 
     public interface Streamable

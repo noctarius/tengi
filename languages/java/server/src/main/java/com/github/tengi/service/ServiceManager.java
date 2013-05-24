@@ -1,4 +1,5 @@
 package com.github.tengi.service;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,23 +22,25 @@ package com.github.tengi.service;
 import com.github.tengi.Connection;
 import com.github.tengi.Message;
 import com.github.tengi.MessageListener;
+import com.github.tengi.SerializationFactory;
 import com.github.tengi.Streamable;
 import com.github.tengi.buffer.MemoryBuffer;
 import com.github.tengi.transport.polling.PollingConnection;
 import com.github.tengi.transport.polling.PollingMessage;
 
-public class ServiceManager
+public class ServiceManager<M extends Message>
     implements MessageListener
 {
 
-    private final Service<Message> service;
+    private final Service<M> service;
 
-    public ServiceManager( Service<Message> service )
+    public ServiceManager( Service<M> service, SerializationFactory serializationFactory )
     {
         this.service = service;
     }
 
     @Override
+    @SuppressWarnings( "unchecked" )
     public void messageReceived( Message message, Connection connection )
     {
         if ( message instanceof PollingMessage )
@@ -52,7 +55,7 @@ public class ServiceManager
         }
         else
         {
-            service.call( message, connection );
+            service.call( (M) message, connection );
         }
     }
 

@@ -1,4 +1,5 @@
 package com.github.tengi.service;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -23,10 +24,10 @@ import com.github.tengi.Message;
 import com.github.tengi.Streamable;
 import com.github.tengi.buffer.MemoryBuffer;
 
-public interface Service<V extends Message>
+public interface Service<M extends Message>
 {
 
-    void call( V request, Connection connection );
+    void call( M request, Connection connection );
 
     void call( MemoryBuffer request, Streamable metadata, Connection connection );
 

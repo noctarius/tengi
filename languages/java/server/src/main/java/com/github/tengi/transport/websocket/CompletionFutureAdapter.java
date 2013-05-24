@@ -1,4 +1,5 @@
-package com.github.tengi.transport;
+package com.github.tengi.transport.websocket;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,30 +19,38 @@ package com.github.tengi.transport;
  * under the License.
  */
 
+import com.github.tengi.CompletionFuture;
 import com.github.tengi.Connection;
-import com.github.tengi.Message;
-import com.github.tengi.MessageListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundMessageHandlerAdapter;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 
-class MessageListenerAdapter extends ChannelInboundMessageHandlerAdapter<Message>
+class CompletionFutureAdapter<T> implements ChannelFutureListener
 {
 
-    private final MessageListener messageListener;
+	private final CompletionFuture<T> completionFuture;
 
-    private final Connection connection;
+	private final Connection connection;
 
-    MessageListenerAdapter( MessageListener messageListener, Connection connection )
-    {
-        this.messageListener = messageListener;
-        this.connection = connection;
-    }
+	private final T message;
 
+	CompletionFutureAdapter(CompletionFuture<T> completionFuture, T message, Connection connection)
+	{
+		this.completionFuture = completionFuture;
+		this.connection = connection;
+		this.message = message;
+	}
 
-    @Override
-    public void messageReceived( ChannelHandlerContext ctx, Message msg )
-        throws Exception
-    {
-        messageListener.messageReceived( msg, connection );
-    }
+	@Override
+	public void operationComplete(ChannelFuture future) throws Exception
+	{
+		if (future.isSuccess())
+		{
+			completionFuture.onSuccess(message, connection);
+		}
+		else
+		{
+			completionFuture.onFailure(future.cause(), message, connection);
+		}
+	}
+
 }

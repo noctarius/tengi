@@ -1,6 +1,6 @@
 package com.github.tengi.test;
 
-import com.github.tengi.SerializationFactory;
+import com.github.tengi.Protocol;
 import com.github.tengi.Streamable;
 import com.github.tengi.buffer.MemoryBuffer;
 
@@ -33,14 +33,14 @@ public class Test
     }
 
     @Override
-    public void readStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
+    public void readStream( MemoryBuffer memoryBuffer, Protocol serializationFactory )
     {
         foo = memoryBuffer.readInt();
         bar = memoryBuffer.readString();
     }
 
     @Override
-    public void writeStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
+    public void writeStream( MemoryBuffer memoryBuffer, Protocol serializationFactory )
     {
         memoryBuffer.writeInt( foo );
         memoryBuffer.writeString( bar );

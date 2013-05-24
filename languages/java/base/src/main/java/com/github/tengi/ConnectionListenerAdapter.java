@@ -1,6 +1,6 @@
 package com.github.tengi;
 
-public class SimpleConnectionListener
+public class ConnectionListenerAdapter
     implements ConnectionListener
 {
 

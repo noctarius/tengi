@@ -38,7 +38,7 @@ public class Entity
         return "[entityId=" + entityId + ", " + "parentEntityId=" + parentEntityId + "]";
     }
 
-    public void writeStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
+    public void writeStream( MemoryBuffer memoryBuffer, Protocol protocol )
     {
         memoryBuffer.writeInt( entityId );
         memoryBuffer.writeInt( parentEntityId );
@@ -46,7 +46,7 @@ public class Entity
         memoryBuffer.writeInt( version );
     }
 
-    public void readStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
+    public void readStream( MemoryBuffer memoryBuffer, Protocol protocol )
     {
         this.entityId = memoryBuffer.readInt();
         this.parentEntityId = memoryBuffer.readInt();

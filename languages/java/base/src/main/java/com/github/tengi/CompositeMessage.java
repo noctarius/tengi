@@ -59,26 +59,26 @@ public class CompositeMessage
     }
 
     @Override
-    public void readStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
+    public void readStream( MemoryBuffer memoryBuffer, Protocol protocol )
     {
-        super.readStream( memoryBuffer, serializationFactory );
+        super.readStream( memoryBuffer, protocol );
 
         short length = memoryBuffer.readShort();
         messages = new ArrayList<>( length );
         for ( int i = 0; i < length; i++ )
         {
-            messages.add( Message.read( memoryBuffer, serializationFactory, connection ) );
+            messages.add( Message.read( memoryBuffer, protocol, connection ) );
         }
     }
 
     @Override
-    public void writeStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
+    public void writeStream( MemoryBuffer memoryBuffer, Protocol protocol )
     {
-        super.writeStream( memoryBuffer, serializationFactory );
+        super.writeStream( memoryBuffer, protocol );
         memoryBuffer.writeShort( (short) messages.size() );
         for ( int i = 0; i < messages.size(); i++ )
         {
-            messages.get( i ).writeStream( memoryBuffer, serializationFactory );
+            messages.get( i ).writeStream( memoryBuffer, protocol );
         }
     }
 

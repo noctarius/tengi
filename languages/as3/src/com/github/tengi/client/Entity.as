@@ -34,7 +34,7 @@ package com.github.tengi.client
             return "[entityId=" + entityId + ", " + "parentEntityId=" + parentEntityId + "]";
         }
 
-        public function writeStream( memoryBuffer:MemoryBuffer ):void
+        public function writeStream( memoryBuffer:MemoryBuffer, protocol:Protocol ):void
         {
             memoryBuffer.writeInt( entityId );
             memoryBuffer.writeInt( parentEntityId );
@@ -42,7 +42,7 @@ package com.github.tengi.client
             memoryBuffer.writeInt( version );
         }
 
-        public function readStream( memoryBuffer:MemoryBuffer ):void
+        public function readStream( memoryBuffer:MemoryBuffer, protocol:Protocol ):void
         {
             this.entityId = memoryBuffer.readInt();
             this.parentEntityId = memoryBuffer.readInt();

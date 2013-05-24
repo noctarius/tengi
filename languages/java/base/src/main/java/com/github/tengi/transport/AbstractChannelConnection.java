@@ -30,7 +30,7 @@ import com.github.tengi.Connection;
 import com.github.tengi.ConnectionConstants;
 import com.github.tengi.Message;
 import com.github.tengi.MessageListener;
-import com.github.tengi.SerializationFactory;
+import com.github.tengi.Protocol;
 import com.github.tengi.Streamable;
 import com.github.tengi.UniqueId;
 import com.github.tengi.buffer.ByteBufMemoryBuffer;
@@ -43,7 +43,7 @@ public abstract class AbstractChannelConnection
 
     private final ChannelInboundMessageHandlerAdapter<ByteBuf> messageDecoder = new TengiMemoryBufferDecoder();
 
-    protected final SerializationFactory serializationFactory;
+    protected final Protocol protocol;
 
     protected final MemoryBufferPool memoryBufferPool;
 
@@ -54,9 +54,9 @@ public abstract class AbstractChannelConnection
     private volatile MessageListener messageListener = null;
 
     protected AbstractChannelConnection( UniqueId connectionId, Channel channel, MemoryBufferPool memoryBufferPool,
-                                         SerializationFactory serializationFactory )
+                                         Protocol protocol )
     {
-        this.serializationFactory = serializationFactory;
+        this.protocol = protocol;
         this.memoryBufferPool = memoryBufferPool;
         this.connectionId = connectionId;
         this.channel = channel;
@@ -153,7 +153,7 @@ public abstract class AbstractChannelConnection
     protected void prepareMessageBuffer( Message message, MemoryBuffer memoryBuffer )
     {
         memoryBuffer.writeByte( ConnectionConstants.DATA_TYPE_MESSAGE );
-        Message.write( memoryBuffer, serializationFactory, message );
+        Message.write( memoryBuffer, protocol, message );
     }
 
     protected void prepareMessageBuffer( MemoryBuffer rawBuffer, Streamable metadata, MemoryBuffer memoryBuffer )
@@ -173,8 +173,8 @@ public abstract class AbstractChannelConnection
         else
         {
             memoryBuffer.writeByte( (byte) 1 );
-            memoryBuffer.writeShort( serializationFactory.getClassIdentifier( streamable ) );
-            streamable.writeStream( memoryBuffer, serializationFactory );
+            memoryBuffer.writeShort( protocol.getClassIdentifier( streamable ) );
+            streamable.writeStream( memoryBuffer, protocol );
         }
     }
 
@@ -183,8 +183,8 @@ public abstract class AbstractChannelConnection
     {
         if ( memoryBuffer.readByte() == 1 )
         {
-            S streamable = (S) serializationFactory.instantiate( memoryBuffer.readShort() );
-            streamable.readStream( memoryBuffer, serializationFactory );
+            S streamable = (S) protocol.instantiate( memoryBuffer.readShort() );
+            streamable.readStream( memoryBuffer, protocol );
             return streamable;
         }
         return null;
@@ -226,7 +226,7 @@ public abstract class AbstractChannelConnection
 
         private void decodeMessageFrame( MemoryBuffer memoryBuffer )
         {
-            Message message = Message.read( memoryBuffer, serializationFactory, connection );
+            Message message = Message.read( memoryBuffer, protocol, connection );
             if ( messageListener != null )
             {
                 messageListener.messageReceived( message, connection );

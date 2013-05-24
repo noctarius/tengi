@@ -31,8 +31,6 @@ package com.github.tengi.client
 
         public static const MESSAGE_TYPE_COMPOSITE:int = 2;
 
-        protected var _serializationFactory:SerializationFactory;
-
         protected var _connection:ClientConnection;
 
         private var _body:Streamable;
@@ -41,10 +39,9 @@ package com.github.tengi.client
 
         private var _type:int = MESSAGE_TYPE_DEFAULT;
 
-        public function Message( serializationFactory:SerializationFactory, connection:ClientConnection,
-                                 body:Streamable = null, messageId:UniqueId = null, type:int = 0 )
+        public function Message( connection:ClientConnection, body:Streamable = null, messageId:UniqueId = null,
+                                 type:int = 0 )
         {
-            this._serializationFactory = serializationFactory;
             this._connection = connection;
             this._messageId = messageId != null ? messageId : UniqueId.randomUniqueId();
             this._body = body;
@@ -56,22 +53,22 @@ package com.github.tengi.client
             return "Message [messageId=" + _messageId + ", body=" + (_body != null ? _body.toString() : "null") + "]";
         }
 
-        public function readStream( memoryBuffer:MemoryBuffer ):void
+        public function readStream( memoryBuffer:MemoryBuffer, protocol:Protocol ):void
         {
             this._messageId = new UniqueId();
-            this._messageId.readStream( memoryBuffer );
+            this._messageId.readStream( memoryBuffer, protocol );
             this._type = memoryBuffer.readByte();
             if ( memoryBuffer.readByte() == 1 )
             {
                 var classId:int = memoryBuffer.readShort();
-                _body = _serializationFactory.instantiate( classId );
-                _body.readStream( memoryBuffer );
+                _body = protocol.instantiate( classId );
+                _body.readStream( memoryBuffer, protocol );
             }
         }
 
-        public function writeStream( memoryBuffer:MemoryBuffer ):void
+        public function writeStream( memoryBuffer:MemoryBuffer, protocol:Protocol ):void
         {
-            _messageId.writeStream( memoryBuffer )
+            _messageId.writeStream( memoryBuffer, protocol )
             memoryBuffer.writeByte( _type );
             if ( body == null )
             {
@@ -80,9 +77,9 @@ package com.github.tengi.client
             else
             {
                 memoryBuffer.writeByte( 1 );
-                var classId:int = _serializationFactory.getClassIdentifier( _body );
+                var classId:int = protocol.getClassIdentifier( _body );
                 memoryBuffer.writeShort( classId );
-                _body.writeStream( memoryBuffer );
+                _body.writeStream( memoryBuffer, protocol );
             }
         }
 
@@ -106,29 +103,28 @@ package com.github.tengi.client
             return _type;
         }
 
-        public static function read( memoryBuffer:MemoryBuffer, serializationFactory:SerializationFactory,
-                                     connection:ClientConnection ):Message
+        public static function read( memoryBuffer:MemoryBuffer, protocol:Protocol, connection:ClientConnection ):Message
         {
             var type:int = memoryBuffer.readByte();
 
             var message:Message;
             if ( type == MESSAGE_TYPE_COMPOSITE )
             {
-                message = new CompositeMessage( serializationFactory, connection );
+                message = new CompositeMessage( connection );
             }
             else
             {
-                message = new Message( serializationFactory, connection );
+                message = new Message( connection );
             }
 
-            message.readStream( memoryBuffer );
+            message.readStream( memoryBuffer, protocol );
             return message;
         }
 
-        public static function write( memoryBuffer:MemoryBuffer, message:Message ):void
+        public static function write( memoryBuffer:MemoryBuffer, message:Message, protocol:Protocol ):void
         {
             memoryBuffer.writeByte( message._type );
-            message.writeStream( memoryBuffer );
+            message.writeStream( memoryBuffer, protocol );
         }
 
     }

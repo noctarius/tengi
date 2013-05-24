@@ -323,7 +323,7 @@ package com.github.tengi.client.buffer
         public function writeUniqueId( value:UniqueId ):void
         {
             _byteArray.position = _writerIndex;
-            value.writeStream( this );
+            value.writeStream( this, null );
             _writerIndex += 16;
         }
 

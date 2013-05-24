@@ -59,13 +59,13 @@ package com.github.tengi.client
             return true;
         }
 
-        public function writeStream( memoryBuffer:MemoryBuffer ):void
+        public function writeStream( memoryBuffer:MemoryBuffer, protocol:Protocol ):void
         {
             uniqueIdData.position = 0;
             memoryBuffer.writeBytes( uniqueIdData, 0, 16 );
         }
 
-        public function readStream( memoryBuffer:MemoryBuffer ):void
+        public function readStream( memoryBuffer:MemoryBuffer, protocol:Protocol ):void
         {
             uniqueIdData.clear();
             memoryBuffer.readBytes( uniqueIdData, 0, 16 );
@@ -92,7 +92,7 @@ package com.github.tengi.client
         public static function readFromStream( memoryBuffer:MemoryBuffer ):UniqueId
         {
             var uniqueId:UniqueId = new UniqueId();
-            uniqueId.readStream( memoryBuffer );
+            uniqueId.readStream( memoryBuffer, null );
             return uniqueId;
         }
 

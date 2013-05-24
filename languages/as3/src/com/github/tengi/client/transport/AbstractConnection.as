@@ -19,11 +19,12 @@
 package com.github.tengi.client.transport
 {
     import com.github.tengi.client.ClientConnection;
+    import com.github.tengi.client.ConnectionConfiguration;
     import com.github.tengi.client.ConnectionConstants;
     import com.github.tengi.client.LinkedMessageCallback;
     import com.github.tengi.client.Message;
     import com.github.tengi.client.MessageListener;
-    import com.github.tengi.client.SerializationFactory;
+    import com.github.tengi.client.Protocol;
     import com.github.tengi.client.Streamable;
     import com.github.tengi.client.buffer.MemoryBuffer;
     import com.github.tengi.client.buffer.MemoryBufferPool;
@@ -35,7 +36,7 @@ package com.github.tengi.client.transport
     public class AbstractConnection extends EventDispatcher
     {
 
-        private var _serializationFactory:SerializationFactory;
+        private var _protocol:Protocol;
 
         private var _memoryBufferPool:MemoryBufferPool;
 
@@ -46,16 +47,16 @@ package com.github.tengi.client.transport
         private const _linkedMessages:Dictionary = new Dictionary();
 
         public function AbstractConnection( connection:ClientConnection, memoryBufferPool:MemoryBufferPool,
-                                            serializationFactory:SerializationFactory )
+                                            configuration:ConnectionConfiguration )
         {
             this._connection = connection;
-            this._serializationFactory = serializationFactory;
+            this._protocol = configuration.protocol;
             this._memoryBufferPool = memoryBufferPool;
         }
 
-        protected final function get serializationFactory():SerializationFactory
+        protected final function get protocol():Protocol
         {
-            return _serializationFactory;
+            return _protocol;
         }
 
         protected final function get memoryBufferPool():MemoryBufferPool
@@ -120,7 +121,7 @@ package com.github.tengi.client.transport
                 memoryBuffer.writeInt( 0 );
 
                 memoryBuffer.writeByte( ConnectionConstants.DATA_TYPE_MESSAGE );
-                Message.write( memoryBuffer, message );
+                Message.write( memoryBuffer, message, _protocol );
 
                 var writerIndex:int = memoryBuffer.writerIndex;
                 memoryBuffer.writerIndex = 0;
@@ -166,8 +167,8 @@ package com.github.tengi.client.transport
             else
             {
                 memoryBuffer.writeByte( 1 );
-                memoryBuffer.writeShort( _serializationFactory.getClassIdentifier( streamable ) );
-                streamable.writeStream( memoryBuffer );
+                memoryBuffer.writeShort( _protocol.getClassIdentifier( streamable ) );
+                streamable.writeStream( memoryBuffer, _protocol );
             }
         }
 
@@ -176,8 +177,8 @@ package com.github.tengi.client.transport
             if ( memoryBuffer.readByte() == 1 )
             {
                 var classId:int = memoryBuffer.readShort();
-                var streamable:Streamable = _serializationFactory.instantiate( classId );
-                streamable.readStream( memoryBuffer );
+                var streamable:Streamable = _protocol.instantiate( classId );
+                streamable.readStream( memoryBuffer, _protocol );
                 return streamable;
             }
             return null;

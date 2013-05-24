@@ -28,32 +28,32 @@ package com.github.tengi.client
 
         private var _messages:Vector.<Message>;
 
-        public function CompositeMessage( serializationFactory:SerializationFactory, connection:ClientConnection,
-                                          messages:Vector.<Message> = null, messageId:UniqueId = null )
+        public function CompositeMessage( connection:ClientConnection, messages:Vector.<Message> = null,
+                                          messageId:UniqueId = null )
         {
-            super( serializationFactory, connection, null, messageId, Message.MESSAGE_TYPE_COMPOSITE );
+            super( connection, null, messageId, Message.MESSAGE_TYPE_COMPOSITE );
             this._messages = messages;
         }
 
-        override public function readStream( memoryBuffer:MemoryBuffer ):void
+        override public function readStream( memoryBuffer:MemoryBuffer, protocol:Protocol ):void
         {
-            super.readStream( memoryBuffer );
+            super.readStream( memoryBuffer, protocol );
             memoryBuffer.writeShort( _messages.length );
             for ( var i:int = 0; i < _messages.length; i++ )
             {
-                _messages[i].writeStream( memoryBuffer );
+                _messages[i].writeStream( memoryBuffer, protocol );
             }
         }
 
-        override public function writeStream( memoryBuffer:MemoryBuffer ):void
+        override public function writeStream( memoryBuffer:MemoryBuffer, protocol:Protocol ):void
         {
-            super.writeStream( memoryBuffer );
+            super.writeStream( memoryBuffer, protocol );
 
             _messages = new Vector.<Message>();
             var length:int = memoryBuffer.readShort();
             for ( var i:int = 0; i < length; i++ )
             {
-                var message:Message = Message.read( memoryBuffer, _serializationFactory, connection );
+                var message:Message = Message.read( memoryBuffer, protocol, connection );
                 _messages.push( message );
             }
         }

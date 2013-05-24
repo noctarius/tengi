@@ -21,7 +21,7 @@ package com.github.tengi.transport.polling;
 
 import com.github.tengi.Connection;
 import com.github.tengi.Message;
-import com.github.tengi.SerializationFactory;
+import com.github.tengi.Protocol;
 import com.github.tengi.UniqueId;
 import com.github.tengi.buffer.MemoryBuffer;
 
@@ -43,16 +43,16 @@ public class PollingMessage
     }
 
     @Override
-    public void readStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
+    public void readStream( MemoryBuffer memoryBuffer, Protocol protocol )
     {
-        super.readStream( memoryBuffer, serializationFactory );
+        super.readStream( memoryBuffer, protocol );
         memoryBuffer.writeInt( lastUpdateId );
     }
 
     @Override
-    public void writeStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
+    public void writeStream( MemoryBuffer memoryBuffer, Protocol protocol )
     {
-        super.writeStream( memoryBuffer, serializationFactory );
+        super.writeStream( memoryBuffer, protocol );
         lastUpdateId = memoryBuffer.readInt();
     }
 

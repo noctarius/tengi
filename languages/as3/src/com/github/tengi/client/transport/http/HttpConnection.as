@@ -23,7 +23,6 @@ package com.github.tengi.client.transport.http
     import com.github.tengi.client.ConnectionConstants;
     import com.github.tengi.client.LongPollingRequestFactory;
     import com.github.tengi.client.Message;
-    import com.github.tengi.client.SerializationFactory;
     import com.github.tengi.client.Streamable;
     import com.github.tengi.client.TransportType;
     import com.github.tengi.client.UniqueId;
@@ -74,10 +73,9 @@ package com.github.tengi.client.transport.http
 
         private var lastLongPollTime:Number = getTimer();
 
-        public function HttpConnection( configuration:ConnectionConfiguration, contentType:String,
-                                        memoryBufferPool:MemoryBufferPool, serializationFactory:SerializationFactory )
+        public function HttpConnection( configuration:ConnectionConfiguration, memoryBufferPool:MemoryBufferPool )
         {
-            super( this, memoryBufferPool, serializationFactory );
+            super( this, memoryBufferPool, configuration );
 
             this.contentType = contentType;
             this.contextPath = configuration.httpContext;
@@ -201,8 +199,9 @@ package com.github.tengi.client.transport.http
         public function prepareMessage( body:Streamable, longPolling:Boolean = false ):Message
         {
             var messageId:UniqueId = UniqueId.randomUniqueId();
-            return longPolling ? new PollingMessage( serializationFactory, this, messageId, lastUpdateId )
-                    : new Message( serializationFactory, this, body, messageId, Message.MESSAGE_TYPE_DEFAULT );
+            return longPolling ? new PollingMessage( this, messageId, lastUpdateId ) : new Message( this, body,
+                                                                                                    messageId,
+                                                                                                    Message.MESSAGE_TYPE_DEFAULT );
         }
 
         public function startLongPollingCycle():void
@@ -236,7 +235,7 @@ package com.github.tengi.client.transport.http
             var memoryBuffer:MemoryBuffer = memoryBufferPool.pop( output );
             try
             {
-                Message.write( memoryBuffer, message );
+                Message.write( memoryBuffer, message, protocol );
             }
             finally
             {
@@ -369,7 +368,7 @@ package com.github.tengi.client.transport.http
                 var dataType:int = memoryBuffer.readByte();
                 if ( dataType == ConnectionConstants.DATA_TYPE_MESSAGE )
                 {
-                    var message:Message = Message.read( memoryBuffer, serializationFactory, this );
+                    var message:Message = Message.read( memoryBuffer, protocol, this );
 
                     requests[message.messageId] = null;
 

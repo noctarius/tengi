@@ -20,7 +20,7 @@ package com.github.tengi.client.transport.polling
 {
     import com.github.tengi.client.ClientConnection;
     import com.github.tengi.client.Message;
-    import com.github.tengi.client.SerializationFactory;
+    import com.github.tengi.client.Protocol;
     import com.github.tengi.client.UniqueId;
     import com.github.tengi.client.buffer.MemoryBuffer;
 
@@ -29,22 +29,21 @@ package com.github.tengi.client.transport.polling
 
         private var _lastUpdateId:int;
 
-        public function PollingMessage( serializationFactory:SerializationFactory, connection:ClientConnection,
-                                        messageId:UniqueId = null, lastUpdateId:int = -1 )
+        public function PollingMessage( connection:ClientConnection, messageId:UniqueId = null, lastUpdateId:int = -1 )
         {
-            super( serializationFactory, connection, null, messageId, Message.MESSAGE_TYPE_LONG_POLLING );
+            super( connection, null, messageId, Message.MESSAGE_TYPE_LONG_POLLING );
             this._lastUpdateId = lastUpdateId;
         }
 
-        override public function readStream( memoryBuffer:MemoryBuffer ):void
+        override public function readStream( memoryBuffer:MemoryBuffer, protocol:Protocol ):void
         {
-            super.readStream( memoryBuffer );
+            super.readStream( memoryBuffer, protocol );
             _lastUpdateId = memoryBuffer.readInt();
         }
 
-        override public function writeStream( memoryBuffer:MemoryBuffer ):void
+        override public function writeStream( memoryBuffer:MemoryBuffer, protocol:Protocol ):void
         {
-            super.writeStream( memoryBuffer );
+            super.writeStream( memoryBuffer, protocol );
             memoryBuffer.writeInt( _lastUpdateId );
         }
 

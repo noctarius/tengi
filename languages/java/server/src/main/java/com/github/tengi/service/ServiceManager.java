@@ -22,7 +22,7 @@ package com.github.tengi.service;
 import com.github.tengi.Connection;
 import com.github.tengi.Message;
 import com.github.tengi.MessageListener;
-import com.github.tengi.SerializationFactory;
+import com.github.tengi.Protocol;
 import com.github.tengi.Streamable;
 import com.github.tengi.buffer.MemoryBuffer;
 import com.github.tengi.transport.polling.PollingConnection;
@@ -34,7 +34,7 @@ public class ServiceManager<M extends Message>
 
     private final Service<M> service;
 
-    public ServiceManager( Service<M> service, SerializationFactory serializationFactory )
+    public ServiceManager( Service<M> service, Protocol serializationFactory )
     {
         this.service = service;
     }

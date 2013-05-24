@@ -24,8 +24,8 @@ import com.github.tengi.buffer.MemoryBuffer;
 public interface Streamable
 {
 
-    void readStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory );
+    void readStream( MemoryBuffer memoryBuffer, Protocol protocol );
 
-    void writeStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory );
+    void writeStream( MemoryBuffer memoryBuffer, Protocol protocol );
 
 }

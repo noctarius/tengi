@@ -21,7 +21,7 @@ package com.github.tengi.service.messagecache;
 
 import com.github.tengi.Connection;
 import com.github.tengi.Message;
-import com.github.tengi.SerializationFactory;
+import com.github.tengi.Protocol;
 import com.github.tengi.UniqueId;
 import com.github.tengi.buffer.MemoryBuffer;
 import com.github.tengi.buffer.MemoryBufferPool;
@@ -45,7 +45,7 @@ public class MessageQueue
 
     private final Connection connection;
 
-    public MessageQueue( Connection connection, SerializationFactory serializationFactory,
+    public MessageQueue( Connection connection, Protocol serializationFactory,
                          MemoryBufferPool memoryBufferPool )
     {
         this.connection = connection;

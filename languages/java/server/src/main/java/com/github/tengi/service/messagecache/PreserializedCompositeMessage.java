@@ -21,7 +21,7 @@ package com.github.tengi.service.messagecache;
 
 import com.github.tengi.Connection;
 import com.github.tengi.Message;
-import com.github.tengi.SerializationFactory;
+import com.github.tengi.Protocol;
 import com.github.tengi.UniqueId;
 import com.github.tengi.buffer.MemoryBuffer;
 
@@ -41,14 +41,14 @@ class PreserializedCompositeMessage
     }
 
     @Override
-    public void readStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
+    public void readStream( MemoryBuffer memoryBuffer, Protocol serializationFactory )
     {
         throw new UnsupportedOperationException(
                                                  "This type of CompositeMessage is only used for sending preserialized data" );
     }
 
     @Override
-    public void writeStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
+    public void writeStream( MemoryBuffer memoryBuffer, Protocol serializationFactory )
     {
         super.writeStream( memoryBuffer, serializationFactory );
         memoryBuffer.writeShort( (short) messages.size() );

@@ -25,7 +25,7 @@ import io.netty.channel.ChannelFutureListener;
 
 import com.github.tengi.CompletionFuture;
 import com.github.tengi.Message;
-import com.github.tengi.SerializationFactory;
+import com.github.tengi.Protocol;
 import com.github.tengi.Streamable;
 import com.github.tengi.TransportType;
 import com.github.tengi.UniqueId;
@@ -45,7 +45,7 @@ public class HttpConnection
     private volatile Channel pollingChannel;
 
     public HttpConnection( UniqueId connectionId, MemoryBufferPool memoryBufferPool,
-                           SerializationFactory serializationFactory )
+                           Protocol serializationFactory )
     {
         super( connectionId, null, memoryBufferPool, serializationFactory );
         this.messageQueue = new MessageQueue( this, serializationFactory, memoryBufferPool );

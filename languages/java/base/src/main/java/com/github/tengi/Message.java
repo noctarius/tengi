@@ -31,8 +31,6 @@ public class Message
 
     public static final byte MESSAGE_TYPE_COMPOSITE = 2;
 
-    protected SerializationFactory serializationFactory;
-
     protected Connection connection;
 
     private Streamable body;
@@ -61,22 +59,22 @@ public class Message
     }
 
     @Override
-    public void readStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
+    public void readStream( MemoryBuffer memoryBuffer, Protocol protocol )
     {
         this.messageId = new UniqueId();
-        this.messageId.readStream( memoryBuffer, serializationFactory );
+        this.messageId.readStream( memoryBuffer, protocol );
         if ( memoryBuffer.readByte() == 1 )
         {
             int classId = memoryBuffer.readShort();
-            body = serializationFactory.instantiate( classId );
-            body.readStream( memoryBuffer, serializationFactory );
+            body = protocol.instantiate( classId );
+            body.readStream( memoryBuffer, protocol );
         }
     }
 
     @Override
-    public void writeStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
+    public void writeStream( MemoryBuffer memoryBuffer, Protocol protocol )
     {
-        messageId.writeStream( memoryBuffer, serializationFactory );
+        messageId.writeStream( memoryBuffer, protocol );
         if ( body == null )
         {
             memoryBuffer.writeByte( (byte) 0 );
@@ -84,9 +82,9 @@ public class Message
         else
         {
             memoryBuffer.writeByte( (byte) 1 );
-            short classId = serializationFactory.getClassIdentifier( body );
+            short classId = protocol.getClassIdentifier( body );
             memoryBuffer.writeShort( classId );
-            body.writeStream( memoryBuffer, serializationFactory );
+            body.writeStream( memoryBuffer, protocol );
         }
     }
 
@@ -110,8 +108,7 @@ public class Message
         return type;
     }
 
-    public static Message read( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory,
-                                Connection connection )
+    public static Message read( MemoryBuffer memoryBuffer, Protocol protocol, Connection connection )
     {
         byte type = memoryBuffer.readByte();
 
@@ -124,14 +121,14 @@ public class Message
         {
             message = new Message( connection, type );
         }
-        message.readStream( memoryBuffer, serializationFactory );
+        message.readStream( memoryBuffer, protocol );
         return message;
     }
 
-    public static void write( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory, Message message )
+    public static void write( MemoryBuffer memoryBuffer, Protocol protocol, Message message )
     {
         memoryBuffer.writeByte( message.type );
-        message.writeStream( memoryBuffer, serializationFactory );
+        message.writeStream( memoryBuffer, protocol );
     }
 
 }

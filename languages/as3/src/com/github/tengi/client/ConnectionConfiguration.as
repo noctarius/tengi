@@ -21,14 +21,27 @@ package com.github.tengi.client
     public class ConnectionConfiguration
     {
 
+        private var _protocol:Protocol;
+
         private var _port:int = 80;
         private var _host:String = "localhost";
         private var _wssContext:String = "/wss";
         private var _httpContext:String = "/http";
         private var _ssl:Boolean = true;
 
-        public function ConnectionConfiguration()
+        public function ConnectionConfiguration( protocol:Protocol )
         {
+            this._protocol = protocol;
+        }
+
+        public function get mimeType():String
+        {
+            return _protocol.mimeType;
+        }
+
+        public function get protocol():Protocol
+        {
+            return _protocol;
         }
 
         public function get port():int

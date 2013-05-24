@@ -1,6 +1,6 @@
 package com.github.tengi.test;
 
-import com.github.tengi.SerializationFactory;
+import com.github.tengi.Protocol;
 import com.github.tengi.Streamable;
 import com.github.tengi.buffer.MemoryBuffer;
 
@@ -11,7 +11,7 @@ public class Request
     private Streamable data;
 
     @Override
-    public void readStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
+    public void readStream( MemoryBuffer memoryBuffer, Protocol serializationFactory )
     {
         if ( memoryBuffer.readByte() == 1 )
         {
@@ -22,7 +22,7 @@ public class Request
     }
 
     @Override
-    public void writeStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
+    public void writeStream( MemoryBuffer memoryBuffer, Protocol serializationFactory )
     {
         if ( data == null )
         {

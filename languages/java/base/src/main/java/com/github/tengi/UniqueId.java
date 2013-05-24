@@ -35,13 +35,13 @@ public class UniqueId
     private final byte[] data = new byte[16];
 
     @Override
-    public void readStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
+    public void readStream( MemoryBuffer memoryBuffer, Protocol protocol )
     {
         memoryBuffer.readBytes( data, 0, 16 );
     }
 
     @Override
-    public void writeStream( MemoryBuffer memoryBuffer, SerializationFactory serializationFactory )
+    public void writeStream( MemoryBuffer memoryBuffer, Protocol protocol )
     {
         memoryBuffer.writeBytes( data, 0, 16 );
     }

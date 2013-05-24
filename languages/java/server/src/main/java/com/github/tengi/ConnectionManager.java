@@ -23,16 +23,18 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.channel.udt.nio.NioUdtProvider;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.channels.spi.SelectorProvider;
 import java.security.NoSuchAlgorithmException;
 import java.util.EnumSet;
@@ -46,6 +48,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
+import org.apache.log4j.Logger;
 import org.eclipse.jetty.npn.NextProtoNego;
 
 import com.github.tengi.transport.protocol.NGNServerProvider;
@@ -56,12 +59,14 @@ import com.github.tengi.utils.NamedThreadFactory;
 public class ConnectionManager
 {
 
-    private final EnumSet<TransportType> SUPPORTED_TRANSPORT_TYPES = EnumSet.of( TransportType.NioTcpSocket,
-                                                                                 TransportType.NioUdpSocket,
-                                                                                 TransportType.SPDY,
-                                                                                 TransportType.WebSocket,
-                                                                                 TransportType.HttpLongPolling,
-                                                                                 TransportType.HttpPolling );
+    private static final Logger LOGGER = Logger.getLogger( ConnectionManager.class );
+
+    private static final EnumSet<TransportType> SUPPORTED_TRANSPORT_TYPES = EnumSet.of( TransportType.NioTcpSocket,
+                                                                                        TransportType.NioUdpSocket,
+                                                                                        TransportType.SPDY,
+                                                                                        TransportType.WebSocket,
+                                                                                        TransportType.HttpLongPolling,
+                                                                                        TransportType.HttpPolling );
 
     private final Map<UniqueId, Connection> connections = new HashMap<UniqueId, Connection>();
 
@@ -69,7 +74,7 @@ public class ConnectionManager
 
     private final AtomicBoolean shutdown = new AtomicBoolean();
 
-    private final SerializationFactory serializationFactory;
+    private final Protocol protocol;
 
     private final ConnectionListener connectionListener;
 
@@ -89,37 +94,91 @@ public class ConnectionManager
 
     private final SSLEngine sslEngine;
 
-    public ConnectionManager( String contentType, ConnectionListener connectionListener,
-                              SerializationFactory serializationFactory )
-        throws NoSuchAlgorithmException
+    public ConnectionManager( String contentType, ConnectionListener connectionListener, Protocol protocol )
     {
         this.connectionListener = connectionListener;
-        this.serializationFactory = serializationFactory;
+        this.protocol = protocol;
         this.contentType = contentType;
 
-        this.sslContext = SSLContext.getDefault();
-        this.sslEngine = sslContext.createSSLEngine();
+        try
+        {
+            this.sslContext = SSLContext.getDefault();
+            this.sslEngine = sslContext.createSSLEngine();
+            NextProtoNego.put( sslEngine, new NGNServerProvider() );
+        }
+        catch ( NoSuchAlgorithmException e )
+        {
+            throw new RuntimeException( "Could not startup NGN service", e );
+        }
+
+        this.tcpAcceptorGroup = buildEventLoopGroup( 4, "TCP-Acceptor" );
+        this.tcpProcessorGroup = buildEventLoopGroup( 20, "TCP-Processor" );
+
+        this.udpProcessorGroup = buildEventLoopGroup( 10, "UDP-Processor" );
+
+        this.tcpServerBootstrap = buildTcpSocket( tcpAcceptorGroup, tcpProcessorGroup );
+        this.udpServerBootstrap = buildUdpSocket( udpProcessorGroup );
+    }
+
+    public ConnectionManager( String contentType, ConnectionListener connectionListener, Protocol protocol,
+                              SSLContext sslContext, SSLEngine sslEngine )
+    {
+        this.connectionListener = connectionListener;
+        this.protocol = protocol;
+        this.contentType = contentType;
+
+        this.sslContext = sslContext;
+        this.sslEngine = sslEngine;
         NextProtoNego.put( sslEngine, new NGNServerProvider() );
 
         this.tcpAcceptorGroup = buildEventLoopGroup( 4, "TCP-Acceptor" );
         this.tcpProcessorGroup = buildEventLoopGroup( 20, "TCP-Processor" );
 
-        this.udpProcessorGroup = buildEventLoopGroup( 10, "UDP-Processor", NioUdtProvider.MESSAGE_PROVIDER );
+        this.udpProcessorGroup = buildEventLoopGroup( 10, "UDP-Processor" );
 
         this.tcpServerBootstrap = buildTcpSocket( tcpAcceptorGroup, tcpProcessorGroup );
         this.udpServerBootstrap = buildUdpSocket( udpProcessorGroup );
+    }
+
+    public void bind( int port, String address )
+        throws UnknownHostException
+    {
+        bind0( port, InetAddress.getByName( address ) );
+    }
+
+    public void bind( int port, InetAddress address )
+    {
+        bind0( port, address );
     }
 
     public void bind( int port, InetAddress[] addresses )
     {
         for ( InetAddress address : addresses )
         {
-            ChannelFuture future = tcpServerBootstrap.bind( address, port );
-            channelGroup.add( future.channel() );
-
-            future = udpServerBootstrap.bind( address, port );
-            channelGroup.add( future.channel() );
+            bind0( port, address );
         }
+    }
+
+    private void bind0( int port, InetAddress address )
+    {
+        ChannelFutureListener listener = new ChannelFutureListener()
+        {
+
+            @Override
+            public void operationComplete( ChannelFuture future )
+                throws Exception
+            {
+                Channel channel = future.channel();
+                channelGroup.add( channel );
+                LOGGER.info( "Registered " + channel.toString() );
+            }
+        };
+
+        ChannelFuture tcpFuture = tcpServerBootstrap.bind( address, port );
+        tcpFuture.addListener( listener );
+
+        ChannelFuture udpFuture = udpServerBootstrap.bind( address, port );
+        udpFuture.addListener( listener );
     }
 
     public Connection getConnectionByConnectionId( UniqueId connectionId )
@@ -223,8 +282,8 @@ public class ConnectionManager
     private Bootstrap buildUdpSocket( EventLoopGroup udpProcessorGroup )
     {
         Bootstrap bootstrap = new Bootstrap();
-        bootstrap.group( udpProcessorGroup ).channelFactory( NioUdtProvider.MESSAGE_ACCEPTOR );
-        bootstrap.option( ChannelOption.SO_BACKLOG, 10 ).handler( new TengiUdpRequestHandler( this ) );
+        bootstrap.group( udpProcessorGroup ).channel( NioDatagramChannel.class );
+        bootstrap.option( ChannelOption.UDP_RECEIVE_PACKET_SIZE, 65535 ).handler( new TengiUdpRequestHandler( this ) );
         return bootstrap;
     }
 }

@@ -1,12 +1,12 @@
 package com.github.tengi.test;
 
 import com.github.tengi.Entity;
-import com.github.tengi.SerializationFactory;
+import com.github.tengi.Protocol;
 import com.github.tengi.Streamable;
 import com.github.tengi.buffer.MemoryBuffer;
 
 public class TestSerializationFactory
-    implements SerializationFactory
+    implements Protocol
 {
 
     @Override
@@ -52,6 +52,12 @@ public class TestSerializationFactory
     public Entity readEntity( MemoryBuffer memoryBuffer, int classId )
     {
         return null;
+    }
+
+    @Override
+    public String getMimeType()
+    {
+        return "binary/tengi";
     }
 
 }

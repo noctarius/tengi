@@ -24,7 +24,7 @@ import io.netty.channel.ChannelFuture;
 
 import com.github.tengi.CompletionFuture;
 import com.github.tengi.Message;
-import com.github.tengi.SerializationFactory;
+import com.github.tengi.Protocol;
 import com.github.tengi.Streamable;
 import com.github.tengi.TransportType;
 import com.github.tengi.UniqueId;
@@ -37,7 +37,7 @@ public class WebsocketConnection
 {
 
     public WebsocketConnection( UniqueId connectionId, Channel channel, MemoryBufferPool memoryBufferPool,
-                                SerializationFactory serializationFactory )
+                                Protocol serializationFactory )
     {
         super( connectionId, channel, memoryBufferPool, serializationFactory );
     }

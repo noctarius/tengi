@@ -18,7 +18,7 @@
  */
 package com.github.tengi.client
 {
-    public class SimpleConnectionListener implements ConnectionListener
+    public class ConnectionListenerAdapter implements ConnectionListener
     {
         public function onHandshake( connection:ClientConnection ):void
         {

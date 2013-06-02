@@ -34,7 +34,7 @@ public class ServiceManager<M extends Message>
 
     private final Service<M> service;
 
-    public ServiceManager( Service<M> service, Protocol serializationFactory )
+    public ServiceManager( Service<M> service, Protocol protocol )
     {
         this.service = service;
     }

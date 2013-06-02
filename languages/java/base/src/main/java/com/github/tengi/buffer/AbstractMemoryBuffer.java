@@ -309,9 +309,9 @@ public abstract class AbstractMemoryBuffer
     }
 
     @Override
-    public void writeByte( byte value )
+    public void writeByte( int value )
     {
-        writeByte( writerIndex++, value );
+        writeByte( writerIndex++, (byte) value );
     }
 
     @Override

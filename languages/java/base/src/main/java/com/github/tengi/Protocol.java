@@ -24,13 +24,13 @@ import com.github.tengi.buffer.MemoryBuffer;
 public interface Protocol
 {
 
-    Streamable instantiate( int classId );
+    <S extends Streamable> S instantiate( short classId );
 
     short getClassIdentifier( Streamable streamable );
 
-    boolean isEntity( int classId );
+    boolean isEntity( short classId );
 
-    Entity readEntity( MemoryBuffer memoryBuffer, int classId );
+    Entity readEntity( MemoryBuffer memoryBuffer, short classId );
 
     String getMimeType();
 

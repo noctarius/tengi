@@ -23,13 +23,13 @@ package com.github.tengi
     import com.github.tengi.client.ConnectionManager;
     import com.github.tengi.client.Message;
     import com.github.tengi.client.MessageListener;
-    import com.github.tengi.client.SimpleConnectionListener;
+    import com.github.tengi.client.ConnectionListenerAdapter;
     import com.github.tengi.client.Streamable;
     import com.github.tengi.client.buffer.MemoryBuffer;
 
     import flash.errors.IOError;
 
-    public class ActionScriptExample extends SimpleConnectionListener implements MessageListener
+    public class ActionScriptExample extends ConnectionListenerAdapter implements MessageListener
     {
         public function ActionScriptExample()
         {

@@ -10,7 +10,7 @@ public class TestSerializationFactory
 {
 
     @Override
-    public Streamable instantiate( int classId )
+    public Streamable instantiate( short classId )
     {
         switch ( classId )
         {
@@ -43,13 +43,13 @@ public class TestSerializationFactory
     }
 
     @Override
-    public boolean isEntity( int classId )
+    public boolean isEntity( short classId )
     {
         return false;
     }
 
     @Override
-    public Entity readEntity( MemoryBuffer memoryBuffer, int classId )
+    public Entity readEntity( MemoryBuffer memoryBuffer, short classId )
     {
         return null;
     }

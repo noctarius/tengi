@@ -34,7 +34,6 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.channels.spi.SelectorProvider;
 import java.security.NoSuchAlgorithmException;
 import java.util.EnumSet;
@@ -74,11 +73,9 @@ public class ConnectionManager
 
     private final AtomicBoolean shutdown = new AtomicBoolean();
 
-    private final Protocol protocol;
+    private final ConnectionConfiguration configuration;
 
     private final ConnectionListener connectionListener;
-
-    private final String contentType;
 
     private final ServerBootstrap tcpServerBootstrap;
 
@@ -94,11 +91,10 @@ public class ConnectionManager
 
     private final SSLEngine sslEngine;
 
-    public ConnectionManager( String contentType, ConnectionListener connectionListener, Protocol protocol )
+    public ConnectionManager( ConnectionConfiguration configuration, ConnectionListener connectionListener )
     {
         this.connectionListener = connectionListener;
-        this.protocol = protocol;
-        this.contentType = contentType;
+        this.configuration = configuration;
 
         try
         {
@@ -120,12 +116,11 @@ public class ConnectionManager
         this.udpServerBootstrap = buildUdpSocket( udpProcessorGroup );
     }
 
-    public ConnectionManager( String contentType, ConnectionListener connectionListener, Protocol protocol,
+    public ConnectionManager( ConnectionConfiguration configuration, ConnectionListener connectionListener,
                               SSLContext sslContext, SSLEngine sslEngine )
     {
         this.connectionListener = connectionListener;
-        this.protocol = protocol;
-        this.contentType = contentType;
+        this.configuration = configuration;
 
         this.sslContext = sslContext;
         this.sslEngine = sslEngine;
@@ -140,22 +135,11 @@ public class ConnectionManager
         this.udpServerBootstrap = buildUdpSocket( udpProcessorGroup );
     }
 
-    public void bind( int port, String address )
-        throws UnknownHostException
+    public void bind()
     {
-        bind0( port, InetAddress.getByName( address ) );
-    }
-
-    public void bind( int port, InetAddress address )
-    {
-        bind0( port, address );
-    }
-
-    public void bind( int port, InetAddress[] addresses )
-    {
-        for ( InetAddress address : addresses )
+        for ( InetAddress address : configuration.getAddresses() )
         {
-            bind0( port, address );
+            bind0( configuration.getPort(), address );
         }
     }
 

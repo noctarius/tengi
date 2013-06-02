@@ -43,7 +43,7 @@ public interface WritableMemoryBuffer
 
     void writeBoolean( boolean value );
 
-    void writeByte( byte value );
+    void writeByte( int value );
 
     void writeUnsignedByte( short value );
 

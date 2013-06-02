@@ -65,7 +65,7 @@ public class Message
         this.messageId.readStream( memoryBuffer, protocol );
         if ( memoryBuffer.readByte() == 1 )
         {
-            int classId = memoryBuffer.readShort();
+            short classId = memoryBuffer.readShort();
             body = protocol.instantiate( classId );
             body.readStream( memoryBuffer, protocol );
         }

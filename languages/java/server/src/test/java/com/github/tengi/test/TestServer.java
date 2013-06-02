@@ -1,12 +1,11 @@
 package com.github.tengi.test;
 
-import java.net.InetAddress;
-
 import com.github.tengi.Connection;
+import com.github.tengi.ConnectionConfiguration;
+import com.github.tengi.ConnectionListenerAdapter;
 import com.github.tengi.ConnectionManager;
 import com.github.tengi.Message;
 import com.github.tengi.Protocol;
-import com.github.tengi.ConnectionListenerAdapter;
 import com.github.tengi.service.ServiceManager;
 
 public class TestServer
@@ -19,17 +18,16 @@ public class TestServer
         new TestServer();
     }
 
-    private final Protocol serializationFactory = new TestSerializationFactory();
+    private final Protocol protocol = new TestSerializationFactory();
 
-    private final ServiceManager<Message> serviceManager = new ServiceManager<Message>( new TestService(),
-                                                                                        serializationFactory );
+    private final ServiceManager<Message> serviceManager = new ServiceManager<Message>( new TestService(), protocol );
 
     private TestServer()
         throws Exception
     {
-        ConnectionManager connectionManager =
-            new ConnectionManager( "application/bbbinary", this, serializationFactory );
-        connectionManager.bind( 80, InetAddress.getLoopbackAddress() );
+        ConnectionConfiguration configuration = new ConnectionConfiguration( protocol );
+        ConnectionManager connectionManager = new ConnectionManager( configuration, this );
+        connectionManager.bind();
     }
 
     @Override

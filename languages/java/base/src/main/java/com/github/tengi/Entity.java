@@ -21,42 +21,20 @@ package com.github.tengi;
 
 import com.github.tengi.buffer.MemoryBuffer;
 
-public class Entity
-    implements Streamable
+public interface Entity
+    extends Streamable
 {
 
-    private int entityId = -1;
+    int getEntityId();
 
-    private int parentEntityId = -1;
+    int getParentEntityId();
 
-    private int entityType;
+    int getEntityType();
 
-    private int version;
+    void writeStream( MemoryBuffer memoryBuffer, Protocol protocol );
 
-    public String toString()
-    {
-        return "[entityId=" + entityId + ", " + "parentEntityId=" + parentEntityId + "]";
-    }
+    void readStream( MemoryBuffer memoryBuffer, Protocol protocol );
 
-    public void writeStream( MemoryBuffer memoryBuffer, Protocol protocol )
-    {
-        memoryBuffer.writeInt( entityId );
-        memoryBuffer.writeInt( parentEntityId );
-        memoryBuffer.writeInt( entityType );
-        memoryBuffer.writeInt( version );
-    }
-
-    public void readStream( MemoryBuffer memoryBuffer, Protocol protocol )
-    {
-        this.entityId = memoryBuffer.readInt();
-        this.parentEntityId = memoryBuffer.readInt();
-        this.entityType = memoryBuffer.readInt();
-        this.version = memoryBuffer.readInt();
-    }
-
-    public void writeEntityHeader( MemoryBuffer memoryBuffer )
-    {
-        memoryBuffer.writeByte( (byte) 1 );
-    }
+    void writeEntityHeader( MemoryBuffer memoryBuffer );
 
 }

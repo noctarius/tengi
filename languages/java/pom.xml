@@ -10,6 +10,7 @@
   <modules>
     <module>base</module>
     <module>server</module>
+    <!-- module>tengi-java-rdp</module -->
   </modules>
 
   <properties>

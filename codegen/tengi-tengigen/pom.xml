@@ -1,0 +1,20 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>tengi-tengigen</artifactId>
+  <name>Tengi: Serialization Codegenerator</name>
+
+  <parent>
+    <groupId>com.github.tengi</groupId>
+    <artifactId>tengi-codegen-reactor</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.parboiled</groupId>
+      <artifactId>parboiled-java</artifactId>
+      <version>1.1.5</version>
+    </dependency>
+  </dependencies>
+</project>

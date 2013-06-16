@@ -1,0 +1,89 @@
+package com.example.foo {
+
+	entity Door {
+		with OpenCloseable, Named, Location;
+	}
+
+	component OpenCloseable {
+		(property)? Bool open (,|;|\n)?
+	}
+	
+	component Named {
+		ASCII name;
+	}
+	
+	component Location {
+		Int xPos;
+		Int yPos;
+	}
+
+	class MyDoor : Door {
+		UTF ownerName;
+		Int ownerId;
+	}
+	
+	class Foo<Type T (, Type T)*> {
+		Byte byte;
+		Bool bool;
+		Short short;
+		Int int;
+		Long long;
+		Float float;
+		Double double;
+		ASCII ascii;
+		UTF utf;
+		List<...> list;
+		Type type;
+		Enum enum;
+		T templateType;
+		
+		Byte[] byteSingleArray;
+		Bool[] boolSingleArray;
+		Short[] shortSingleArray;
+		Int[] intSingleArray;
+		Long[] longSingleArray;
+		Float[] floatSingleArray;
+		Double[] doubleSingleArray;
+		ASCII[] asciiSingleArray;
+		UTF[] utfSingleArray;
+		List<...>[] listSingleArray;
+		Type[] typeSingleArray;
+		Enum[] enumSingleArray;
+		T[] templateTypeSingleArray;
+		
+		Byte[][] byteDoubleArray;
+		Bool[][] boolDoubleArray;
+		Short[][] shortDoubleArray;
+		Int[][] intDoubleArray;
+		Long[][] longDoubleArray;
+		Float[][] floatDoubleArray;
+		Double[][] doubleDoubleArray;
+		ASCII[][] asciiDoubleArray;
+		UTF[][] utfDoubleArray;
+		List<...>[][] listDoubleArray;
+		Type[][] typeDoubleArray;
+		Enum[][] enumDoubleArray;
+		T[][] templateTypeDoubleArray;
+		
+		Byte[][][] byteMultiArray;
+		Bool[][][] boolMultiArray;
+		Short[][][] shortMultiArray;
+		Int[][][] intMultiArray;
+		Long[][][] longMultiArray;
+		Float[][][] floatMultiArray;
+		Double[][][] doubleMultiArray;
+		ASCII[][][] asciiMultiArray;
+		UTF[][][] utfMultiArray;
+		List<...>[][][] listMultiArray;
+		Type[][][] typeMultiArray;
+		Enum[][][] enumMultiArray;
+		T[][][] templateTypeMultiArray;
+	}
+	
+	enum Bar<Type identifier> {
+	}
+	
+	service FooBar {
+	}
+
+}

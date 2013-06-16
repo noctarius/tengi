@@ -32,6 +32,9 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.DefaultThreadFactory;
+import io.netty.util.concurrent.EventExecutorGroup;
 
 import java.net.InetAddress;
 import java.nio.channels.spi.SelectorProvider;
@@ -53,7 +56,6 @@ import org.eclipse.jetty.npn.NextProtoNego;
 import com.github.tengi.transport.protocol.NGNServerProvider;
 import com.github.tengi.transport.protocol.TengiUnificatedProtocolNegotiator;
 import com.github.tengi.transport.protocol.handler.TengiUdpRequestHandler;
-import com.github.tengi.utils.NamedThreadFactory;
 
 public class ConnectionManager
 {
@@ -69,7 +71,10 @@ public class ConnectionManager
 
     private final Map<UniqueId, Connection> connections = new HashMap<UniqueId, Connection>();
 
-    private final ChannelGroup channelGroup = new DefaultChannelGroup();
+    private final EventExecutorGroup eventExecutorGroup =
+        new DefaultEventExecutorGroup( 20, new DefaultThreadFactory( "groupEventExecutor" ) );
+
+    private final ChannelGroup channelGroup = new DefaultChannelGroup( eventExecutorGroup.next() );
 
     private final AtomicBoolean shutdown = new AtomicBoolean();
 
@@ -240,7 +245,7 @@ public class ConnectionManager
 
     private EventLoopGroup buildEventLoopGroup( int threads, String threadPrefix, SelectorProvider selectorProvider )
     {
-        ThreadFactory threadFactory = new NamedThreadFactory( threadPrefix );
+        ThreadFactory threadFactory = new DefaultThreadFactory( threadPrefix );
         return new NioEventLoopGroup( threads, threadFactory, selectorProvider );
     }
 
@@ -267,7 +272,7 @@ public class ConnectionManager
     {
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group( udpProcessorGroup ).channel( NioDatagramChannel.class );
-        bootstrap.option( ChannelOption.UDP_RECEIVE_PACKET_SIZE, 65535 ).handler( new TengiUdpRequestHandler( this ) );
+        bootstrap.handler( new TengiUdpRequestHandler( this ) );
         return bootstrap;
     }
 }

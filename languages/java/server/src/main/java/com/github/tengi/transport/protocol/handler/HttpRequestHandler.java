@@ -1,4 +1,5 @@
 package com.github.tengi.transport.protocol.handler;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,16 +19,13 @@ package com.github.tengi.transport.protocol.handler;
  * under the License.
  */
 
-import java.nio.charset.Charset;
-import java.util.EnumSet;
-
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.MessageBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundMessageHandlerAdapter;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.MessageList;
 import io.netty.handler.codec.MessageToMessageCodec;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -38,11 +36,15 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 
+import java.nio.charset.Charset;
+import java.util.EnumSet;
+
 import com.github.tengi.Connection;
 import com.github.tengi.ConnectionManager;
 import com.github.tengi.TransportType;
 import com.github.tengi.UniqueId;
 import com.github.tengi.transport.AbstractChannelConnection;
+import com.github.tengi.utils.ChannelMessageHandler;
 
 public class HttpRequestHandler
     extends MessageToMessageCodec<HttpRequest, ByteBuf>
@@ -62,7 +64,7 @@ public class HttpRequestHandler
     }
 
     @Override
-    protected void encode( ChannelHandlerContext ctx, ByteBuf msg, MessageBuf<Object> out )
+    protected void encode( ChannelHandlerContext ctx, ByteBuf msg, MessageList<Object> out )
         throws Exception
     {
         DefaultFullHttpResponse response =
@@ -71,7 +73,7 @@ public class HttpRequestHandler
     }
 
     @Override
-    protected void decode( ChannelHandlerContext ctx, HttpRequest msg, MessageBuf<Object> out )
+    protected void decode( ChannelHandlerContext ctx, HttpRequest msg, MessageList<Object> out )
         throws Exception
     {
         if ( !msg.getMethod().equals( HttpMethod.POST ) )
@@ -127,7 +129,7 @@ public class HttpRequestHandler
             }
 
             AbstractChannelConnection channelConnection = (AbstractChannelConnection) connection;
-            ChannelInboundMessageHandlerAdapter<ByteBuf> messageDecoder = channelConnection.getMessageDecoder();
+            ChannelMessageHandler<ByteBuf> messageDecoder = channelConnection.getMessageDecoder();
             messageDecoder.messageReceived( ctx, ( (DefaultFullHttpRequest) msg ).content() );
         }
     }

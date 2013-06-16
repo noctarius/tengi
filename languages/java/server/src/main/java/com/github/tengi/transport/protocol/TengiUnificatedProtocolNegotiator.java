@@ -1,4 +1,5 @@
 package com.github.tengi.transport.protocol;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,8 +21,9 @@ package com.github.tengi.transport.protocol;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundByteHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.MessageList;
+import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.compression.SnappyFramedDecoder;
 import io.netty.handler.codec.compression.SnappyFramedEncoder;
 import io.netty.handler.codec.compression.ZlibCodecFactory;
@@ -31,7 +33,7 @@ import io.netty.handler.ssl.SslHandler;
 import com.github.tengi.ConnectionManager;
 
 public class TengiUnificatedProtocolNegotiator
-    extends ChannelInboundByteHandlerAdapter
+    extends ByteToMessageDecoder
 {
 
     private final ConnectionManager connectionManager;
@@ -49,7 +51,7 @@ public class TengiUnificatedProtocolNegotiator
     }
 
     @Override
-    protected void inboundBufferUpdated( ChannelHandlerContext ctx, ByteBuf in )
+    protected void decode( ChannelHandlerContext ctx, ByteBuf in, MessageList<Object> out )
         throws Exception
     {
         // Magic header cannot be read at this point
@@ -81,7 +83,7 @@ public class TengiUnificatedProtocolNegotiator
             if ( !acceptedProtocol )
             {
                 // Illegal protocol header or unknown protocol request
-                in.skipBytes( in.readableBytes() );
+                in.clear();
                 ctx.close();
             }
         }

@@ -20,8 +20,8 @@ package com.github.tengi.transport.protocol.handler;
  */
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.MessageBuf;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.MessageList;
 import io.netty.handler.codec.MessageToMessageCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 
@@ -30,7 +30,7 @@ public class WebsocketRequestHandler
 {
 
     @Override
-    protected void encode( ChannelHandlerContext ctx, ByteBuf msg, MessageBuf<Object> out )
+    protected void encode( ChannelHandlerContext ctx, ByteBuf msg, MessageList<Object> out )
         throws Exception
     {
         // TODO Auto-generated method stub
@@ -38,7 +38,7 @@ public class WebsocketRequestHandler
     }
 
     @Override
-    protected void decode( ChannelHandlerContext ctx, WebSocketFrame msg, MessageBuf<Object> out )
+    protected void decode( ChannelHandlerContext ctx, WebSocketFrame msg, MessageList<Object> out )
         throws Exception
     {
         // TODO Auto-generated method stub

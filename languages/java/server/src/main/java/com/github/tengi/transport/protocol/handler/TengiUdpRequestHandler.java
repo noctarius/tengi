@@ -1,4 +1,5 @@
 package com.github.tengi.transport.protocol.handler;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,15 +21,15 @@ package com.github.tengi.transport.protocol.handler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundMessageHandlerAdapter;
 import io.netty.channel.socket.DatagramPacket;
 
 import com.github.tengi.Connection;
 import com.github.tengi.ConnectionManager;
 import com.github.tengi.UniqueId;
+import com.github.tengi.utils.ChannelMessageHandler;
 
 public class TengiUdpRequestHandler
-    extends ChannelInboundMessageHandlerAdapter<DatagramPacket>
+    extends ChannelMessageHandler<DatagramPacket>
 {
 
     private final ConnectionManager connectionManager;

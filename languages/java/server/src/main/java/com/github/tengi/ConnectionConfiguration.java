@@ -4,6 +4,8 @@ import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Collections;
 
 public class ConnectionConfiguration
 {
@@ -11,7 +13,7 @@ public class ConnectionConfiguration
 
     private int port = 80;
 
-    private InetAddress[] addresses;
+    private Iterable<InetAddress> addresses;
 
     private String httpContext = "/http";
 
@@ -29,7 +31,7 @@ public class ConnectionConfiguration
         }
         catch ( UnknownHostException e )
         {
-            addresses = new InetAddress[0];
+            addresses = Collections.emptyList();
         }
     }
 
@@ -43,12 +45,17 @@ public class ConnectionConfiguration
         this.port = port;
     }
 
-    public InetAddress[] getAddresses()
+    public Iterable<InetAddress> getAddresses()
     {
         return addresses;
     }
 
-    public void setAddresses( InetAddress[] addresses )
+    public void setAddresses( InetAddress... addresses )
+    {
+        setAddresses( Arrays.asList( addresses ) );
+    }
+
+    public void setAddresses( Iterable<InetAddress> addresses )
     {
         this.addresses = addresses;
     }
@@ -88,10 +95,10 @@ public class ConnectionConfiguration
         return protocol;
     }
 
-    public static InetAddress[] getAllLocalIntefaces()
+    public static Iterable<InetAddress> getAllLocalIntefaces()
         throws UnknownHostException
     {
-        return new InetAddress[] { Inet4Address.getByName( "0.0.0.0" ), Inet6Address.getByName( "::/0" ) };
+        return Arrays.asList( new InetAddress[] { Inet4Address.getByName( "0.0.0.0" ), Inet6Address.getByName( "::/0" ) } );
     }
 
 }

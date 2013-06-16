@@ -1,4 +1,5 @@
 package com.github.tengi.transport.protocol;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,8 +20,8 @@ package com.github.tengi.transport.protocol;
  */
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundMessageHandler;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.MessageToMessageCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
@@ -92,13 +93,13 @@ public class SpdyOrHttpNegotiator
     }
 
     @Override
-    protected ChannelInboundMessageHandler<?> createHttpRequestHandlerForHttp()
+    protected MessageToMessageCodec<?, ?> createHttpRequestHandlerForHttp()
     {
         return new HttpRequestHandler( connectionManager );
     }
 
     @Override
-    protected ChannelInboundMessageHandler<?> createHttpRequestHandlerForSpdy()
+    protected MessageToMessageCodec<?, ?> createHttpRequestHandlerForSpdy()
     {
         return new SpdyRequestHandler( connectionManager );
     }

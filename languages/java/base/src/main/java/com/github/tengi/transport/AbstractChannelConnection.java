@@ -23,7 +23,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundMessageHandlerAdapter;
 
 import com.github.tengi.CompletionFuture;
 import com.github.tengi.Connection;
@@ -36,12 +35,13 @@ import com.github.tengi.UniqueId;
 import com.github.tengi.buffer.ByteBufMemoryBuffer;
 import com.github.tengi.buffer.MemoryBuffer;
 import com.github.tengi.buffer.MemoryBufferPool;
+import com.github.tengi.utils.ChannelMessageHandler;
 
 public abstract class AbstractChannelConnection
     implements Connection
 {
 
-    private final ChannelInboundMessageHandlerAdapter<ByteBuf> messageDecoder = new TengiMemoryBufferDecoder();
+    private final ChannelMessageHandler<ByteBuf> messageDecoder = new TengiMemoryBufferDecoder();
 
     protected final Protocol protocol;
 
@@ -93,7 +93,7 @@ public abstract class AbstractChannelConnection
         return channel;
     }
 
-    public ChannelInboundMessageHandlerAdapter<ByteBuf> getMessageDecoder()
+    public ChannelMessageHandler<ByteBuf> getMessageDecoder()
     {
         return messageDecoder;
     }
@@ -191,7 +191,7 @@ public abstract class AbstractChannelConnection
     }
 
     private class TengiMemoryBufferDecoder
-        extends ChannelInboundMessageHandlerAdapter<ByteBuf>
+        extends ChannelMessageHandler<ByteBuf>
     {
 
         private final Connection connection = AbstractChannelConnection.this;

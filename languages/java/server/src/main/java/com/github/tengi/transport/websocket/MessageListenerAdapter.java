@@ -1,4 +1,5 @@
 package com.github.tengi.transport.websocket;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,13 +19,16 @@ package com.github.tengi.transport.websocket;
  * under the License.
  */
 
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.MessageList;
+
 import com.github.tengi.Connection;
 import com.github.tengi.Message;
 import com.github.tengi.MessageListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundMessageHandlerAdapter;
 
-class MessageListenerAdapter extends ChannelInboundMessageHandlerAdapter<Message>
+class MessageListenerAdapter
+    extends ChannelInboundHandlerAdapter
 {
 
     private final MessageListener messageListener;
@@ -37,9 +41,22 @@ class MessageListenerAdapter extends ChannelInboundMessageHandlerAdapter<Message
         this.connection = connection;
     }
 
-
     @Override
-    public void messageReceived( ChannelHandlerContext ctx, Message msg )
+    public void messageReceived( ChannelHandlerContext ctx, MessageList<Object> msgs )
+        throws Exception
+    {
+        for ( int index = 0; index < msgs.size(); index++ )
+        {
+            Object message = msgs.get( index );
+            if ( message instanceof Message )
+            {
+                messageReceived( ctx, (Message) message );
+            }
+        }
+        msgs.releaseAllAndRecycle();
+    }
+
+    private void messageReceived( ChannelHandlerContext ctx, Message msg )
         throws Exception
     {
         messageListener.messageReceived( msg, connection );

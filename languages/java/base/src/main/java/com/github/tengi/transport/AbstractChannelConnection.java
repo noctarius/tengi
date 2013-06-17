@@ -28,8 +28,10 @@ import com.github.tengi.CompletionFuture;
 import com.github.tengi.Connection;
 import com.github.tengi.ConnectionConstants;
 import com.github.tengi.Message;
+import com.github.tengi.MessageFrameListener;
 import com.github.tengi.MessageListener;
 import com.github.tengi.Protocol;
+import com.github.tengi.RawFrameListener;
 import com.github.tengi.Streamable;
 import com.github.tengi.UniqueId;
 import com.github.tengi.buffer.ByteBufMemoryBuffer;
@@ -108,6 +110,12 @@ public abstract class AbstractChannelConnection
     public void setMessageListener( MessageListener messageListener )
     {
         this.messageListener = messageListener;
+    }
+
+    @Override
+    public void setMessageListener( MessageFrameListener messageFrameListener, RawFrameListener rawFrameListener )
+    {
+        this.messageListener = new LambdaMessageListenerAdapter( messageFrameListener, rawFrameListener );
     }
 
     @Override
@@ -242,6 +250,40 @@ public abstract class AbstractChannelConnection
             if ( messageListener != null )
             {
                 messageListener.rawDataReceived( rawBuffer, metadata, connection );
+            }
+        }
+    }
+
+    private class LambdaMessageListenerAdapter
+        implements MessageListener
+    {
+
+        private final MessageFrameListener messageFrameListener;
+
+        private final RawFrameListener rawFrameListener;
+
+        private LambdaMessageListenerAdapter( MessageFrameListener messageFrameListener,
+                                              RawFrameListener rawFrameListener )
+        {
+            this.messageFrameListener = messageFrameListener;
+            this.rawFrameListener = rawFrameListener;
+        }
+
+        @Override
+        public void messageReceived( Message message, Connection connection )
+        {
+            if ( messageFrameListener != null )
+            {
+                messageFrameListener.messageReceived( message, connection );
+            }
+        }
+
+        @Override
+        public void rawDataReceived( MemoryBuffer rawBuffer, Streamable metadata, Connection connection )
+        {
+            if ( rawFrameListener != null )
+            {
+                rawFrameListener.rawDataReceived( rawBuffer, metadata, connection );
             }
         }
     }

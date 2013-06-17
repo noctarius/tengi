@@ -19,7 +19,11 @@ package com.github.tengi;
  * under the License.
  */
 
-public interface MessageListener
-    extends MessageFrameListener, RawFrameListener
+import com.github.tengi.buffer.MemoryBuffer;
+
+public interface RawFrameListener
 {
+
+    void rawDataReceived( MemoryBuffer rawBuffer, Streamable metadata, Connection connection );
+
 }

@@ -19,7 +19,9 @@ package com.github.tengi;
  * under the License.
  */
 
-public interface MessageListener
-    extends MessageFrameListener, RawFrameListener
+public interface MessageFrameListener
 {
+
+    void messageReceived( Message message, Connection connection );
+
 }

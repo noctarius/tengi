@@ -153,7 +153,7 @@ package com.github.tengi.client.buffer
             _byteArray.position = _readerIndex;
             var u1:uint = _byteArray.readUnsignedInt();
             var u0:uint = _byteArray.readUnsignedInt();
-            var value:Long = Long.newLong( u1, u0 );
+            var value:Long = new Long( u1, u0 );
             _readerIndex += 8;
             return value;
         }
@@ -288,8 +288,8 @@ package com.github.tengi.client.buffer
         public function writeLong( value:Long ):void
         {
             _byteArray.position = _writerIndex;
-            _byteArray.writeUnsignedInt( value.composite0 );
-            _byteArray.writeUnsignedInt( value.composite1 );
+            _byteArray.writeUnsignedInt( value.low );
+            _byteArray.writeUnsignedInt( value.high );
             _writerIndex += 8;
         }
 

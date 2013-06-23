@@ -25,6 +25,8 @@ package com.noctarius.tengi.client
     public final class TransportType extends Enum
     {
 
+        private static const ENFORCER:Object = new Object();
+
         public static const TCP:TransportType = new TransportType( "TCP", "tengi-tcp" );
 
         public static const UDP:TransportType = new TransportType( "UDP", "tengi-udp" );
@@ -39,11 +41,15 @@ package com.noctarius.tengi.client
 
         public static const SSL_PROXY:TransportType = new TransportType( "SSL_PROXY", "tengi-ssl-proxy" );
 
+        {
+            finalizeEnumType( TransportType, ENFORCER );
+        }
+
         private var _transport:String;
 
         function TransportType( name:String, transport:String ):void
         {
-            super( name );
+            super( name, ENFORCER );
             this._transport = transport;
         }
 

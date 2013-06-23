@@ -18,6 +18,7 @@
  */
 package com.noctarius.tengi.client.lang
 {
+    import flash.errors.IllegalOperationError;
     import flash.utils.Dictionary;
     import flash.utils.getQualifiedClassName;
 
@@ -29,19 +30,19 @@ package com.noctarius.tengi.client.lang
         private var _name:String;
         private var _ordinal:int;
 
-        public function Enum( name:String )
+        public function Enum( name:String, enforcer:Object )
         {
             this._name = name;
-            addToEnumCollection( this );
+            addToEnumType( this, enforcer );
         }
 
         protected function byName( name:String ):Enum
         {
             var className:String = getQualifiedClassName( this );
-            var enumTypeDefinition:EnumTypeDefinition = ENUM_VALUE_COLLECTION[className] as EnumTypeDefinition;
-            if ( enumTypeDefinition != null )
+            var enumTypeConstants:Array = ENUM_VALUE_COLLECTION[className] as Array;
+            if ( enumTypeConstants != null )
             {
-                for each ( var value:Enum in enumTypeDefinition.constants )
+                for each ( var value:Enum in enumTypeConstants )
                 {
                     if ( value._name == name )
                     {
@@ -65,25 +66,49 @@ package com.noctarius.tengi.client.lang
         protected function getConstants():Array
         {
             var className:String = getQualifiedClassName( this );
-            var enumTypeDefinition:EnumTypeDefinition = ENUM_VALUE_COLLECTION[className] as EnumTypeDefinition;
-            if ( enumTypeDefinition != null )
-            {
-                return [].concat( enumTypeDefinition.constants );
-            }
-            return null;
+            return ENUM_VALUE_COLLECTION[className] as Array;
         }
 
-        private static function addToEnumCollection( enum:Enum ):void
+        private static function addToEnumType( enum:Enum, enforcer:Object ):void
         {
             var className:String = getQualifiedClassName( enum );
-            var enumTypeDefinition:EnumTypeDefinition = ENUM_VALUE_COLLECTION[className] as EnumTypeDefinition;
-            if ( enumTypeDefinition == null )
+            var value:Object = ENUM_VALUE_COLLECTION[className];
+            if ( value == null )
             {
-                enumTypeDefinition = new EnumTypeDefinition();
-                ENUM_VALUE_COLLECTION[className] = enumTypeDefinition;
+                value = new EnumTypeDefinition( enforcer )
+                ENUM_VALUE_COLLECTION[className] = value;
+            }
+            else if ( value is Array )
+            {
+                throw new IllegalOperationError( "Enum type " + className + " is already completed." );
+            }
+            var enumTypeDefinition:EnumTypeDefinition = EnumTypeDefinition( value );
+            if ( enumTypeDefinition._enforcer != enforcer )
+            {
+                throw new IllegalOperationError( "Illegal enforcer used for enum type " + className + "." );
             }
             enum._ordinal = enumTypeDefinition._currentOrdinal++;
             enumTypeDefinition.constants.push( enum );
+        }
+
+        protected static function finalizeEnumType( enumType:Class, enforcer:Object ):void
+        {
+            var className:String = getQualifiedClassName( enumType );
+            var value:Object = ENUM_VALUE_COLLECTION[className];
+            if ( value is Array )
+            {
+                throw new IllegalOperationError( "Enum type " + className + " is already completed." );
+            }
+            else if ( value == null )
+            {
+                throw new IllegalOperationError( "Cannot finalize empty enum type " + className + "." );
+            }
+            var enumTypeDefinition:EnumTypeDefinition = EnumTypeDefinition( value );
+            if ( enumTypeDefinition._enforcer != enforcer )
+            {
+                throw new IllegalOperationError( "Illegal enforcer used for enum type " + className + "." );
+            }
+            ENUM_VALUE_COLLECTION[className] = [].concat( enumTypeDefinition.constants );
         }
 
     }
@@ -91,8 +116,14 @@ package com.noctarius.tengi.client.lang
 
 import com.noctarius.tengi.client.lang.Enum;
 
-class EnumTypeDefinition
+internal class EnumTypeDefinition
 {
-    var _currentOrdinal = 0;
-    const constants:Vector.<Enum> = new Vector.<Enum>();
+    internal var _enforcer:Object;
+    internal var _currentOrdinal:int = 0;
+    internal const constants:Vector.<Enum> = new Vector.<Enum>();
+
+    public function EnumTypeDefinition( enforcer:Object )
+    {
+        this._enforcer = enforcer;
+    }
 }

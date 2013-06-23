@@ -29,7 +29,7 @@ package com.noctarius.tengi.client.buffer
     public class MemoryBuffer
     {
 
-        var _byteArray:ByteArray;
+        internal var _byteArray:ByteArray;
 
         private var _readerIndex:uint = 0;
         private var _writerIndex:uint = 0;
@@ -337,12 +337,12 @@ package com.noctarius.tengi.client.buffer
             _writerIndex = writerIndex;
         }
 
-        function get byteArray():ByteArray
+        internal function get byteArray():ByteArray
         {
             return _byteArray;
         }
 
-        function set byteArray( byteArray:ByteArray ):void
+        internal function set byteArray( byteArray:ByteArray ):void
         {
             this._byteArray = byteArray;
 

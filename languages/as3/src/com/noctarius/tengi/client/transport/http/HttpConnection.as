@@ -411,7 +411,7 @@ package com.noctarius.tengi.client.transport.http
 
 internal class RequestMapper
 {
-    var responseHeaders:Array;
+    internal var responseHeaders:Array;
 
-    var httpStatus:int;
+    internal var httpStatus:int;
 }

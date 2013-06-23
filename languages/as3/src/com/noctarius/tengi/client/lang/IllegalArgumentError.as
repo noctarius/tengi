@@ -3,7 +3,7 @@ package com.noctarius.tengi.client.lang
     public class IllegalArgumentError extends Error
     {
 
-        function IllegalArgumentError( message:* = "", id:* = 0 )
+        function IllegalArgumentError( message:String = "", id:* = 0 )
         {
             super( message, id );
         }

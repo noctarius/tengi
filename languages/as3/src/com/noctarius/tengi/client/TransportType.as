@@ -19,32 +19,31 @@
 package com.noctarius.tengi.client
 {
 
-    import com.noctarius.tengi.client.TransportType;
+    import com.noctarius.tengi.client.lang.Enum;
     import com.noctarius.tengi.client.lang.IllegalArgumentError;
-    import com.noctarius.tengi.client.lang.util.Enum;
 
     public final class TransportType extends Enum
     {
 
-        public static const TCP : TransportType = new TransportType( "TCP", 0, "tengi-tcp", _ );
+        public static const TCP:TransportType = new TransportType( "TCP", "tengi-tcp" );
 
-        public static const UDP : TransportType = new TransportType( "UDP", 1, "tengi-udp", _ );
+        public static const UDP:TransportType = new TransportType( "UDP", "tengi-udp" );
 
-        public static const HTTP_POLLING : TransportType = new TransportType( "HTTP_POLLING", 2, "tengi-http-polling", _ );
+        public static const HTTP_POLLING:TransportType = new TransportType( "HTTP_POLLING", "tengi-http-polling" );
 
-        public static const HTTP_LONG_POLLING : TransportType = new TransportType( "HTTP_LONG_POLLING", 3, "tengi-http-longpolling", _ );
+        public static const HTTP_LONG_POLLING:TransportType = new TransportType( "HTTP_LONG_POLLING", "tengi-http-longpolling" );
 
-        public static const WEBSOCKET : TransportType = new TransportType( "WEBSOCKET", 4, "tengi-websocket", _ );
+        public static const WEBSOCKET:TransportType = new TransportType( "WEBSOCKET", "tengi-websocket" );
 
-        public static const SPDY : TransportType = new TransportType( "SPDY", 5, "tengi-spdy", _ );
+        public static const SPDY:TransportType = new TransportType( "SPDY", "tengi-spdy" );
 
-        public static const SSL_PROXY:TransportType = new TransportType( "SSL_PROXY", 6, "tengi-ssl-proxy", _ );
+        public static const SSL_PROXY:TransportType = new TransportType( "SSL_PROXY", "tengi-ssl-proxy" );
 
         private var _transport:String;
-        
-        function TransportType( name : String, ordinal : int, transport:String, restrictor : *) : void
+
+        function TransportType( name:String, transport:String ):void
         {
-            super( name, ordinal, restrictor );
+            super( name );
             this._transport = transport;
         }
 
@@ -53,18 +52,13 @@ package com.noctarius.tengi.client
             return _transport;
         }
 
-        internal static function get constants():Array
-        {
-            return [ TCP, UDP, HTTP_POLLING, HTTP_LONG_POLLING, WEBSOCKET, SPDY, SSL_PROXY ];
-        }
-
-        public static function valueOf(name : String):TransportType
+        public static function valueOf( name:String ):TransportType
         {
             try
             {
-                return TransportType( TCP.constantOf( name ) );
+                return TransportType( TCP.byName( name ) );
             }
-            catch (e : Error)
+            catch ( e:Error )
             {
                 throw new IllegalArgumentError( e.message );
             }
@@ -72,9 +66,9 @@ package com.noctarius.tengi.client
             return null;
         }
 
-        override protected function getConstants():Array
+        public static function values():Array
         {
-            return constants;
+            return TCP.getConstants();
         }
 
     }

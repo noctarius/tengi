@@ -13,7 +13,8 @@ package com.github.tengi
 {
     /** imports */
 
-    public class ActionScriptExample extends SimpleConnectionListener implements MessageListener
+    public class ActionScriptExample extends SimpleConnectionListener
+        implements MessageListener
     {
         public function ActionScriptExample()
         {
@@ -21,7 +22,8 @@ package com.github.tengi
             var connectionManager:ConnectionManager = new ConnectionManager( 20 );
 
             var protocol:Protocol = new ExampleProtocol();
-            var configuration:ConnectionConfiguration = new ConnectionConfiguration( protocol );
+            var configuration:ConnectionConfiguration;
+            configuration = new ConnectionConfiguration( protocol );
             configuration.host = "localhost";
             configuration.port = 80;
 
@@ -40,16 +42,19 @@ package com.github.tengi
             linkedExample.value = "This one has it's own callback";
             // Response is received in given callback
             connection.sendLinkedObject( linkedExample,
-                function ( request:Message, response:Message, connection:ClientConnection ):void
+                function ( request:Message, response:Message,
+                           connection:ClientConnection ):void
                 {
                     var sendExample:Example = request.body as Example;
                     var receivedExample:Example = response.body as Example;
-                    trace("send=" + sendExample.value + ", received=" + receivedExample.value);
+                    trace("send=" + sendExample.value + ", received="
+                        + receivedExample.value);
                 }
             );
         }
 
-        public function messageReceived( message:Message, connection:ClientConnection ):void
+        public function messageReceived( message:Message,
+                                         connection:ClientConnection ):void
         {
             var body:Streamable = message.body;
             if ( body is Example )
@@ -151,12 +156,14 @@ internal class Example implements Streamable
         public ExampleEchoServer()
             throws Exception
         {
-            // Listen on port 80 for IPv4 / IPv6 connections with different TCP protocols and reliable UDP
+            // Listen on port 80 for IPv4 / IPv6 connections with different TCP
+            // protocols and reliable UDP
             Protocol protocol = new MyProtocol();
             ConnectionConfiguration configuration = ConnectionConfiguration.Builder().
                 protocol( protocol ).unifiedPort( 80 ).localAddresses().build();
 
-            ConnectionManager connectionManager = new ConnectionManager( configuration, this );
+            ConnectionManager connectionManager;
+            connectionManager = new ConnectionManager( configuration, this );
             connectionManager.bind();
         }
     
@@ -178,7 +185,8 @@ internal class Example implements Streamable
         }
     
         @Override
-        public void rawDataReceived( MemoryBuffer rawBuffer, Streamable metadata, Connection connection )
+        public void rawDataReceived( MemoryBuffer rawBuffer, Streamable metadata, 
+                                     Connection connection )
         {
         }
     

@@ -18,7 +18,8 @@ package com.github.tengi
     {
         public function ActionScriptExample()
         {
-			// Configure ConnectionManager, internal MemoryBuffer pool and used protocol
+			// Configure ConnectionManager, internal MemoryBuffer pool and 
+            // used protocol
             var connectionManager:ConnectionManager = new ConnectionManager( 20 );
 
             var protocol:Protocol = new ExampleProtocol();
@@ -63,7 +64,8 @@ package com.github.tengi
             }
         }
 
-        public function rawDataReceived( memoryBuffer:MemoryBuffer, metadata:Streamable,
+        public function rawDataReceived( memoryBuffer:MemoryBuffer,
+                                         metadata:Streamable,
                                          connection:ClientConnection ):void
         {
             throw new IOError( "rawdata are not supported by this protocol :-(" );

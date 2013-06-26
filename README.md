@@ -11,16 +11,7 @@ Short example with ActionScript client and Java server
 ```as3
 package com.github.tengi
 {
-    import com.github.tengi.client.ClientConnection;
-    import com.github.tengi.client.ConnectionConfiguration;
-    import com.github.tengi.client.ConnectionManager;
-    import com.github.tengi.client.Message;
-    import com.github.tengi.client.MessageListener;
-    import com.github.tengi.client.SimpleConnectionListener;
-    import com.github.tengi.client.Streamable;
-    import com.github.tengi.client.buffer.MemoryBuffer;
-
-    import flash.errors.IOError;
+    /** imports */
 
     public class ActionScriptExample extends SimpleConnectionListener implements MessageListener
     {
@@ -74,13 +65,6 @@ package com.github.tengi
         }
     }
 }
-
-import com.github.tengi.client.Entity;
-import com.github.tengi.client.SerializationFactory;
-import com.github.tengi.client.Streamable;
-import com.github.tengi.client.buffer.MemoryBuffer;
-
-import flash.errors.IOError;
 
 internal class ExampleProtocol implements SerializationFactory
 {
@@ -146,11 +130,7 @@ internal class Example implements Streamable
 ```java
     package com.github.tengi;
     
-    import java.net.Inet4Address;
-    import java.net.Inet6Address;
-    import java.net.InetAddress;
-    
-    import com.github.tengi.buffer.MemoryBuffer;
+    /** imports */
     
     public class ExampleEchoServer
         extends SimpleConnectionListener
@@ -167,16 +147,19 @@ internal class Example implements Streamable
             throws Exception
         {
             // Listen on port 80 for IPv4 / IPv6 connections with different TCP protocols and reliable UDP
-            ConnectionManager connectionManager = new ConnectionManager( "binary/tengi", this, new MyProtocol() );
-            connectionManager.bind( 80,
-                                    new InetAddress[] { Inet4Address.getByName( "localhost" ),
-                                        Inet6Address.getByName( "localhost" ) } );
+            MyProtocol protocol = new MyProtocol();
+            ConnectionConfiguration configuration = ConnectionConfiguration.Builder().
+                protocol( protocol ).unifiedPort(80).localAddresses().build();
+
+            ConnectionManager connectionManager = new ConnectionManager( configuration, this );
+            connectionManager.bind();
         }
     
         @Override
         public void onConnect( Connection connection )
         {
             System.out.println( "New connection: " + connection );
+           connection.setMessageListener( this );
         }
     
         @Override
@@ -220,15 +203,21 @@ internal class Example implements Streamable
             }
     
             @Override
-            public boolean isEntity( int classId )
+            public boolean isEntity( short classId )
             {
                 return false;
             }
     
             @Override
-            public Entity readEntity( MemoryBuffer memoryBuffer, int classId )
+            public Entity readEntity( MemoryBuffer memoryBuffer, short classId )
             {
                 return null;
+            }
+
+            @Override
+            public String getMimeType()
+            {
+                return "binary/tengi";
             }
         }
     

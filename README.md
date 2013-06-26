@@ -18,10 +18,10 @@ package com.github.tengi
         public function ActionScriptExample()
         {
 			// Configure ConnectionManager, internal MemoryBuffer pool and used protocol
-            var connectionManager:ConnectionManager = new ConnectionManager( "binary/tengi", 20,
-                                                                             new ExampleProtocol() );
+            var connectionManager:ConnectionManager = new ConnectionManager( 20 );
 
-            var configuration:ConnectionConfiguration = new ConnectionConfiguration();
+            var protocol:Protocol = new ExampleProtocol();
+            var configuration:ConnectionConfiguration = new ConnectionConfiguration(protocol);
             configuration.host = "localhost";
             configuration.port = 80;
 
@@ -66,7 +66,7 @@ package com.github.tengi
     }
 }
 
-internal class ExampleProtocol implements SerializationFactory
+internal class ExampleProtocol implements Protocol
 {
 
     public function instantiate( classId:int ):Streamable
@@ -96,6 +96,11 @@ internal class ExampleProtocol implements SerializationFactory
     public function readEntity( memoryBuffer:MemoryBuffer, classId:int ):Entity
     {
         return null;
+    }
+
+    public function get mimeType():String
+    {
+        return "binary/tengi";
     }
 }
 
@@ -147,7 +152,7 @@ internal class Example implements Streamable
             throws Exception
         {
             // Listen on port 80 for IPv4 / IPv6 connections with different TCP protocols and reliable UDP
-            MyProtocol protocol = new MyProtocol();
+            Protocol protocol = new MyProtocol();
             ConnectionConfiguration configuration = ConnectionConfiguration.Builder().
                 protocol( protocol ).unifiedPort(80).localAddresses().build();
 
@@ -178,7 +183,7 @@ internal class Example implements Streamable
         }
     
         private static class MyProtocol
-            implements SerializationFactory
+            implements Protocol
         {
     
             @Override

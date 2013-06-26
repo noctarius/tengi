@@ -113,6 +113,18 @@ public abstract class AbstractChannelConnection
     }
 
     @Override
+    public void setMessageListener( MessageFrameListener messageFrameListener )
+    {
+        this.messageListener = new LambdaMessageListenerAdapter( messageFrameListener, null );
+    }
+
+    @Override
+    public void setMessageListener( RawFrameListener rawFrameListener )
+    {
+        this.messageListener = new LambdaMessageListenerAdapter( null, rawFrameListener );
+    }
+
+    @Override
     public void setMessageListener( MessageFrameListener messageFrameListener, RawFrameListener rawFrameListener )
     {
         this.messageListener = new LambdaMessageListenerAdapter( messageFrameListener, rawFrameListener );

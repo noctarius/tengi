@@ -35,8 +35,7 @@ public class WebsocketConnection
     extends AbstractChannelConnection
 {
 
-    WebsocketConnection( UniqueId connectionId, Channel channel, MemoryBufferPool memoryBufferPool,
-                         Protocol protocol )
+    WebsocketConnection( UniqueId connectionId, Channel channel, MemoryBufferPool memoryBufferPool, Protocol protocol )
     {
         super( connectionId, channel, memoryBufferPool, protocol );
     }
@@ -58,7 +57,7 @@ public class WebsocketConnection
 
             if ( completionFuture != null )
             {
-                completionFuture.onSuccess( message, this );
+                completionFuture.onCompletion( message, this, null );
             }
         }
         catch ( Exception e )
@@ -66,7 +65,7 @@ public class WebsocketConnection
             memoryBufferPool.push( memoryBuffer );
             if ( completionFuture != null )
             {
-                completionFuture.onFailure( e, message, this );
+                completionFuture.onCompletion( message, this, e );
             }
         }
 
@@ -86,7 +85,7 @@ public class WebsocketConnection
 
             if ( completionFuture != null )
             {
-                completionFuture.onSuccess( null, this );
+                completionFuture.onCompletion( null, this, null );
             }
         }
         catch ( Exception e )
@@ -94,7 +93,7 @@ public class WebsocketConnection
             memoryBufferPool.push( rawBuffer );
             if ( completionFuture != null )
             {
-                completionFuture.onFailure( e, null, this );
+                completionFuture.onCompletion( null, this, e );
             }
         }
     }

@@ -40,8 +40,12 @@ public interface Connection
 
     <T extends Streamable> void sendRawData( MemoryBuffer rawBuffer, T metadata, CompletionFuture<T> completionFuture );
 
+    void setMessageListener( MessageFrameListener messageFrameListener );
+
+    void setMessageListener( RawFrameListener rawFrameListener );
+
     void setMessageListener( MessageFrameListener messageFrameListener, RawFrameListener rawFrameListener );
-    
+
     void setMessageListener( MessageListener messageListener );
 
     void clearMessageListener();

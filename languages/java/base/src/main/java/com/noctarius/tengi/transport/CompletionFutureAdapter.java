@@ -1,4 +1,5 @@
 package com.noctarius.tengi.transport;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -46,14 +47,6 @@ class CompletionFutureAdapter<T extends Streamable>
     public void operationComplete( ChannelFuture future )
         throws Exception
     {
-        if ( future.isSuccess() )
-        {
-            completionFuture.onSuccess( message, connection );
-        }
-        else
-        {
-            completionFuture.onFailure( future.cause(), message, connection );
-        }
+        completionFuture.onCompletion( message, connection, future.cause() );
     }
-
 }

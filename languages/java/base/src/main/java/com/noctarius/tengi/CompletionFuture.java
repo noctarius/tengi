@@ -1,4 +1,5 @@
 package com.noctarius.tengi;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,8 +22,6 @@ package com.noctarius.tengi;
 public interface CompletionFuture<T>
 {
 
-    void onSuccess( T message, Connection connection );
-
-    void onFailure( Throwable throwable, T message, Connection connection );
+    void onCompletion( T message, Connection connection, Throwable cause );
 
 }

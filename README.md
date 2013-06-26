@@ -21,7 +21,7 @@ package com.github.tengi
             var connectionManager:ConnectionManager = new ConnectionManager( 20 );
 
             var protocol:Protocol = new ExampleProtocol();
-            var configuration:ConnectionConfiguration = new ConnectionConfiguration(protocol);
+            var configuration:ConnectionConfiguration = new ConnectionConfiguration( protocol );
             configuration.host = "localhost";
             configuration.port = 80;
 
@@ -154,7 +154,7 @@ internal class Example implements Streamable
             // Listen on port 80 for IPv4 / IPv6 connections with different TCP protocols and reliable UDP
             Protocol protocol = new MyProtocol();
             ConnectionConfiguration configuration = ConnectionConfiguration.Builder().
-                protocol( protocol ).unifiedPort(80).localAddresses().build();
+                protocol( protocol ).unifiedPort( 80 ).localAddresses().build();
 
             ConnectionManager connectionManager = new ConnectionManager( configuration, this );
             connectionManager.bind();

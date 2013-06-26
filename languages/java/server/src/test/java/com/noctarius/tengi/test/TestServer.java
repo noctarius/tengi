@@ -25,7 +25,7 @@ public class TestServer
     private TestServer()
         throws Exception
     {
-        ConnectionConfiguration configuration = new ConnectionConfiguration( protocol );
+        ConnectionConfiguration configuration = ConnectionConfiguration.Builder().protocol( protocol ).build();
         ConnectionManager connectionManager = new ConnectionManager( configuration, this );
         connectionManager.bind();
     }

@@ -25,33 +25,28 @@ import com.noctarius.tengi.Connection;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 
-class CompletionFutureAdapter<T> implements ChannelFutureListener
+class CompletionFutureAdapter<T>
+    implements ChannelFutureListener
 {
 
-	private final CompletionFuture<T> completionFuture;
+    private final CompletionFuture<T> completionFuture;
 
-	private final Connection connection;
+    private final Connection connection;
 
-	private final T message;
+    private final T message;
 
-	CompletionFutureAdapter(CompletionFuture<T> completionFuture, T message, Connection connection)
-	{
-		this.completionFuture = completionFuture;
-		this.connection = connection;
-		this.message = message;
-	}
+    CompletionFutureAdapter( CompletionFuture<T> completionFuture, T message, Connection connection )
+    {
+        this.completionFuture = completionFuture;
+        this.connection = connection;
+        this.message = message;
+    }
 
-	@Override
-	public void operationComplete(ChannelFuture future) throws Exception
-	{
-		if (future.isSuccess())
-		{
-			completionFuture.onSuccess(message, connection);
-		}
-		else
-		{
-			completionFuture.onFailure(future.cause(), message, connection);
-		}
-	}
+    @Override
+    public void operationComplete( ChannelFuture future )
+        throws Exception
+    {
+        completionFuture.onCompletion( message, connection, future.cause() );
+    }
 
 }

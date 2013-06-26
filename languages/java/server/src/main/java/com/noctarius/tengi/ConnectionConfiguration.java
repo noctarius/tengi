@@ -4,37 +4,34 @@ import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-
-import com.noctarius.tengi.Protocol;
+import java.util.Iterator;
+import java.util.List;
 
 public class ConnectionConfiguration
 {
     private final Protocol protocol;
 
-    private int port = 80;
+    private final int port;
 
-    private Iterable<InetAddress> addresses;
+    private final Iterable<InetAddress> addresses;
 
-    private String httpContext = "/http";
+    private final String httpContext;
 
-    private String wssContext = "/wss";
+    private final String wssContext;
 
-    private boolean ssl = true;
+    private final boolean ssl;
 
-    public ConnectionConfiguration( Protocol protocol )
+    private ConnectionConfiguration( ConnectionConfigurationBuilder builder )
     {
-        this.protocol = protocol;
-
-        try
-        {
-            addresses = getAllLocalIntefaces();
-        }
-        catch ( UnknownHostException e )
-        {
-            addresses = Collections.emptyList();
-        }
+        this.protocol = builder.protocol;
+        this.port = builder.port;
+        this.addresses = Collections.unmodifiableList( builder.addresses );
+        this.httpContext = builder.httpContext;
+        this.wssContext = builder.wssContext;
+        this.ssl = builder.ssl;
     }
 
     public int getPort()
@@ -42,24 +39,9 @@ public class ConnectionConfiguration
         return port;
     }
 
-    public void setPort( int port )
-    {
-        this.port = port;
-    }
-
     public Iterable<InetAddress> getAddresses()
     {
         return addresses;
-    }
-
-    public void setAddresses( InetAddress... addresses )
-    {
-        setAddresses( Arrays.asList( addresses ) );
-    }
-
-    public void setAddresses( Iterable<InetAddress> addresses )
-    {
-        this.addresses = addresses;
     }
 
     public String getHttpContext()
@@ -67,19 +49,9 @@ public class ConnectionConfiguration
         return httpContext;
     }
 
-    public void setHttpContext( String httpContext )
-    {
-        this.httpContext = httpContext;
-    }
-
     public String getWssContext()
     {
         return wssContext;
-    }
-
-    public void setWssContext( String wssContext )
-    {
-        this.wssContext = wssContext;
     }
 
     public boolean isSsl()
@@ -87,20 +59,152 @@ public class ConnectionConfiguration
         return ssl;
     }
 
-    public void setSsl( boolean ssl )
-    {
-        this.ssl = ssl;
-    }
-
     public Protocol getProtocol()
     {
         return protocol;
     }
 
-    public static Iterable<InetAddress> getAllLocalIntefaces()
-        throws UnknownHostException
+    public static ConnectionConfigurationBuilder Builder()
     {
-        return Arrays.asList( new InetAddress[] { Inet4Address.getByName( "0.0.0.0" ), Inet6Address.getByName( "::/0" ) } );
+        return new ConnectionConfigurationBuilder();
+    }
+
+    public static class ConnectionConfigurationBuilder
+    {
+        private Protocol protocol;
+
+        private int port = 80;
+
+        private List<InetAddress> addresses;
+
+        private String httpContext = "/http";
+
+        private String wssContext = "/wss";
+
+        private boolean ssl = true;
+
+        private ConnectionConfigurationBuilder()
+        {
+            try
+            {
+                addresses = getAllLocalIntefaces();
+            }
+            catch ( UnknownHostException e )
+            {
+                addresses = Collections.emptyList();
+            }
+        }
+
+        public int port()
+        {
+            return port;
+        }
+
+        public ConnectionConfigurationBuilder port( int port )
+        {
+            this.port = port;
+            return this;
+        }
+
+        public Iterable<InetAddress> addresses()
+        {
+            return addresses;
+        }
+
+        public ConnectionConfigurationBuilder addresses( InetAddress... addresses )
+        {
+            addresses( Arrays.asList( addresses ) );
+            return this;
+        }
+
+        public ConnectionConfigurationBuilder addresses( Iterable<InetAddress> addresses )
+        {
+            this.addresses = new ArrayList<InetAddress>();
+            Iterator<InetAddress> iterator = addresses.iterator();
+            while ( iterator.hasNext() )
+            {
+                InetAddress address = iterator.next();
+                if ( address != null )
+                {
+                    this.addresses.add( address );
+                }
+            }
+            return this;
+        }
+
+        public ConnectionConfigurationBuilder localAddresses()
+        {
+            try
+            {
+                addresses( getAllLocalIntefaces() );
+                return this;
+            }
+            catch ( UnknownHostException e )
+            {
+                throw new RuntimeException( "Local interfaces could not be queried", e );
+            }
+        }
+
+        public String httpContext()
+        {
+            return httpContext;
+        }
+
+        public ConnectionConfigurationBuilder httpContext( String httpContext )
+        {
+            this.httpContext = httpContext;
+            return this;
+        }
+
+        public String wssContext()
+        {
+            return wssContext;
+        }
+
+        public ConnectionConfigurationBuilder wssContext( String wssContext )
+        {
+            this.wssContext = wssContext;
+            return this;
+        }
+
+        public boolean ssl()
+        {
+            return ssl;
+        }
+
+        public ConnectionConfigurationBuilder ssl( boolean ssl )
+        {
+            this.ssl = ssl;
+            return this;
+        }
+
+        public Protocol protocol()
+        {
+            return protocol;
+        }
+
+        public ConnectionConfigurationBuilder protocol( Protocol protocol )
+        {
+            this.protocol = protocol;
+            return this;
+        }
+
+        public ConnectionConfiguration build()
+        {
+            if ( protocol == null )
+            {
+                throw new IllegalStateException( "protocol must not be null" );
+            }
+            return new ConnectionConfiguration( this );
+        }
+
+        private static List<InetAddress> getAllLocalIntefaces()
+            throws UnknownHostException
+        {
+            return Arrays.asList( new InetAddress[] { Inet4Address.getByName( "0.0.0.0" ),
+                Inet6Address.getByName( "::/0" ) } );
+        }
+
     }
 
 }

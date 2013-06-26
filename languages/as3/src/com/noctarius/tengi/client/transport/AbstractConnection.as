@@ -64,7 +64,7 @@ package com.noctarius.tengi.client.transport
             return _memoryBufferPool;
         }
 
-        public function setMessageListener( messageListener:MessageListener ):void
+        public function setMessageListener( messageListener:* ):void
         {
             this._messageListener = messageListener;
         }
@@ -187,7 +187,13 @@ package com.noctarius.tengi.client.transport
     }
 }
 
+import com.noctarius.tengi.client.ClientConnection;
 import com.noctarius.tengi.client.Message;
+import com.noctarius.tengi.client.MessageFrameListener;
+import com.noctarius.tengi.client.MessageListener;
+import com.noctarius.tengi.client.RawFrameListener;
+import com.noctarius.tengi.client.Streamable;
+import com.noctarius.tengi.client.buffer.MemoryBuffer;
 
 internal class LinkedMessageHolder
 {
@@ -217,5 +223,35 @@ internal class LinkedMessageHolder
     public function get bubbles():Boolean
     {
         return _bubbles;
+    }
+}
+
+internal class ClosureMessageListener implements MessageListener
+{
+
+    private var messageFrameListener:MessageFrameListener;
+    private var rawFrameListener:RawFrameListener;
+
+    public function ClosureMessageListener( messageFrameListener:MessageFrameListener,
+                                            rawFrameListener:RawFrameListener )
+    {
+        this.messageFrameListener = messageFrameListener;
+        this.rawFrameListener = rawFrameListener;
+    }
+
+    public function messageReceived( message:Message, connection:ClientConnection ):void
+    {
+        if ( !messageFrameListener )
+        {
+            messageFrameListener.messageReceived( message, connection );
+        }
+    }
+
+    public function rawDataReceived( memoryBuffer:MemoryBuffer, metadata:Streamable, connection:ClientConnection ):void
+    {
+        if ( !rawFrameListener )
+        {
+            rawFrameListener.rawDataReceived( memoryBuffer, metadata, connection );
+        }
     }
 }

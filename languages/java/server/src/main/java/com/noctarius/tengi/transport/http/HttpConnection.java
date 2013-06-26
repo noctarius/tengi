@@ -44,8 +44,7 @@ public class HttpConnection
 
     private volatile Channel pollingChannel;
 
-    public HttpConnection( UniqueId connectionId, MemoryBufferPool memoryBufferPool,
-                           Protocol serializationFactory )
+    public HttpConnection( UniqueId connectionId, MemoryBufferPool memoryBufferPool, Protocol serializationFactory )
     {
         super( connectionId, null, memoryBufferPool, serializationFactory );
         this.messageQueue = new MessageQueue( this, serializationFactory, memoryBufferPool );
@@ -86,7 +85,7 @@ public class HttpConnection
 
             if ( completionFuture != null )
             {
-                completionFuture.onSuccess( message, this );
+                completionFuture.onCompletion( message, this, null );
             }
         }
         catch ( Exception e )
@@ -94,7 +93,7 @@ public class HttpConnection
             memoryBufferPool.push( memoryBuffer );
             if ( completionFuture != null )
             {
-                completionFuture.onFailure( e, message, this );
+                completionFuture.onCompletion( message, this, e );
             }
         }
     }
@@ -111,7 +110,7 @@ public class HttpConnection
 
             if ( completionFuture != null )
             {
-                completionFuture.onSuccess( null, this );
+                completionFuture.onCompletion( null, this, null );
             }
         }
         catch ( Exception e )
@@ -119,7 +118,7 @@ public class HttpConnection
             memoryBufferPool.push( rawBuffer );
             if ( completionFuture != null )
             {
-                completionFuture.onFailure( e, null, this );
+                completionFuture.onCompletion( null, this, e );
             }
         }
     }

@@ -18,10 +18,12 @@
  */
 package com.noctarius.tengi.client
 {
-    /**
-     * This interface defines the listener for arriving gameserver frames. It needs to be registered to a {@link com.noctarius.tengi.client.ClientConnection}.
-     */
-    public interface MessageListener extends MessageFrameListener, RawFrameListener
+    import com.noctarius.tengi.client.buffer.MemoryBuffer;
+
+    public interface RawFrameListener
     {
+
+        function rawDataReceived( memoryBuffer:MemoryBuffer, metadata:Streamable, connection:ClientConnection ):void;
+
     }
 }

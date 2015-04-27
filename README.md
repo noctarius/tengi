@@ -26,7 +26,8 @@ class User {
     return "User(userId=" + userId + ", name=" + name + ")";
   }
 
-  public static void write(Object value, WritableMemoryBuffer memoryBuffer, Protocol protocol) {
+  public static void write(Object value, WritableMemoryBuffer memoryBuffer,
+                           Protocol protocol) {
     User user = (User) value;
     memoryBuffer.writeInt(user.userId);
     memoryBuffer.writeString(user.name);
@@ -73,7 +74,8 @@ class MyClient {
 
   private static void onConnection(Connection connection) {
     // Add MessageListener with echo functionality
-    connection.addMessageListener((connection, message) -> connection.sendMessage(message));
+    connection.addMessageListener(
+        (connection, message) -> connection.sendMessage(message));
   }
 
   private static void onMessage(Connection connection, Message message) {
@@ -115,7 +117,8 @@ class MyServer {
 
   private static void onConnection(Connection connection) {
     // Add MessageListener with echo functionality
-    connection.addMessageListener((connection, message) -> System.out.println(message.getBody());
+    connection.addMessageListener(
+        (connection, message) -> System.out.println(message.getBody());
 
     // Create fake user
     User user = new User(1, "Peter");

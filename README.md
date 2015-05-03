@@ -60,7 +60,12 @@ class MyClient {
       .addMarshaller(User::isSerializable, User::read, User::write)
 
       // Configure available transports
-      .addTransport(ClientTransport.TCP_TRANSPORT)
+      .addTransport(ClientTransport.TCP_TRANSPORT,
+          ClientTransport.RDP_TRANSPORT)
+
+      // Configure transport ports
+      .transportPort(ClientTransport.TCP_TRANSPORT, 8080)
+      .transportPort(ClientTransport.RDP_TRANSPORT, 9090)
 
       // Build final configuration
       .build();
@@ -103,7 +108,18 @@ class MyServer {
       .addMarshaller(User::isSerializable, User::read, User::write)
 
       // Configure available transports
-      .addTransport(ServerTransport.TCP_TRANSPORT)
+      .addTransport(ServerTransport.TCP_TRANSPORT,
+          ServerTransport.WEBSOCKET_TRANSPORT,
+          ServerTransport.HTTP2_TRANSPORT,
+          ServerTransport.RDP_TRANSPORT,
+          ServerTransport.HTTP_TRANSPORT)
+
+      // Configure transport ports
+      .transportPort(ServerTransport.TCP_TRANSPORT, 8080)
+      .transportPort(ServerTransport.WEBSOCKET_TRANSPORT, 8080)
+      .transportPort(ServerTransport.HTTP2_TRANSPORT, 8080)
+      .transportPort(ServerTransport.RDP_TRANSPORT, 9090)
+      .transportPort(ServerTransport.HTTP_TRANSPORT, 8080)
 
       // Build final configuration
       .build();

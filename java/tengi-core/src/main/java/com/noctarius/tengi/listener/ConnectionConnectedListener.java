@@ -14,35 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.transport;
+package com.noctarius.tengi.listener;
 
 import com.noctarius.tengi.connection.Connection;
-import com.noctarius.tengi.Transport;
-import com.noctarius.tengi.transport.tcp.TcpTransport;
 
-public enum ClientTransport
-        implements Transport {
-    TCP_TRANSPORT(new TcpTransport());
+public interface ConnectionConnectedListener {
 
-    private final Transport transport;
-
-    private ClientTransport(Transport transport) {
-        this.transport = transport;
-    }
-
-    @Override
-    public String getName() {
-        return transport.getName();
-    }
-
-    @Override
-    public boolean isStreaming() {
-        return transport.isStreaming();
-    }
-
-    @Override
-    public boolean accept(Connection connection) {
-        return transport.accept(connection);
-    }
+    void onConnectionAccept(Connection connection);
 
 }

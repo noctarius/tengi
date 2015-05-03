@@ -14,29 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.transport.tcp;
+package com.noctarius.tengi.server.server;
 
-import com.noctarius.tengi.connection.Connection;
-import com.noctarius.tengi.Transport;
+import com.noctarius.tengi.config.Configuration;
+import com.noctarius.tengi.listener.ConnectionConnectedListener;
+import io.netty.channel.Channel;
 
-public class TcpTransport
-        implements Transport {
+import java.util.concurrent.CompletableFuture;
 
-    private static final String TRANSPORT_NAME = "tengi::transport::tcp";
+public interface Server {
 
-    @Override
-    public String getName() {
-        return TRANSPORT_NAME;
-    }
+    CompletableFuture<Channel> start(ConnectionConnectedListener connectedListener);
 
-    @Override
-    public boolean isStreaming() {
-        return true;
-    }
+    CompletableFuture<Channel> stop();
 
-    @Override
-    public boolean accept(Connection connection) {
-        return false;
+    public static Server create(Configuration configuration)
+            throws Exception {
+
+        return new ServerImpl(configuration);
     }
 
 }

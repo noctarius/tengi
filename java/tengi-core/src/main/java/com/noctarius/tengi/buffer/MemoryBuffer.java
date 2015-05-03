@@ -14,29 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.transport.tcp;
+package com.noctarius.tengi.buffer;
 
-import com.noctarius.tengi.connection.Connection;
-import com.noctarius.tengi.Transport;
+public interface MemoryBuffer
+        extends ReadableMemoryBuffer, WritableMemoryBuffer {
 
-public class TcpTransport
-        implements Transport {
+    int capacity();
 
-    private static final String TRANSPORT_NAME = "tengi::transport::tcp";
+    int maxCapacity();
 
-    @Override
-    public String getName() {
-        return TRANSPORT_NAME;
-    }
+    boolean growing();
 
-    @Override
-    public boolean isStreaming() {
-        return true;
-    }
+    void free();
 
-    @Override
-    public boolean accept(Connection connection) {
-        return false;
-    }
+    void clear();
+
+    MemoryBuffer duplicate();
+
+    void lock();
+
+    void release();
+
+    boolean isReleased();
+
+    boolean isReleasable();
 
 }

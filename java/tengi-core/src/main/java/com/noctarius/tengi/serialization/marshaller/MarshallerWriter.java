@@ -14,29 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.transport.tcp;
+package com.noctarius.tengi.serialization.marshaller;
 
-import com.noctarius.tengi.connection.Connection;
-import com.noctarius.tengi.Transport;
+import com.noctarius.tengi.buffer.WritableMemoryBuffer;
+import com.noctarius.tengi.serialization.Protocol;
 
-public class TcpTransport
-        implements Transport {
+public interface MarshallerWriter<O> {
 
-    private static final String TRANSPORT_NAME = "tengi::transport::tcp";
-
-    @Override
-    public String getName() {
-        return TRANSPORT_NAME;
-    }
-
-    @Override
-    public boolean isStreaming() {
-        return true;
-    }
-
-    @Override
-    public boolean accept(Connection connection) {
-        return false;
-    }
+    void marshall(O object, WritableMemoryBuffer memoryBuffer, Protocol protocol)
+            throws Exception;
 
 }

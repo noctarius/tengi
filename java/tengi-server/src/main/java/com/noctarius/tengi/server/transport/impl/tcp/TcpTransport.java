@@ -14,37 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.transport;
+package com.noctarius.tengi.server.transport.impl.tcp;
 
-import com.noctarius.tengi.Transport;
 import com.noctarius.tengi.connection.Connection;
-import com.noctarius.tengi.server.transport.impl.http.HttpTransport;
-import com.noctarius.tengi.server.transport.impl.tcp.TcpTransport;
+import com.noctarius.tengi.Transport;
 
-public enum ServerTransport
+public class TcpTransport
         implements Transport {
-    TCP_TRANSPORT(new TcpTransport()),
-    HTTP_TRANSPORT(new HttpTransport());
 
-    private final Transport transport;
-
-    private ServerTransport(Transport transport) {
-        this.transport = transport;
-    }
+    private static final String TRANSPORT_NAME = "tengi::transport::tcp";
 
     @Override
     public String getName() {
-        return transport.getName();
+        return TRANSPORT_NAME;
     }
 
     @Override
     public boolean isStreaming() {
-        return transport.isStreaming();
+        return true;
     }
 
     @Override
     public boolean accept(Connection connection) {
-        return transport.accept(connection);
+        return false;
     }
 
 }

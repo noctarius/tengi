@@ -16,289 +16,306 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.noctarius.tengi</groupId>
-    <artifactId>tengi-java-parent</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+  <groupId>com.noctarius.tengi</groupId>
+  <artifactId>tengi-java-parent</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
 
-    <name>tengi: Java Parent</name>
-    <packaging>pom</packaging>
+  <name>tengi: Java Parent</name>
+  <packaging>pom</packaging>
 
-    <properties>
-        <!-- common project properties -->
-        <java.compiler.source>1.8</java.compiler.source>
-        <java.compiler.target>1.8</java.compiler.target>
-        <java.compiler.encoding>UTF-8</java.compiler.encoding>
-        <timestamp>${maven.build.timestamp}</timestamp>
-        <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+  <properties>
+    <!-- common project properties -->
+    <java.compiler.source>1.8</java.compiler.source>
+    <java.compiler.target>1.8</java.compiler.target>
+    <java.compiler.encoding>UTF-8</java.compiler.encoding>
+    <timestamp>${maven.build.timestamp}</timestamp>
+    <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
 
-        <!-- dependency versions -->
-        <junit.version>4.11</junit.version>
-        <netty.version>4.0.27.Final</netty.version>
-    </properties>
+    <!-- dependency versions -->
+    <junit.version>4.11</junit.version>
+    <netty.version>4.1.0.Beta5-SNAPSHOT</netty.version>
+    <hppc.version>0.6.1</hppc.version>
+  </properties>
 
-    <modules>
-        <module>tengi-api</module>
-        <module>tengi-server</module>
-        <module>tengi-client</module>
-    </modules>
+  <modules>
+    <module>tengi-core</module>
+    <module>tengi-server</module>
+    <module>tengi-client</module>
+  </modules>
 
-    <dependencyManagement>
-        <dependencies>
-            <!-- project dependencies -->
-            <dependency>
-                <groupId>com.noctarius.tengi</groupId>
-                <artifactId>tengi-java-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+  <dependencyManagement>
+    <dependencies>
+      <!-- project dependencies -->
+      <dependency>
+        <groupId>com.noctarius.tengi</groupId>
+        <artifactId>tengi-java-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
 
-            <!-- external dependencies -->
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-buffer</artifactId>
-                <version>${netty.version}</version>
-            </dependency>
+      <!-- external dependencies -->
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-buffer</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-codec-http</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-codec-http2</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
 
-            <!-- test dependencies -->
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+      <dependency>
+        <groupId>com.carrotsearch</groupId>
+        <artifactId>hppc</artifactId>
+        <version>${hppc.version}</version>
+      </dependency>
 
-    <scm>
-        <connection>scm:git:git://github.com/noctarius/tengi.git</connection>
-        <developerConnection>scm:git:git@github.com:noctarius/tengi.git</developerConnection>
-        <url>https://github.com/noctarius/tengi/</url>
-        <tag>HEAD</tag>
-    </scm>
+      <!-- test dependencies -->
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
-    <developers>
-        <developer>
-            <id>cengelbert</id>
-            <name>Christoph Engelbert (@noctarius2k)</name>
-            <email>noctarius@apache.org</email>
-            <timezone>+1</timezone>
-        </developer>
-    </developers>
+  <scm>
+    <connection>scm:git:git://github.com/noctarius/tengi.git</connection>
+    <developerConnection>scm:git:git@github.com:noctarius/tengi.git</developerConnection>
+    <url>https://github.com/noctarius/tengi/</url>
+    <tag>HEAD</tag>
+  </scm>
 
-    <licenses>
-        <license>
-            <name>APACHE LICENSE 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-        </license>
-    </licenses>
+  <developers>
+    <developer>
+      <id>cengelbert</id>
+      <name>Christoph Engelbert (@noctarius2k)</name>
+      <email>noctarius@apache.org</email>
+      <timezone>+1</timezone>
+    </developer>
+  </developers>
 
-    <issueManagement>
-        <system>github</system>
-        <url>https://github.com/noctarius/tengi/issues</url>
-    </issueManagement>
+  <licenses>
+    <license>
+      <name>APACHE LICENSE 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+    </license>
+  </licenses>
 
-    <ciManagement>
-        <system>Jenkins</system>
-        <url>https://noctarius.ci.cloudbees.com/job/tengi</url>
-    </ciManagement>
+  <issueManagement>
+    <system>github</system>
+    <url>https://github.com/noctarius/tengi/issues</url>
+  </issueManagement>
 
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>https://noctarius.ci.cloudbees.com/job/tengi</url>
+  </ciManagement>
 
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.2</version>
+        <configuration>
+          <source>${java.compiler.source}</source>
+          <target>${java.compiler.target}</target>
+          <encoding>${java.compiler.encoding}</encoding>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <version>2.3.6</version>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <Export-Package>
+              com.noctarius.tengi.*
+            </Export-Package>
+            <Private-Package>
+              com.noctarius.tengi.impl.*,
+            </Private-Package>
+          </instructions>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <version>0.9</version>
+        <executions>
+          <execution>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <excludes>
+            <exclude>README.md</exclude>
+            <exclude>LICENSE</exclude>
+            <exclude>*.svg</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.4</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.10.1</version>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <show>public</show>
+              <sourceFileExcludes>
+                <exclude>com/noctarius/tengi/impl/*/*.java</exclude>
+              </sourceFileExcludes>
+              <sourceFileIncludes>
+                <include>com/noctarius/tengi/*.java</include>
+              </sourceFileIncludes>
+              <excludePackageNames>*.impl.*</excludePackageNames>
+              <detectJavaApiLink>true</detectJavaApiLink>
+              <links>
+                <link>http://docs.hazelcast.org/docs/3.4/javadoc/</link>
+              </links>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.7.2.201409121644</version>
+        <executions>
+          <execution>
+            <id>jacoco-initialize</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>jacoco-site</id>
+            <phase>package</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.10.1</version>
+        <configuration>
+          <show>public</show>
+          <sourceFileExcludes>
+            <exclude>com/noctarius/tengi/impl/*/*.java</exclude>
+          </sourceFileExcludes>
+          <sourceFileIncludes>
+            <include>com/noctarius/tengi/*.java</include>
+          </sourceFileIncludes>
+          <excludePackageNames>*.impl.*</excludePackageNames>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <profiles>
+    <profile>
+      <id>release-sign-artifacts</id>
+      <activation>
+        <property>
+          <name>performRelease</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.2</version>
-                <configuration>
-                    <source>${java.compiler.source}</source>
-                    <target>${java.compiler.target}</target>
-                    <encoding>${java.compiler.encoding}</encoding>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <version>2.3.6</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <instructions>
-                        <Export-Package>
-                            com.noctarius.tengi.*
-                        </Export-Package>
-                        <Private-Package>
-                            com.noctarius.tengi.impl.*,
-                        </Private-Package>
-                    </instructions>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.rat</groupId>
-                <artifactId>apache-rat-plugin</artifactId>
-                <version>0.9</version>
-                <executions>
-                    <execution>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <excludes>
-                        <exclude>README.md</exclude>
-                        <exclude>LICENSE</exclude>
-                        <exclude>*.svg</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.4</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <show>public</show>
-                            <sourceFileExcludes>
-                                <exclude>com/noctarius/tengi/impl/*/*.java</exclude>
-                            </sourceFileExcludes>
-                            <sourceFileIncludes>
-                                <include>com/noctarius/tengi/*.java</include>
-                            </sourceFileIncludes>
-                            <excludePackageNames>*.impl.*</excludePackageNames>
-                            <detectJavaApiLink>true</detectJavaApiLink>
-                            <links>
-                                <link>http://docs.hazelcast.org/docs/3.4/javadoc/</link>
-                            </links>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.2.201409121644</version>
-                <executions>
-                    <execution>
-                        <id>jacoco-initialize</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>jacoco-site</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.1</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
         </plugins>
-    </build>
+      </build>
+    </profile>
+  </profiles>
 
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.1</version>
-                <configuration>
-                    <show>public</show>
-                    <sourceFileExcludes>
-                        <exclude>com/noctarius/tengi/impl/*/*.java</exclude>
-                    </sourceFileExcludes>
-                    <sourceFileIncludes>
-                        <include>com/noctarius/tengi/*.java</include>
-                    </sourceFileIncludes>
-                    <excludePackageNames>*.impl.*</excludePackageNames>
-                </configuration>
-            </plugin>
-        </plugins>
-    </reporting>
+  <distributionManagement>
+    <snapshotRepository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>Sonatype Nexus Snapshots</name>
+      <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <repository>
+      <id>sonatype-nexus-staging</id>
+      <name>Nexus Release Repository</name>
+      <url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
 
-    <profiles>
-        <profile>
-            <id>release-sign-artifacts</id>
-            <activation>
-                <property>
-                    <name>performRelease</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.1</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>sonatype-nexus-snapshots</id>
-            <name>Sonatype Nexus Snapshots</name>
-            <url>http://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>sonatype-nexus-staging</id>
-            <name>Nexus Release Repository</name>
-            <url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
-    <repositories>
-        <repository>
-            <id>sonatype-nexus-public</id>
-            <name>SonaType public snapshots and releases repository</name>
-            <url>https://oss.sonatype.org/content/groups/public</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
+  <repositories>
+    <repository>
+      <id>sonatype-nexus-public</id>
+      <name>SonaType public snapshots and releases repository</name>
+      <url>https://oss.sonatype.org/content/groups/public</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 </project>

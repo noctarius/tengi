@@ -63,7 +63,8 @@ public interface ReadableMemoryBuffer {
 
     String readString();
 
-    <O> O readObject(Protocol protocol);
+    <O> O readObject(Protocol protocol)
+            throws Exception;
 
     Identifier readIdentifier();
 

@@ -1,5 +1,8 @@
 package com.noctarius.tengi.server.transport.impl.negotiation;
 
+import com.noctarius.tengi.serialization.Serializer;
+import com.noctarius.tengi.server.server.ConnectionManager;
+import com.noctarius.tengi.server.transport.impl.ConnectionProcessor;
 import com.noctarius.tengi.server.transport.impl.http2.Http2ConnectionProcessor;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -18,9 +21,13 @@ public class Http2Negotiator
         extends ByteToMessageDecoder {
 
     private final int maxHttpContentLength;
+    private final ConnectionManager connectionManager;
+    private final Serializer serializer;
 
-    public Http2Negotiator(int maxHttpContentLength) {
+    public Http2Negotiator(int maxHttpContentLength, ConnectionManager connectionManager, Serializer serializer) {
         this.maxHttpContentLength = maxHttpContentLength;
+        this.connectionManager = connectionManager;
+        this.serializer = serializer;
     }
 
     @Override
@@ -68,7 +75,8 @@ public class Http2Negotiator
 
     private void switchToHttp2(ChannelHandlerContext ctx) {
         ChannelPipeline pipeline = ctx.pipeline();
-        pipeline.addLast("http2-connection-processor", new Http2ConnectionProcessor());
+        pipeline.addLast("http2-connection-processor", new Http2ConnectionProcessor(serializer));
+        //pipeline.addLast("connection-processor", new ConnectionProcessor(connectionManager, serializer));
         pipeline.remove(this);
     }
 
@@ -76,7 +84,7 @@ public class Http2Negotiator
         ChannelPipeline pipeline = ctx.pipeline();
         pipeline.addLast("httpCodec", new HttpServerCodec());
         pipeline.addLast("httpChunkAggregator", new HttpObjectAggregator(maxHttpContentLength));
-        pipeline.addLast("websocketNegotiator", new WebsocketNegotiator());
+        pipeline.addLast("websocketNegotiator", new WebsocketNegotiator(connectionManager, serializer));
     }
 
     private SelectedProtocol getProtocol(SSLEngine engine) {

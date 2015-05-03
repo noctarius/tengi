@@ -1,5 +1,6 @@
 package com.noctarius.tengi.server.transport.impl.http2;
 
+import com.noctarius.tengi.serialization.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.DefaultHttp2Connection;
@@ -12,15 +13,12 @@ import io.netty.handler.codec.http2.Http2Headers;
 public class Http2ConnectionProcessor
         extends Http2ConnectionHandler {
 
-    private static final String HTTP_HEADER_NAME_CONNECTIONID = "XX-tengi-connection-id";
+    private final Serializer serializer;
 
-    private static final String HTTP_HEADER_NAME_SUPPORTED_TRANSPORT_TYPES = "XX-tengi-transport-types";
-
-    private static final String HTTP_HEADER_NAME_TRANSPORT_TYPE = "XX-tengi-transport-type";
-
-    public Http2ConnectionProcessor() {
+    public Http2ConnectionProcessor(Serializer serializer) {
         super(new DefaultHttp2Connection(true), new InternalFrameAdapter());
         ((InternalFrameAdapter) decoder().listener()).encoder(encoder());
+        this.serializer = serializer;
     }
 
     private static class InternalFrameAdapter

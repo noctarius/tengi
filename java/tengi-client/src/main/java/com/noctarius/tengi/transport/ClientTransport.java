@@ -16,7 +16,6 @@
  */
 package com.noctarius.tengi.transport;
 
-import com.noctarius.tengi.connection.Connection;
 import com.noctarius.tengi.Transport;
 import com.noctarius.tengi.transport.tcp.TcpTransport;
 
@@ -38,11 +37,6 @@ public enum ClientTransport
     @Override
     public boolean isStreaming() {
         return transport.isStreaming();
-    }
-
-    @Override
-    public boolean accept(Connection connection) {
-        return transport.accept(connection);
     }
 
 }

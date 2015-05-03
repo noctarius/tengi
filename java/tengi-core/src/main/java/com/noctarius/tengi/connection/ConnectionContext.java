@@ -1,8 +1,10 @@
 package com.noctarius.tengi.connection;
 
 import com.noctarius.tengi.Identifier;
+import com.noctarius.tengi.Message;
 import com.noctarius.tengi.Transport;
-import io.netty.buffer.ByteBuf;
+import com.noctarius.tengi.buffer.MemoryBuffer;
+import com.noctarius.tengi.connection.impl.LongPollingRequest;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -24,6 +26,11 @@ public abstract class ConnectionContext {
         return transport;
     }
 
-    public abstract <T> CompletableFuture<T> writeByteBuf(ByteBuf buffer, T object);
+    public void processLongPollingRequest(LongPollingRequest request) {
+    }
 
+    public abstract CompletableFuture<Message> writeMemoryBuffer(MemoryBuffer memoryBuffer, Message object)
+            throws Exception;
+
+    public abstract CompletableFuture<Connection> close(Connection connection);
 }

@@ -1,5 +1,7 @@
 package com.noctarius.tengi.server.transport.impl.negotiation;
 
+import com.noctarius.tengi.serialization.Serializer;
+import com.noctarius.tengi.server.server.ConnectionManager;
 import com.noctarius.tengi.server.transport.impl.http.HttpConnectionProcessor;
 import com.noctarius.tengi.server.transport.impl.websocket.WebsocketConnectionProcessor;
 import io.netty.channel.ChannelHandlerContext;
@@ -16,6 +18,14 @@ public class WebsocketNegotiator
         extends ChannelInboundHandlerAdapter {
 
     private static final String WEBSOCKET_PATH = "/wss";
+
+    private final ConnectionManager connectionManager;
+    private final Serializer serializer;
+
+    public WebsocketNegotiator(ConnectionManager connectionManager, Serializer serializer) {
+        this.connectionManager = connectionManager;
+        this.serializer = serializer;
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object object)
@@ -38,7 +48,7 @@ public class WebsocketNegotiator
 
     private void switchToHttpLongPolling(ChannelHandlerContext ctx) {
         ChannelPipeline pipeline = ctx.pipeline();
-        pipeline.addLast("http-longpolling-connection-processor", new HttpConnectionProcessor());
+        pipeline.addLast("http-connection-processor", new HttpConnectionProcessor(connectionManager, serializer));
         pipeline.remove(this);
     }
 
@@ -51,7 +61,8 @@ public class WebsocketNegotiator
         } else {
             handshaker.handshake(ctx.channel(), request);
             ChannelPipeline pipeline = ctx.pipeline();
-            pipeline.addLast("websocket-connection-processor", new WebsocketConnectionProcessor(handshaker));
+            pipeline.addLast("websocket-connection-processor",
+                    new WebsocketConnectionProcessor(handshaker, connectionManager, serializer));
             pipeline.remove(this);
         }
     }

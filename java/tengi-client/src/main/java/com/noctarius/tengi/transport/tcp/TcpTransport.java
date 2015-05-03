@@ -16,7 +16,6 @@
  */
 package com.noctarius.tengi.transport.tcp;
 
-import com.noctarius.tengi.connection.Connection;
 import com.noctarius.tengi.Transport;
 
 public class TcpTransport
@@ -32,11 +31,6 @@ public class TcpTransport
     @Override
     public boolean isStreaming() {
         return true;
-    }
-
-    @Override
-    public boolean accept(Connection connection) {
-        return false;
     }
 
 }

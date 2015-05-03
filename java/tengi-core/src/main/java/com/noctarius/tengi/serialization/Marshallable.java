@@ -41,7 +41,8 @@ public interface Marshallable {
      * @param memoryBuffer WritableMemoryBuffer to write to
      * @param protocol     Protocol instance for additional protocol complexity
      */
-    void marshall(WritableMemoryBuffer memoryBuffer, Protocol protocol);
+    void marshall(WritableMemoryBuffer memoryBuffer, Protocol protocol)
+            throws Exception;
 
     /**
      * This method implements logic to un-marshall (de-serialize) this
@@ -52,6 +53,7 @@ public interface Marshallable {
      * @param memoryBuffer ReadableMemoryBuffer to read from
      * @param protocol     Protocol instance for additional protocol complexity
      */
-    void unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol);
+    void unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
+            throws Exception;
 
 }

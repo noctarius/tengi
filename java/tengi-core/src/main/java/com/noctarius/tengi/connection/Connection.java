@@ -20,9 +20,7 @@ import com.noctarius.tengi.Identifier;
 import com.noctarius.tengi.Message;
 import com.noctarius.tengi.Transport;
 import com.noctarius.tengi.listener.ConnectionListener;
-import com.noctarius.tengi.listener.FrameListener;
 import com.noctarius.tengi.listener.MessageListener;
-import com.noctarius.tengi.serialization.Marshallable;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -52,26 +50,6 @@ public interface Connection {
      * @return the transport of this connection
      */
     Transport getTransport();
-
-    /**
-     * Adds a {@link com.noctarius.tengi.listener.FrameListener}
-     * to this connection.
-     *
-     * @param frameListener FrameListener instance to add
-     * @return a unique identifier for this registration
-     */
-    Identifier addFrameListener(FrameListener frameListener);
-
-    /**
-     * <p>Removes a previously registered {@link com.noctarius.tengi.listener.FrameListener}
-     * based on the {@link com.noctarius.tengi.Identifier} returned
-     * from registration.</p>
-     * <p>Using this method anonymous listener implementations or Java 8
-     * lambdas can be registered and removed.</p>
-     *
-     * @param registrationIdentifier the Identifier generated while registration
-     */
-    void removeFrameListener(Identifier registrationIdentifier);
 
     /**
      * Adds a {@link com.noctarius.tengi.listener.MessageListener}
@@ -114,24 +92,6 @@ public interface Connection {
     void removeConnectionListener(Identifier registrationIdentifier);
 
     /**
-     * Writes a {@link com.noctarius.tengi.Message} object to this connection.
-     *
-     * @param message Message instance to write
-     * @param <M>     the type of the message
-     * @return a CompletionFuture to add additional behavior after the message is written
-     */
-    <M extends Message> CompletableFuture<M> writeMessage(M message);
-
-    /**
-     * Writes a {@link com.noctarius.tengi.serialization.Marshallable} object to this connection.
-     *
-     * @param marshallable Marshallable instance to write
-     * @param <M>          the type of a Marshallable object
-     * @return a CompletionFuture to add additional behavior after the object is written
-     */
-    <M extends Marshallable> CompletableFuture<M> writeMarshallable(M marshallable);
-
-    /**
      * Writes a common object to this connection. This types needs to be serializable using
      * a previously registered {@link com.noctarius.tengi.serialization.marshaller.Marshaller} or
      * must be of a commonly supported (internally supported) type. Objects send using this method
@@ -140,10 +100,10 @@ public interface Connection {
      * on the receiver side.
      *
      * @param object object to write
-     * @param <O>    the type of an object
      * @return a CompletionFuture to add additional behavior after the object is written
      */
-    <O> CompletableFuture<O> writeObject(O object);
+    <O> CompletableFuture<Message> writeObject(O object)
+            throws Exception;
 
     /**
      * Closes the connection and releases any internally acquired resources that are assigned

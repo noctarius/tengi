@@ -16,8 +16,6 @@
  */
 package com.noctarius.tengi;
 
-import com.noctarius.tengi.connection.Connection;
-
 /**
  * The <tt>Transport</tt> interface describes a basic transport
  * definition. A transport layer is any kind of data transmission
@@ -45,17 +43,5 @@ public interface Transport {
      * @return true if Transport is streaming, otherwise false
      */
     boolean isStreaming();
-
-    /**
-     * This method tries to accept the given
-     * {@link com.noctarius.tengi.connection.Connection} and returns <tt>true</tt>
-     * if accepted or <tt>false</tt> if connection does not support
-     * this transportation type (for example because of the client
-     * does not) or the acceptance was not possible.
-     *
-     * @param connection the connection to accept
-     * @return true if accepted, otherwise false
-     */
-    boolean accept(Connection connection);
 
 }

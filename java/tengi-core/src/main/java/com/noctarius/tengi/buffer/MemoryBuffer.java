@@ -23,10 +23,6 @@ public interface MemoryBuffer
 
     int maxCapacity();
 
-    boolean growing();
-
-    void free();
-
     void clear();
 
     MemoryBuffer duplicate();

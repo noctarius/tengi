@@ -6,9 +6,9 @@ import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 import com.noctarius.tengi.serialization.Protocol;
 import com.noctarius.tengi.serialization.marshaller.Marshaller;
 import com.noctarius.tengi.utils.ExceptionUtil;
-import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 
 import java.lang.reflect.Constructor;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 enum PacketMarshaller
@@ -16,7 +16,7 @@ enum PacketMarshaller
 
     INSTANCE;
 
-    private final ConcurrentMap<Class<Packet>, Construction> constructors = new ConcurrentHashMapV8<>();
+    private final ConcurrentMap<Class<Packet>, Construction> constructors = new ConcurrentHashMap<>();
 
     @Override
     public short getMarshallerId() {

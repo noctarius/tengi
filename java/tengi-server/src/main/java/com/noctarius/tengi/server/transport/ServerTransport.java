@@ -17,14 +17,18 @@
 package com.noctarius.tengi.server.transport;
 
 import com.noctarius.tengi.Transport;
-import com.noctarius.tengi.connection.Connection;
 import com.noctarius.tengi.server.transport.impl.http.HttpTransport;
 import com.noctarius.tengi.server.transport.impl.tcp.TcpTransport;
 
 public enum ServerTransport
         implements Transport {
+
+    HTTP_TRANSPORT(new HttpTransport()),
+    HTTP2_TRANSPORT(null),
+    WEBSOCKET_TRANSPORT(null),
+    RDP_TRANSPORT(null),
     TCP_TRANSPORT(new TcpTransport()),
-    HTTP_TRANSPORT(new HttpTransport());
+    UDP_TRANSPORT(null);
 
     private final Transport transport;
 
@@ -40,11 +44,6 @@ public enum ServerTransport
     @Override
     public boolean isStreaming() {
         return transport.isStreaming();
-    }
-
-    @Override
-    public boolean accept(Connection connection) {
-        return transport.accept(connection);
     }
 
 }

@@ -28,13 +28,14 @@ import org.junit.Test;
 public class ApiTestCase {
 
     @Test
-    public void testInitialization() throws Exception {
+    public void testInitialization()
+            throws Exception {
 
         // Create configuration using Builder
         Configuration configuration = new Configuration.Builder()
 
                 // Configure custom Marshaller
-                .addMarshaller(ApiTestCase::isMarshallable, ApiTestCase::read, ApiTestCase::write)
+                .addMarshaller(ApiTestCase::isMarshallable, (short) 100, ApiTestCase::read, ApiTestCase::write)
 
                         // Configure available transports
                 .addTransport(ClientTransport.TCP_TRANSPORT)
@@ -49,24 +50,27 @@ public class ApiTestCase {
         client.connect("127.0.0.1", System.out::println);
     }
 
-    private static void write(Object object, WritableMemoryBuffer memoryBuffer, Protocol protocol) {
+    private static void write(Object object, WritableMemoryBuffer memoryBuffer, Protocol protocol)
+            throws Exception {
+
         memoryBuffer.writeByte(10);
-        if (protocol.writeNullable(object, memoryBuffer)) {
+        protocol.writeNullable(object, memoryBuffer, (o, b, p) -> {
             ((MyWritable) object).write(memoryBuffer);
-        }
+        });
     }
 
-    private static Object read(ReadableMemoryBuffer memoryBuffer, Protocol protocol) {
+    private static Object read(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
+            throws Exception {
+
         int typeId = memoryBuffer.readByte();
         if (typeId != 10) {
             throw new IllegalStateException();
         }
-        if (protocol.readNullable(memoryBuffer)) {
+        return protocol.readNullable(memoryBuffer, (b, p) -> {
             MyWritable myWritable = new MyWritable();
             myWritable.read(memoryBuffer);
             return myWritable;
-        }
-        return null;
+        });
     }
 
     private static MarshallerFilter.Result isMarshallable(Object object) {

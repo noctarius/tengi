@@ -17,29 +17,37 @@
 package com.noctarius.tengi.connection;
 
 import com.noctarius.tengi.Identifier;
+import com.noctarius.tengi.Message;
 import com.noctarius.tengi.Transport;
+import com.noctarius.tengi.buffer.MemoryBuffer;
 import com.noctarius.tengi.listener.ConnectionListener;
-import com.noctarius.tengi.listener.FrameListener;
 import com.noctarius.tengi.listener.MessageListener;
+import com.noctarius.tengi.serialization.Serializer;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractConnection
         implements Connection {
 
+    private final ConnectionContext connectionContext;
     private final Identifier connectionId;
     private final Transport transport;
+    private final Serializer serializer;
 
-    private final Map<Identifier, FrameListener> frameListeners = new HashMap<>();
-    private final Map<Identifier, MessageListener> messageListeners = new HashMap<>();
-    private final Map<Identifier, ConnectionListener> connectionListeners = new HashMap<>();
+    private final Map<Identifier, MessageListener> messageListeners = new ConcurrentHashMap<>();
+    private final Map<Identifier, ConnectionListener> connectionListeners = new ConcurrentHashMap<>();
 
-    protected AbstractConnection(Identifier connectionId, Transport transport) {
+    protected AbstractConnection(ConnectionContext connectionContext, Identifier connectionId, //
+                                 Transport transport, Serializer serializer) {
+
+        this.connectionContext = connectionContext;
         this.connectionId = connectionId;
         this.transport = transport;
+        this.serializer = serializer;
     }
 
     @Override
@@ -50,24 +58,6 @@ public abstract class AbstractConnection
     @Override
     public Transport getTransport() {
         return transport;
-    }
-
-    @Override
-    public Identifier addFrameListener(FrameListener frameListener) {
-        for (FrameListener fl : frameListeners.values()) {
-            if (fl == frameListener) {
-                throw new IllegalStateException("FrameListener is already registered");
-            }
-        }
-
-        Identifier identifier = Identifier.randomIdentifier();
-        frameListeners.put(identifier, frameListener);
-        return identifier;
-    }
-
-    @Override
-    public void removeFrameListener(Identifier registrationIdentifier) {
-        frameListeners.remove(registrationIdentifier);
     }
 
     @Override
@@ -106,8 +96,24 @@ public abstract class AbstractConnection
         connectionListeners.remove(registrationIdentifier);
     }
 
-    protected Collection<FrameListener> getFrameListeners() {
-        return Collections.unmodifiableCollection(frameListeners.values());
+    @Override
+    public <O> CompletableFuture<Message> writeObject(O object)
+            throws Exception {
+
+        Message message;
+        if (object instanceof Message) {
+            message = (Message) object;
+        } else {
+            message = Message.create(object);
+        }
+
+        MemoryBuffer memoryBuffer = serializer.writeObject(message);
+        return connectionContext.writeMemoryBuffer(memoryBuffer, message);
+    }
+
+    @Override
+    public CompletableFuture<Connection> close() {
+        return connectionContext.close(this);
     }
 
     protected Collection<MessageListener> getMessageListeners() {
@@ -116,6 +122,10 @@ public abstract class AbstractConnection
 
     protected Collection<ConnectionListener> getConnectionListeners() {
         return Collections.unmodifiableCollection(connectionListeners.values());
+    }
+
+    protected ConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
 }

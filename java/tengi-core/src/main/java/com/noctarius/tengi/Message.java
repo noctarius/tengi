@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi;
 
-import com.noctarius.tengi.serialization.Marshallable;
+import com.noctarius.tengi.utils.Validate;
 
 /**
  * The <tt>Message</tt> interface defines a message which consists of an
@@ -24,15 +24,26 @@ import com.noctarius.tengi.serialization.Marshallable;
  * have a registered {@link com.noctarius.tengi.serialization.marshaller.Marshaller}
  * or is an internally handled type.
  */
-public interface Message
-        extends Marshallable {
+public final class Message {
+
+    private final Identifier messageId;
+    private final Object body;
+
+    private Message(Identifier messageId, Object body) {
+        Validate.notNull("messageId", messageId);
+        Validate.notNull("body", body);
+        this.messageId = messageId;
+        this.body = body;
+    }
 
     /**
      * Returns the unique message Id.
      *
      * @return the message id
      */
-    Identifier getMessageId();
+    public Identifier getMessageId() {
+        return messageId;
+    }
 
     /**
      * Returns the messages body object. This object is the real value of
@@ -43,11 +54,50 @@ public interface Message
      * @param <O> the type of the messages object body
      * @return the message body
      */
-    <O> O getBody();
+    public <O> O getBody() {
+        return (O) body;
+    }
 
     public static Message create(Object body) {
-        Identifier identifier = Identifier.randomIdentifier();
-        return null;
+        Identifier messageId = Identifier.randomIdentifier();
+        return new Message(messageId, body);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Message)) {
+            return false;
+        }
+
+        Message message = (Message) o;
+
+        if (!body.equals(message.body)) {
+            return false;
+        }
+        if (!messageId.equals(message.messageId)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = messageId.hashCode();
+        result = 31 * result + body.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Message{" + "messageId=" + messageId + ", body=" + body + '}';
+    }
+
+    public static Message create(Identifier messageId, Object body) {
+        return new Message(messageId, body);
     }
 
 }

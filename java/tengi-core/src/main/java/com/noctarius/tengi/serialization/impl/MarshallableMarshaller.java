@@ -6,9 +6,9 @@ import com.noctarius.tengi.serialization.Marshallable;
 import com.noctarius.tengi.serialization.Protocol;
 import com.noctarius.tengi.serialization.marshaller.Marshaller;
 import com.noctarius.tengi.utils.ExceptionUtil;
-import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 
 import java.lang.reflect.Constructor;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 enum MarshallableMarshaller
@@ -16,7 +16,7 @@ enum MarshallableMarshaller
 
     INSTANCE;
 
-    private final ConcurrentMap<Class<Marshallable>, Constructor<Marshallable>> constructors = new ConcurrentHashMapV8<>();
+    private final ConcurrentMap<Class<Marshallable>, Constructor<Marshallable>> constructors = new ConcurrentHashMap<>();
 
     @Override
     public short getMarshallerId() {

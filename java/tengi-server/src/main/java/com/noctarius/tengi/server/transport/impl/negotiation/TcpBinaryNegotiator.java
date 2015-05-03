@@ -1,5 +1,7 @@
 package com.noctarius.tengi.server.transport.impl.negotiation;
 
+import com.noctarius.tengi.serialization.Serializer;
+import com.noctarius.tengi.serialization.impl.DefaultProtocolConstants;
 import com.noctarius.tengi.server.server.ConnectionManager;
 import com.noctarius.tengi.server.transport.impl.tcp.TcpConnectionProcessor;
 import io.netty.buffer.ByteBuf;
@@ -18,11 +20,15 @@ public class TcpBinaryNegotiator
     private final boolean detectSsl;
     private final boolean detectCompression;
     private final ConnectionManager connectionManager;
+    private final Serializer serializer;
 
-    public TcpBinaryNegotiator(boolean detectSsl, boolean detectCompression, ConnectionManager connectionManager) {
+    public TcpBinaryNegotiator(boolean detectSsl, boolean detectCompression, //
+                               ConnectionManager connectionManager, Serializer serializer) {
+
         this.detectSsl = detectSsl;
         this.detectCompression = detectCompression;
         this.connectionManager = connectionManager;
+        this.serializer = serializer;
     }
 
     public void channelRead(ChannelHandlerContext ctx, Object object)
@@ -45,12 +51,12 @@ public class TcpBinaryNegotiator
 
         } else {
             // Read the magic header
-            int magicByte0 = in.getUnsignedByte(in.readerIndex());
-            int magicByte1 = in.getUnsignedByte(in.readerIndex() + 1);
-            int magicByte2 = in.getUnsignedByte(in.readerIndex() + 2);
-            int magicByte3 = in.getUnsignedByte(in.readerIndex() + 3);
+            int magic0 = in.getUnsignedByte(in.readerIndex());
+            int magic1 = in.getUnsignedByte(in.readerIndex() + 1);
+            int magic2 = in.getUnsignedByte(in.readerIndex() + 2);
+            int magic3 = in.getUnsignedByte(in.readerIndex() + 3);
 
-            boolean acceptedProtocol = switchProtocol(magicByte0, magicByte1, magicByte2, magicByte3, ctx);
+            boolean acceptedProtocol = switchProtocol(in, magic0, magic1, magic2, magic3, ctx);
             if (!acceptedProtocol) {
                 // Illegal protocol header or unknown protocol request
                 in.clear();
@@ -61,40 +67,41 @@ public class TcpBinaryNegotiator
         ctx.fireChannelRead(object);
     }
 
-    private boolean switchProtocol(int magicByte0, int magicByte1, int magicByte2, int magicByte3, ChannelHandlerContext ctx) {
-        switch (magicByte0) {
+    private boolean switchProtocol(ByteBuf in, int magic0, int magic1, int magic2, int magic3, ChannelHandlerContext ctx) {
+        switch (magic0) {
             case 0x1F:
-                if (magicByte1 == 0x8B && detectCompression) {
+                if (magic1 == 0x8B && detectCompression) {
                     enableGZIP(ctx);
                 }
                 break;
 
             case 0xFF:
-                if (magicByte1 == 's' && magicByte2 == 'N' && magicByte3 == 'a' && detectCompression) {
+                if (magic1 == 's' && magic2 == 'N' && magic3 == 'a' && detectCompression) {
                     enableSnappy(ctx);
                 }
                 break;
 
             case 'G':
-                if (magicByte1 == 'E' && magicByte2 == 'T') {
+                if (magic1 == 'E' && magic2 == 'T') {
                     switchToHttpNegotiation(ctx);
                 }
                 break;
 
             case 'P':
-                if (magicByte1 == 'O' && magicByte2 == 'S' && magicByte3 == 'T') {
+                if (magic1 == 'O' && magic2 == 'S' && magic3 == 'T') {
                     switchToHttpNegotiation(ctx);
                 }
                 break;
 
             case 'C':
-                if (magicByte1 == 'O' && magicByte2 == 'N' && magicByte3 == 'N') {
+                if (magic1 == 'O' && magic2 == 'N' && magic3 == 'N') {
                     switchToHttpNegotiation(ctx);
                 }
                 break;
 
             case 'T':
-                if (magicByte1 == 'e' && magicByte2 == 'N' && magicByte3 == 'g') {
+                if (magic1 == 'e' && magic2 == 'N' && magic3 == 'g') {
+                    in.skipBytes(DefaultProtocolConstants.PROTOCOL_MAGIC_HEADER.length);
                     switchToNativeTcp(ctx);
                 }
                 break;
@@ -108,13 +115,13 @@ public class TcpBinaryNegotiator
 
     private void switchToHttpNegotiation(ChannelHandlerContext ctx) {
         ChannelPipeline pipeline = ctx.pipeline();
-        pipeline.addLast("httpNegotiator", new Http2Negotiator(1024 * 1024));
+        pipeline.addLast("httpNegotiator", new Http2Negotiator(1024 * 1024, connectionManager, serializer));
         pipeline.remove(this);
     }
 
     private void switchToNativeTcp(ChannelHandlerContext ctx) {
         ChannelPipeline pipeline = ctx.pipeline();
-        pipeline.addLast("tcp-connection-processor", new TcpConnectionProcessor());
+        pipeline.addLast("tcp-connection-processor", new TcpConnectionProcessor(connectionManager, serializer));
         pipeline.remove(this);
     }
 
@@ -128,7 +135,7 @@ public class TcpBinaryNegotiator
     private void enableSsl(ChannelHandlerContext ctx) {
         ChannelPipeline pipeline = ctx.pipeline();
         pipeline.addLast("ssl", connectionManager.getSslContext().newHandler(ctx.alloc()));
-        pipeline.addLast("negotiationSSL", new TcpBinaryNegotiator(false, true, connectionManager));
+        pipeline.addLast("negotiationSSL", new TcpBinaryNegotiator(false, true, connectionManager, serializer));
         pipeline.remove(this);
     }
 
@@ -136,7 +143,7 @@ public class TcpBinaryNegotiator
         ChannelPipeline pipeline = ctx.pipeline();
         pipeline.addLast("gzipinflater", ZlibCodecFactory.newZlibEncoder(ZlibWrapper.GZIP));
         pipeline.addLast("gzipdeflater", ZlibCodecFactory.newZlibDecoder(ZlibWrapper.GZIP));
-        pipeline.addLast("negotiationGZIP", new TcpBinaryNegotiator(true, false, connectionManager));
+        pipeline.addLast("negotiationGZIP", new TcpBinaryNegotiator(true, false, connectionManager, serializer));
         pipeline.remove(this);
     }
 
@@ -144,7 +151,7 @@ public class TcpBinaryNegotiator
         ChannelPipeline pipeline = ctx.pipeline();
         pipeline.addLast("snappyinflater", new SnappyFrameEncoder());
         pipeline.addLast("snappydeflater", new SnappyFrameDecoder());
-        pipeline.addLast("negotiationSnappy", new TcpBinaryNegotiator(true, false, connectionManager));
+        pipeline.addLast("negotiationSnappy", new TcpBinaryNegotiator(true, false, connectionManager, serializer));
         pipeline.remove(this);
     }
 

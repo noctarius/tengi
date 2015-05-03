@@ -10,7 +10,6 @@ import com.noctarius.tengi.utils.Validate;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 @TypeId(DefaultProtocolConstants.TYPEID_PACKET)
 public class Packet
@@ -40,7 +39,9 @@ public class Packet
     }
 
     @Override
-    public final void marshall(WritableMemoryBuffer memoryBuffer, Protocol protocol) {
+    public final void marshall(WritableMemoryBuffer memoryBuffer, Protocol protocol)
+            throws Exception {
+
         memoryBuffer.writeInt(values.size());
         for (Map.Entry<String, Object> entry : values.entrySet()) {
             memoryBuffer.writeString(entry.getKey());
@@ -49,11 +50,13 @@ public class Packet
     }
 
     @Override
-    public final void unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol) {
+    public final void unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
+            throws Exception {
+
         int size = memoryBuffer.readInt();
         for (int i = 0; i < size; i++) {
             String key = memoryBuffer.readString();
-            Objects value = memoryBuffer.readObject(protocol);
+            Object value = memoryBuffer.readObject(protocol);
             values.put(key, value);
         }
     }
@@ -84,5 +87,10 @@ public class Packet
         int result = values.hashCode();
         result = 31 * result + packetName.hashCode();
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Packet{" + "values=" + values + ", packetName='" + packetName + '\'' + '}';
     }
 }

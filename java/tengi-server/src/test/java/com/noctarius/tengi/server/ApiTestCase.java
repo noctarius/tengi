@@ -16,11 +16,11 @@
  */
 package com.noctarius.tengi.server;
 
-import com.noctarius.tengi.connection.Connection;
 import com.noctarius.tengi.Message;
 import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
 import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 import com.noctarius.tengi.config.Configuration;
+import com.noctarius.tengi.connection.Connection;
 import com.noctarius.tengi.serialization.Protocol;
 import com.noctarius.tengi.serialization.marshaller.MarshallerFilter;
 import com.noctarius.tengi.server.server.Server;
@@ -38,7 +38,7 @@ public class ApiTestCase {
         Configuration configuration = new Configuration.Builder()
 
                 // Configure custom Marshaller
-                .addMarshaller(ApiTestCase::isMarshallable, ApiTestCase::read, ApiTestCase::write)
+                .addMarshaller(ApiTestCase::isMarshallable, (short) 100, ApiTestCase::read, ApiTestCase::write)
 
                         // Configure available transports
                 .addTransport(ServerTransport.TCP_TRANSPORT)
@@ -67,24 +67,27 @@ public class ApiTestCase {
         System.out.println(message);
     }
 
-    private static void write(Object object, WritableMemoryBuffer memoryBuffer, Protocol protocol) {
+    private static void write(Object object, WritableMemoryBuffer memoryBuffer, Protocol protocol)
+            throws Exception {
+
         memoryBuffer.writeByte(10);
-        if (protocol.writeNullable(object, memoryBuffer)) {
+        protocol.writeNullable(object, memoryBuffer, (o, b, p) -> {
             ((MyWritable) object).write(memoryBuffer);
-        }
+        });
     }
 
-    private static Object read(ReadableMemoryBuffer memoryBuffer, Protocol protocol) {
+    private static Object read(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
+            throws Exception {
+
         int typeId = memoryBuffer.readByte();
         if (typeId != 10) {
             throw new IllegalStateException();
         }
-        if (protocol.readNullable(memoryBuffer)) {
+        return protocol.readNullable(memoryBuffer, (b, p) -> {
             MyWritable myWritable = new MyWritable();
             myWritable.read(memoryBuffer);
             return myWritable;
-        }
-        return null;
+        });
     }
 
     private static MarshallerFilter.Result isMarshallable(Object object) {

@@ -20,17 +20,18 @@ import com.noctarius.tengi.Identifier;
 import com.noctarius.tengi.buffer.MemoryBuffer;
 import com.noctarius.tengi.serialization.Protocol;
 import com.noctarius.tengi.utils.UnsafeUtil;
+import io.netty.buffer.AbstractReferenceCountedByteBuf;
+import io.netty.buffer.ByteBuf;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 
-public abstract class AbstractMemoryBuffer
+class NettyMemoryBuffer
         implements MemoryBuffer {
 
     private static final Unsafe UNSAFE = UnsafeUtil.UNSAFE;
 
-    private static final long LOCK_COUNTER_OFFSET;
     private static final long IDENTIFIER_DATA_OFFSET;
 
     static {
@@ -39,10 +40,6 @@ public abstract class AbstractMemoryBuffer
         }
 
         try {
-            Field lockCounter = AbstractMemoryBuffer.class.getDeclaredField("lockCounter");
-            lockCounter.setAccessible(true);
-            LOCK_COUNTER_OFFSET = UNSAFE.objectFieldOffset(lockCounter);
-
             Field identifierData = Identifier.class.getDeclaredField("data");
             identifierData.setAccessible(true);
             IDENTIFIER_DATA_OFFSET = UNSAFE.objectFieldOffset(identifierData);
@@ -51,92 +48,87 @@ public abstract class AbstractMemoryBuffer
         }
     }
 
-    private volatile int lockCounter = 0;
+    private final AbstractReferenceCountedByteBuf buffer;
+    private volatile boolean released = false;
 
-    protected int writerIndex = 0;
-
-    protected int readerIndex = 0;
+    public NettyMemoryBuffer(AbstractReferenceCountedByteBuf buffer) {
+        this.buffer = buffer;
+    }
 
     @Override
     public void lock() {
-        if (lockCounter == -1) {
-            throw new IllegalStateException("MemoryBuffer already freed");
-        }
-
-        while (true) {
-            int lockCounter = this.lockCounter;
-            int newLockCounter = lockCounter + 1;
-            if (UNSAFE.compareAndSwapInt(this, LOCK_COUNTER_OFFSET, lockCounter, newLockCounter)) {
-                return;
-            }
-        }
+        buffer.retain();
     }
 
     @Override
     public void release() {
-        if (lockCounter == -1) {
-            throw new IllegalStateException("MemoryBuffer already freed");
-        }
-
-        while (true) {
-            int lockCounter = this.lockCounter;
-            int newLockCounter = lockCounter - 1;
-            if (UNSAFE.compareAndSwapInt(this, LOCK_COUNTER_OFFSET, lockCounter, newLockCounter)) {
-                if (newLockCounter == -1) {
-                    free();
-                }
-                return;
-            }
+        if (buffer.release()) {
+            released = true;
         }
     }
 
     @Override
     public boolean isReleased() {
-        return lockCounter == -1;
+        return released;
     }
 
     @Override
     public boolean isReleasable() {
-        return lockCounter == 0;
+        return buffer.refCnt() == 0;
+    }
+
+    @Override
+    public int capacity() {
+        return buffer.capacity();
+    }
+
+    @Override
+    public int maxCapacity() {
+        return buffer.maxCapacity();
     }
 
     @Override
     public void clear() {
-        writerIndex = 0;
-        readerIndex = 0;
+        buffer.clear();
+    }
+
+    @Override
+    public MemoryBuffer duplicate() {
+        return null;
     }
 
     @Override
     public boolean readable() {
-        return readerIndex() < writerIndex();
+        return buffer.isReadable();
     }
 
     @Override
     public int readableBytes() {
-        return writerIndex() - readerIndex();
+        return buffer.readableBytes();
     }
 
     @Override
     public boolean readBoolean() {
-        return readByte() == 1 ? true : false;
+        return buffer.readBoolean();
     }
 
     @Override
     public byte readByte() {
-        return readByte(readerIndex++);
+        return buffer.readByte();
     }
 
     @Override
     public int readBytes(byte[] bytes) {
-        return readBytes(bytes, 0, bytes.length);
+        int length = Math.min(bytes.length, readableBytes());
+        buffer.readBytes(bytes, 0, length);
+        return length;
     }
 
     @Override
     public int readBytes(byte[] bytes, int offset, int length) {
-        for (int pos = offset; pos < offset + length; pos++) {
-            bytes[pos] = readByte();
-        }
-        return length;
+        int realLength = Math.min(length, readableBytes());
+        buffer.readBytes(bytes, 0, realLength);
+        return realLength;
     }
 
     @Override
@@ -165,25 +157,25 @@ public abstract class AbstractMemoryBuffer
 
     @Override
     public int readBuffer(MemoryBuffer memoryBuffer, int offset, int length) {
-        if (memoryBuffer instanceof AbstractMemoryBuffer) {
-            AbstractMemoryBuffer mb = (AbstractMemoryBuffer) memoryBuffer;
-            for (long pos = offset; pos < offset + length; pos++) {
-                mb.writeByte(offset, readByte());
-            }
+        int realLength = Math.min(length, memoryBuffer.writableBytes());
+        if (memoryBuffer instanceof NettyMemoryBuffer) {
+            NettyMemoryBuffer mb = (NettyMemoryBuffer) memoryBuffer;
+            ByteBuf other = mb.buffer;
+
+            other.writeBytes(buffer, offset, realLength);
+
         } else {
-            int mark = memoryBuffer.writerIndex();
             memoryBuffer.writerIndex(offset);
-            for (int pos = offset; pos < offset + length; pos++) {
+            for (int i = offset; i < offset + realLength; i++) {
                 memoryBuffer.writeByte(readByte());
             }
-            memoryBuffer.writerIndex(Math.max(mark, memoryBuffer.writerIndex()));
         }
-        return length;
+        return realLength;
     }
 
     @Override
     public short readUnsignedByte() {
-        return (short) (readByte() & 0xFF);
+        return buffer.readUnsignedByte();
     }
 
     @Override
@@ -244,44 +236,43 @@ public abstract class AbstractMemoryBuffer
 
     @Override
     public int readerIndex() {
-        return readerIndex;
+        return buffer.readerIndex();
     }
 
     @Override
     public void readerIndex(int readerIndex) {
-        this.readerIndex = readerIndex;
+        buffer.readerIndex(readerIndex);
     }
 
     @Override
     public boolean writable() {
-        return growing() || writerIndex() < maxCapacity();
+        return buffer.isWritable();
     }
 
     @Override
     public void writeBoolean(boolean value) {
-        writeByte((byte) (value ? 1 : 0));
+        buffer.writeBoolean(value);
     }
 
     @Override
     public void writeByte(int value) {
-        writeByte(writerIndex++, (byte) value);
+        buffer.writeByte(value);
     }
 
     @Override
     public int writableBytes() {
-        return maxCapacity() - writerIndex();
+        return buffer.writableBytes();
     }
 
     @Override
     public void writeBytes(byte[] bytes) {
-        writeBytes(bytes, 0, bytes.length);
+        buffer.writeBytes(bytes);
     }
 
     @Override
     public void writeBytes(byte[] bytes, int offset, int length) {
-        for (int pos = offset; pos < length; pos++) {
-            writeByte(bytes[pos]);
-        }
+        int realLength = Math.min(bytes.length, writableBytes());
+        buffer.writeBytes(bytes, offset, realLength);
     }
 
     @Override
@@ -309,24 +300,24 @@ public abstract class AbstractMemoryBuffer
 
     @Override
     public void writeBuffer(MemoryBuffer memoryBuffer, int offset, int length) {
-        if (memoryBuffer instanceof AbstractMemoryBuffer) {
-            AbstractMemoryBuffer mb = (AbstractMemoryBuffer) memoryBuffer;
-            for (long pos = offset; pos < offset + length; pos++) {
-                writeByte(mb.readByte(offset));
-            }
+        int realLength = Math.min(length, memoryBuffer.readableBytes());
+        if (memoryBuffer instanceof NettyMemoryBuffer) {
+            NettyMemoryBuffer mb = (NettyMemoryBuffer) memoryBuffer;
+            ByteBuf other = mb.buffer;
+
+            buffer.writeBytes(other, offset, realLength);
+
         } else {
-            int mark = memoryBuffer.readerIndex();
             memoryBuffer.readerIndex(offset);
-            for (int pos = offset; pos < offset + length; pos++) {
+            for (int i = offset; i < offset + realLength; i++) {
                 writeByte(memoryBuffer.readByte());
             }
-            memoryBuffer.readerIndex(Math.max(mark, memoryBuffer.readerIndex()));
         }
     }
 
     @Override
     public void writeUnsignedByte(short value) {
-        writeByte((byte) value);
+        buffer.writeByte(value);
     }
 
     @Override
@@ -385,37 +376,27 @@ public abstract class AbstractMemoryBuffer
     }
 
     @Override
-    public <O> O readObject(Protocol protocol) {
-        // TODO
-        return null;
+    public <O> O readObject(Protocol protocol)
+            throws Exception {
+
+        return protocol.readObject(this);
     }
 
     @Override
-    public void writeObject(Object object, Protocol protocol) {
-        // TODO
+    public void writeObject(Object object, Protocol protocol)
+            throws Exception {
+
+        protocol.writeObject(object, this);
     }
 
     @Override
     public int writerIndex() {
-        return writerIndex;
+        return buffer.writerIndex();
     }
 
     @Override
     public void writerIndex(int writerIndex) {
-        this.writerIndex = writerIndex;
+        buffer.writerIndex(writerIndex);
     }
 
-    protected void rangeCheck(long offset) {
-        if (offset < 0) {
-            throw new IndexOutOfBoundsException(String.format("Offset %s is below 0", offset));
-        }
-        if (offset >= maxCapacity()) {
-            throw new IndexOutOfBoundsException(
-                    String.format("Offset %s is higher than maximum legal index ", offset, (maxCapacity() - 1)));
-        }
-    }
-
-    protected abstract void writeByte(long offset, byte value);
-
-    protected abstract byte readByte(long offset);
 }

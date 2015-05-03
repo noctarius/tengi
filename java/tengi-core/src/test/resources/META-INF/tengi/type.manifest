@@ -1,3 +1,2 @@
-com.noctarius.tengi.Packet
 com.noctarius.tengi.serialization.impl.SerializationTestCase$SubPacketWithDefaultConstructor
 com.noctarius.tengi.serialization.impl.SerializationTestCase$SubPacketWithoutDefaultConstructor

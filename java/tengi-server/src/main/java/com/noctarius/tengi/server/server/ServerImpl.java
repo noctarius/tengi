@@ -2,6 +2,7 @@ package com.noctarius.tengi.server.server;
 
 import com.noctarius.tengi.config.Configuration;
 import com.noctarius.tengi.listener.ConnectionConnectedListener;
+import com.noctarius.tengi.serialization.Serializer;
 import com.noctarius.tengi.server.transport.impl.negotiation.TcpBinaryNegotiator;
 import com.noctarius.tengi.utils.CompletableFutureUtil;
 import io.netty.bootstrap.ServerBootstrap;
@@ -23,7 +24,6 @@ import java.util.concurrent.CompletableFuture;
 class ServerImpl
         implements Server {
 
-    private final Configuration configuration;
     private final ConnectionManager connectionManager;
 
     private final EventManager eventManager;
@@ -31,23 +31,29 @@ class ServerImpl
     private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
 
+    private final Serializer serializer;
+
     private volatile Channel serverChannel;
 
     ServerImpl(Configuration configuration)
             throws Exception {
 
-        this.configuration = configuration;
         this.bossGroup = new NioEventLoopGroup(5, new DefaultThreadFactory("channel-boss-"));
         this.workerGroup = new NioEventLoopGroup(5, new DefaultThreadFactory("channel-worker-"));
-        this.connectionManager = new ConnectionManager(createSslContext());
+        this.serializer = createSerializer(configuration);
+        this.connectionManager = new ConnectionManager(createSslContext(), serializer);
         this.eventManager = new EventManager();
+    }
+
+    private Serializer createSerializer(Configuration configuration) {
+        return Serializer.create(configuration.getMarshallers());
     }
 
     @Override
     public CompletableFuture<Channel> start(ConnectionConnectedListener connectedListener) {
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.option(ChannelOption.SO_BACKLOG, 1024).group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
-                 .childHandler(new ProtocolNegotiator(connectionManager));
+                 .childHandler(new ProtocolNegotiator(connectionManager, serializer));
 
         ChannelFuture future = bootstrap.bind(8080);
         return CompletableFutureUtil.executeAsync(() -> {
@@ -86,16 +92,18 @@ class ServerImpl
             extends ChannelInitializer<SocketChannel> {
 
         private final ConnectionManager connectionManager;
+        private final Serializer serializer;
 
-        private ProtocolNegotiator(ConnectionManager connectionManager) {
+        private ProtocolNegotiator(ConnectionManager connectionManager, Serializer serializer) {
             this.connectionManager = connectionManager;
+            this.serializer = serializer;
         }
 
         @Override
         protected void initChannel(SocketChannel channel)
                 throws Exception {
 
-            channel.pipeline().addLast(new TcpBinaryNegotiator(true, true, connectionManager));
+            channel.pipeline().addLast(new TcpBinaryNegotiator(true, true, connectionManager, serializer));
         }
     }
 }

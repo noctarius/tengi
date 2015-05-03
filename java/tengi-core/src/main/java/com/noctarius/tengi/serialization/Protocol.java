@@ -18,6 +18,8 @@ package com.noctarius.tengi.serialization;
 
 import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
 import com.noctarius.tengi.buffer.WritableMemoryBuffer;
+import com.noctarius.tengi.serialization.marshaller.MarshallerReader;
+import com.noctarius.tengi.serialization.marshaller.MarshallerWriter;
 
 public interface Protocol {
 
@@ -35,17 +37,24 @@ public interface Protocol {
     <O> void writeObject(O object, WritableMemoryBuffer memoryBuffer)
             throws Exception;
 
-    default boolean writeNullable(Object object, WritableMemoryBuffer memoryBuffer) {
+    default <O> void writeNullable(O object, WritableMemoryBuffer memoryBuffer, MarshallerWriter<O> writer)
+            throws Exception {
+
         if (object == null) {
             memoryBuffer.writeByte(0);
-            return false;
+            return;
         }
         memoryBuffer.writeByte(1);
-        return true;
+        writer.marshall(object, memoryBuffer, this);
     }
 
-    default boolean readNullable(ReadableMemoryBuffer memoryBuffer) {
-        return memoryBuffer.readByte() == 1;
+    default <O> O readNullable(ReadableMemoryBuffer memoryBuffer, MarshallerReader<O> reader)
+            throws Exception {
+
+        if (memoryBuffer.readByte() == 1) {
+            return reader.unmarshall(memoryBuffer, this);
+        }
+        return null;
     }
 
 }

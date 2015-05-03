@@ -1,7 +1,6 @@
 package com.noctarius.tengi.server.transport.impl.http;
 
 import com.noctarius.tengi.Transport;
-import com.noctarius.tengi.connection.Connection;
 
 public class HttpTransport
         implements Transport {
@@ -18,8 +17,4 @@ public class HttpTransport
         return false;
     }
 
-    @Override
-    public boolean accept(Connection connection) {
-        return false;
-    }
 }

@@ -63,7 +63,8 @@ public interface WritableMemoryBuffer {
 
     void writeString(String value);
 
-    void writeObject(Object object, Protocol protocol);
+    void writeObject(Object object, Protocol protocol)
+            throws Exception;
 
     void writeIdentifier(Identifier identifier);
 

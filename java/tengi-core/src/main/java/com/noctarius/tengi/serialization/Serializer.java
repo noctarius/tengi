@@ -1,5 +1,6 @@
 package com.noctarius.tengi.serialization;
 
+import com.noctarius.tengi.buffer.MemoryBuffer;
 import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
 import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 import com.noctarius.tengi.config.MarshallerConfiguration;
@@ -13,6 +14,9 @@ public interface Serializer {
     Protocol getProtocol();
 
     <O> O readObject(ReadableMemoryBuffer memoryBuffer)
+            throws Exception;
+
+    <O> MemoryBuffer writeObject(O object)
             throws Exception;
 
     <O> void writeObject(O object, WritableMemoryBuffer memoryBuffer)

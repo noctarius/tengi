@@ -16,9 +16,6 @@
  */
 package com.noctarius.tengi.buffer;
 
-import com.noctarius.tengi.Identifier;
-import com.noctarius.tengi.serialization.Protocol;
-
 import java.nio.ByteBuffer;
 
 public interface WritableMemoryBuffer {
@@ -63,10 +60,8 @@ public interface WritableMemoryBuffer {
 
     void writeString(String value);
 
-    void writeObject(Object object, Protocol protocol)
+    void writeObject(Object object)
             throws Exception;
-
-    void writeIdentifier(Identifier identifier);
 
     int writerIndex();
 

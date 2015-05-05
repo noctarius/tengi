@@ -41,10 +41,10 @@ public abstract class ConnectionProcessor<T>
             ConnectionContext connectionContext = createConnectionContext(ctx, connectionId);
             connectionManager.assignConnection(connectionId, connectionContext, transport);
         } else {
-            connectionId = memoryBuffer.readIdentifier();
+            connectionId = memoryBuffer.readObject();
         }
 
-        Message message = memoryBuffer.readObject(serializer.getProtocol());
+        Message message = memoryBuffer.readObject();
         connectionManager.publishMessage(connectionId, message);
     }
 

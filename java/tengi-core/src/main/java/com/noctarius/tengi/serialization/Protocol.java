@@ -25,11 +25,11 @@ public interface Protocol {
 
     String getMimeType();
 
-    short typeId(Object object);
+    void writeTypeId(Object value, WritableMemoryBuffer memoryBuffer);
 
-    Object objectFromTypeId(short typeId);
+    <T> Class<T> readTypeId(ReadableMemoryBuffer memoryBuffer);
 
-    <T> Class<T> fromTypeId(short typeId);
+    <T> T readTypeObject(ReadableMemoryBuffer memoryBuffer);
 
     <O> O readObject(ReadableMemoryBuffer memoryBuffer)
             throws Exception;

@@ -45,7 +45,7 @@ public interface Configuration {
             return this;
         }
 
-        public <O> Builder addMarshaller(MarshallerFilter marshallerFilter, short marshallerId, //
+        public <O, I> Builder addMarshaller(MarshallerFilter marshallerFilter, I marshallerId, //
                                          MarshallerReader<O> reader, MarshallerWriter<O> writer) {
 
             marshallers.add(new MarshallerConfiguration(marshallerFilter, marshaller(marshallerId, reader, writer)));

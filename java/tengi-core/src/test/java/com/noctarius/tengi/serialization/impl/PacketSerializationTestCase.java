@@ -1,16 +1,22 @@
 package com.noctarius.tengi.serialization.impl;
 
 import com.noctarius.tengi.Packet;
+import com.noctarius.tengi.SystemException;
 import com.noctarius.tengi.buffer.MemoryBuffer;
 import com.noctarius.tengi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.serialization.Protocol;
-import com.noctarius.tengi.serialization.TypeId;
+import com.noctarius.tengi.serialization.Serializer;
+import com.noctarius.tengi.serialization.debugger.SerializationDebugger;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.junit.Test;
 
 import java.util.Collections;
 
+import static com.noctarius.tengi.serialization.impl.SerializationClasses.SubPacketMarshallException;
+import static com.noctarius.tengi.serialization.impl.SerializationClasses.SubPacketUnmarshallException;
+import static com.noctarius.tengi.serialization.impl.SerializationClasses.SubPacketWithDefaultConstructor;
+import static com.noctarius.tengi.serialization.impl.SerializationClasses.SubPacketWithoutDefaultConstructor;
 import static org.junit.Assert.assertEquals;
 
 public class PacketSerializationTestCase {
@@ -24,7 +30,7 @@ public class PacketSerializationTestCase {
         Packet packet = new Packet("Test");
 
         ByteBuf buffer = Unpooled.buffer();
-        MemoryBuffer memoryBuffer = MemoryBufferFactory.unpooled(buffer);
+        MemoryBuffer memoryBuffer = MemoryBufferFactory.unpooled(buffer, protocol);
 
         protocol.writeObject(packet, memoryBuffer);
         Packet read = protocol.readObject(memoryBuffer);
@@ -41,7 +47,7 @@ public class PacketSerializationTestCase {
         Packet packet = new SubPacketWithDefaultConstructor();
 
         ByteBuf buffer = Unpooled.buffer();
-        MemoryBuffer memoryBuffer = MemoryBufferFactory.unpooled(buffer);
+        MemoryBuffer memoryBuffer = MemoryBufferFactory.unpooled(buffer, protocol);
 
         protocol.writeObject(packet, memoryBuffer);
         Packet read = protocol.readObject(memoryBuffer);
@@ -58,7 +64,7 @@ public class PacketSerializationTestCase {
         Packet packet = new SubPacketWithoutDefaultConstructor("Test");
 
         ByteBuf buffer = Unpooled.buffer();
-        MemoryBuffer memoryBuffer = MemoryBufferFactory.unpooled(buffer);
+        MemoryBuffer memoryBuffer = MemoryBufferFactory.unpooled(buffer, protocol);
 
         protocol.writeObject(packet, memoryBuffer);
         Packet read = protocol.readObject(memoryBuffer);
@@ -66,21 +72,49 @@ public class PacketSerializationTestCase {
         assertEquals(packet, read);
     }
 
-    @TypeId(1000)
-    public static class SubPacketWithDefaultConstructor
-            extends Packet {
+    @Test(expected = SystemException.class)
+    public void testSubclassMarshallException()
+            throws Exception {
 
-        public SubPacketWithDefaultConstructor() {
-            super("SubPacketWithDefaultConstructor");
+        SerializationDebugger.Debugger.ENABLED = true;
+        try {
+            Protocol protocol = new DefaultProtocol(Collections.emptyList());
+            Serializer serializer = Serializer.create(protocol);
+
+            Packet packet = new SubPacketMarshallException("Test");
+
+            ByteBuf buffer = Unpooled.buffer();
+            MemoryBuffer memoryBuffer = MemoryBufferFactory.unpooled(buffer, protocol);
+
+            serializer.writeObject(packet, memoryBuffer);
+            Packet read = protocol.readObject(memoryBuffer);
+
+            assertEquals(packet, read);
+        } finally {
+            SerializationDebugger.Debugger.ENABLED = false;
         }
     }
 
-    @TypeId(1001)
-    public static class SubPacketWithoutDefaultConstructor
-            extends Packet {
+    @Test(expected = SystemException.class)
+    public void testSubclassUnmarshallException()
+            throws Exception {
 
-        public SubPacketWithoutDefaultConstructor(String packageName) {
-            super(packageName);
+        SerializationDebugger.Debugger.ENABLED = true;
+        try {
+            Protocol protocol = new DefaultProtocol(Collections.emptyList());
+            Serializer serializer = Serializer.create(protocol);
+
+            Packet packet = new SubPacketUnmarshallException("Test");
+
+            ByteBuf buffer = Unpooled.buffer();
+            MemoryBuffer memoryBuffer = MemoryBufferFactory.unpooled(buffer, protocol);
+
+            serializer.writeObject(packet, memoryBuffer);
+            Packet read = protocol.readObject(memoryBuffer);
+
+            assertEquals(packet, read);
+        } finally {
+            SerializationDebugger.Debugger.ENABLED = false;
         }
     }
 

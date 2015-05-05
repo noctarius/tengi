@@ -1,2 +1,4 @@
-com.noctarius.tengi.serialization.impl.SerializationTestCase$SubPacketWithDefaultConstructor
-com.noctarius.tengi.serialization.impl.SerializationTestCase$SubPacketWithoutDefaultConstructor
+com.noctarius.tengi.serialization.impl.SerializationClasses$SubPacketWithDefaultConstructor
+com.noctarius.tengi.serialization.impl.SerializationClasses$SubPacketWithoutDefaultConstructor
+com.noctarius.tengi.serialization.impl.SerializationClasses$SubPacketMarshallException
+com.noctarius.tengi.serialization.impl.SerializationClasses$SubPacketUnmarshallException

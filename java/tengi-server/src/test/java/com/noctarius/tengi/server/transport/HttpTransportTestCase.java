@@ -40,7 +40,7 @@ public class HttpTransportTestCase
         Initializer initializer = initializer(serializer, future);
         Runner runner = (channel) -> {
             ByteBuf buffer = Unpooled.buffer();
-            MemoryBuffer memoryBuffer = MemoryBufferFactory.unpooled(buffer);
+            MemoryBuffer memoryBuffer = MemoryBufferFactory.unpooled(buffer, serializer.getProtocol());
 
             memoryBuffer.writeBoolean(false);
 
@@ -71,7 +71,7 @@ public class HttpTransportTestCase
         return (ctx, object) -> {
             if (object instanceof HttpContent) {
                 HttpContent content = (HttpContent) object;
-                MemoryBuffer memoryBuffer = MemoryBufferFactory.unpooled(content.content());
+                MemoryBuffer memoryBuffer = MemoryBufferFactory.unpooled(content.content(), serializer.getProtocol());
                 Object response = serializer.readObject(memoryBuffer);
                 future.complete(response);
             }

@@ -1,9 +1,6 @@
 package com.noctarius.tengi.serialization.impl;
 
-import com.carrotsearch.hppc.IntObjectMap;
-import com.carrotsearch.hppc.IntObjectOpenHashMap;
-import com.carrotsearch.hppc.ObjectIntMap;
-import com.carrotsearch.hppc.ObjectIntOpenIdentityHashMap;
+import com.noctarius.tengi.Identifier;
 import com.noctarius.tengi.Message;
 import com.noctarius.tengi.SystemException;
 import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
@@ -11,6 +8,9 @@ import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 import com.noctarius.tengi.config.MarshallerConfiguration;
 import com.noctarius.tengi.serialization.Protocol;
 import com.noctarius.tengi.serialization.TypeId;
+import com.noctarius.tengi.serialization.debugger.DebuggableMarshaller;
+import com.noctarius.tengi.serialization.debugger.DebuggableProtocol;
+import com.noctarius.tengi.serialization.marshaller.Identifiable;
 import com.noctarius.tengi.serialization.marshaller.Marshaller;
 import com.noctarius.tengi.serialization.marshaller.MarshallerFilter;
 import com.noctarius.tengi.utils.ExceptionUtil;
@@ -29,15 +29,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class DefaultProtocol
-        implements Protocol, DefaultProtocolConstants {
+        implements Protocol, DebuggableProtocol, DefaultProtocolConstants {
 
-    private final IntObjectMap<Class<?>> types = new IntObjectOpenHashMap<>();
-    private final ObjectIntMap<Class<?>> reverseTypes = new ObjectIntOpenIdentityHashMap<>();
+    private final Map<Short, Class<?>> typeById = new ConcurrentHashMap<>();
+    private final Map<Class<?>, Short> reverseTypeId = new ConcurrentHashMap<>();
 
     private final ConcurrentMap<Class<?>, Marshaller> marshallerCache = new ConcurrentHashMap<>();
 
     private final Map<MarshallerFilter, Marshaller> marshallers = new HashMap<>();
-    private final IntObjectMap<Marshaller> marshallerById = new IntObjectOpenHashMap<>();
+    private final Map<Short, Marshaller> marshallerById = new ConcurrentHashMap<>();
+    private final Map<Marshaller, Short> reverseMarshallerId = new ConcurrentHashMap<>();
 
     public DefaultProtocol(Collection<MarshallerConfiguration> marshallerConfigurations) {
         this(null, marshallerConfigurations);
@@ -72,21 +73,31 @@ public class DefaultProtocol
     }
 
     @Override
-    public short typeId(Object object) {
-        Class<?> clazz = object.getClass();
-        int typeId = reverseTypes.getOrDefault(clazz, -1);
-
-        if (typeId == -1) {
-            throw new SystemException("TypeId for class '" + clazz.getName() + "' not found. Not registered?");
+    public void writeTypeId(Object value, WritableMemoryBuffer memoryBuffer) {
+        Class<?> type;
+        if (value instanceof Class) {
+            type = (Class<?>) value;
+        } else {
+            type = value.getClass();
         }
+        Short typeId = reverseTypeId.get(type);
 
-        return (short) typeId;
+        if (typeId == null) {
+            throw new SystemException("TypeId for type '" + type.getName() + "' not found. Not registered?");
+        }
+        memoryBuffer.writeShort(typeId);
     }
 
     @Override
-    public Object objectFromTypeId(short typeId) {
+    public <T> Class<T> readTypeId(ReadableMemoryBuffer memoryBuffer) {
+        short typeId = memoryBuffer.readShort();
+        return (Class<T>) typeById.get(typeId);
+    }
+
+    @Override
+    public Object readTypeObject(ReadableMemoryBuffer memoryBuffer) {
         try {
-            Class<?> clazz = types.get(typeId);
+            Class<?> clazz = readTypeId(memoryBuffer);
             return clazz.newInstance();
         } catch (Exception e) {
             throw ExceptionUtil.rethrow(e);
@@ -94,8 +105,22 @@ public class DefaultProtocol
     }
 
     @Override
-    public <T> Class<T> fromTypeId(short typeId) {
-        return (Class<T>) types.get(typeId);
+    public Class<?> findType(ReadableMemoryBuffer memoryBuffer) {
+        int readerIndex = memoryBuffer.readerIndex();
+        try {
+            short typeId = memoryBuffer.readShort();
+            Class<?> clazz = typeById.get(typeId);
+            if (clazz != null) {
+                return clazz;
+            }
+            Marshaller<?> marshaller = marshallerById.get(typeId);
+            if (marshaller != null && marshaller instanceof DebuggableMarshaller) {
+                return ((DebuggableMarshaller<?>) marshaller).findType(memoryBuffer, this);
+            }
+            return null;
+        } finally {
+            memoryBuffer.readerIndex(readerIndex);
+        }
     }
 
     @Override
@@ -112,17 +137,18 @@ public class DefaultProtocol
             throws Exception {
 
         Marshaller marshaller = computeMarshaller(object);
-        memoryBuffer.writeShort(marshaller.getMarshallerId());
+        memoryBuffer.writeShort(findMarshallerId(marshaller));
         marshaller.marshall(object, memoryBuffer, this);
     }
 
     private void registerInternalMarshallers() {
-        // Extensible types
+        // External types
         registerMarshaller(PacketMarshallerFilter.INSTANCE, PacketMarshaller.INSTANCE);
         registerMarshaller(MarshallableMarshallerFilter.INSTANCE, MarshallableMarshaller.INSTANCE);
 
-        // Hard wired types
-        registerMarshaller(Message.class, MessageMarshaller.INSTANCE);
+        // Internal types
+        registerMarshaller(Message.class, CommonMarshaller.MessageMarshaller.INSTANCE);
+        registerMarshaller(Identifier.class, CommonMarshaller.IdentifierMarshaller.INSTANCE);
         registerMarshaller(Byte.class, CommonMarshaller.ByteMarshaller.INSTANCE);
         registerMarshaller(byte.class, CommonMarshaller.ByteMarshaller.INSTANCE);
         registerMarshaller(Short.class, CommonMarshaller.ShortMarshaller.INSTANCE);
@@ -144,13 +170,17 @@ public class DefaultProtocol
     }
 
     private void registerMarshaller(MarshallerFilter filter, Marshaller marshaller) {
+        short marshallerId = findMarshallerId(marshaller);
         marshallers.put(filter, marshaller);
-        marshallerById.put(marshaller.getMarshallerId(), marshaller);
+        marshallerById.put(marshallerId, marshaller);
+        reverseMarshallerId.put(marshaller, marshallerId);
     }
 
     private <O> void registerMarshaller(Class<O> clazz, Marshaller marshaller) {
-        marshallerById.put(marshaller.getMarshallerId(), marshaller);
+        short marshallerId = findMarshallerId(marshaller);
         marshallerCache.put(clazz, marshaller);
+        marshallerById.put(marshallerId, marshaller);
+        reverseMarshallerId.put(marshaller, marshallerId);
     }
 
     private void typesInitializer(InputStream is) {
@@ -179,13 +209,31 @@ public class DefaultProtocol
 
         TypeId annotation = clazz.getAnnotation(TypeId.class);
         if (annotation == null) {
-            throw new SystemException("Registered serialization type is not annotation with @TypeId");
+            throw new SystemException("Registered serialization type is not annotated with @TypeId");
         }
 
         short typeId = annotation.value();
 
-        reverseTypes.put(clazz, typeId);
-        types.put(typeId, clazz);
+        reverseTypeId.put(clazz, typeId);
+        typeById.put(typeId, clazz);
+    }
+
+    private <O> short findMarshallerId(Marshaller<O> marshaller) {
+        Short marshallerId = reverseMarshallerId.get(marshaller);
+        if (marshallerId != null) {
+            return marshallerId;
+        }
+
+        if (marshaller instanceof Identifiable) {
+            return ((Identifiable<Short>) marshaller).identifier();
+        }
+
+        TypeId annotation = marshaller.getClass().getAnnotation(TypeId.class);
+        if (annotation == null) {
+            throw new SystemException("Registered marshaller type is not annotated with @TypeId");
+        }
+
+        return annotation.value();
     }
 
     private Marshaller computeMarshaller(Object object) {
@@ -201,11 +249,6 @@ public class DefaultProtocol
         }
 
         marshaller = testMarshaller(object, MarshallableMarshallerFilter.INSTANCE, MarshallableMarshaller.INSTANCE);
-        if (marshaller != null) {
-            return marshaller;
-        }
-
-        marshaller = testMarshaller(object, MessageMarshallerFilter.INSTANCE, MessageMarshaller.INSTANCE);
         if (marshaller != null) {
             return marshaller;
         }

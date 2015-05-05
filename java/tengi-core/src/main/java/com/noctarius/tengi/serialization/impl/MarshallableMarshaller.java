@@ -4,6 +4,8 @@ import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
 import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 import com.noctarius.tengi.serialization.Marshallable;
 import com.noctarius.tengi.serialization.Protocol;
+import com.noctarius.tengi.serialization.TypeId;
+import com.noctarius.tengi.serialization.debugger.DebuggableMarshaller;
 import com.noctarius.tengi.serialization.marshaller.Marshaller;
 import com.noctarius.tengi.utils.ExceptionUtil;
 
@@ -11,25 +13,19 @@ import java.lang.reflect.Constructor;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+@TypeId(DefaultProtocolConstants.SERIALIZED_TYPE_MARSHALLABLE)
 enum MarshallableMarshaller
-        implements Marshaller<Marshallable> {
+        implements Marshaller<Marshallable>, DebuggableMarshaller<Marshallable> {
 
     INSTANCE;
 
     private final ConcurrentMap<Class<Marshallable>, Constructor<Marshallable>> constructors = new ConcurrentHashMap<>();
 
     @Override
-    public short getMarshallerId() {
-        return DefaultProtocolConstants.SERIALIZED_TYPE_MARSHALLABLE;
-    }
-
-    @Override
     public Marshallable unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
             throws Exception {
 
-        short typeId = memoryBuffer.readShort();
-
-        Class<Marshallable> clazz = protocol.fromTypeId(typeId);
+        Class<Marshallable> clazz = protocol.readTypeId(memoryBuffer);
         Constructor<Marshallable> constructor = constructors.computeIfAbsent(clazz, this::computeConstructor);
         Marshallable marshallable = constructor.newInstance();
         marshallable.unmarshall(memoryBuffer, protocol);
@@ -40,9 +36,7 @@ enum MarshallableMarshaller
     public void marshall(Marshallable marshallable, WritableMemoryBuffer memoryBuffer, Protocol protocol)
             throws Exception {
 
-        short typeId = protocol.typeId(marshallable);
-
-        memoryBuffer.writeShort(typeId);
+        protocol.writeTypeId(marshallable, memoryBuffer);
         marshallable.marshall(memoryBuffer, protocol);
     }
 
@@ -52,5 +46,15 @@ enum MarshallableMarshaller
         } catch (NoSuchMethodException e) {
             throw ExceptionUtil.rethrow(e);
         }
+    }
+
+    @Override
+    public Class<?> findType(ReadableMemoryBuffer memoryBuffer, Protocol protocol) {
+        return protocol.readTypeId(memoryBuffer);
+    }
+
+    @Override
+    public String debugValue(Object value) {
+        return value.toString();
     }
 }

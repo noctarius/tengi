@@ -62,12 +62,12 @@ public class HttpConnectionProcessor
         sendHttpResponse(ctx.channel(), request, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
 
         // TODO: Pool MemoryBuffers
-        return MemoryBufferFactory.unpooled(request.content());
+        return MemoryBufferFactory.unpooled(request.content(), getSerializer().getProtocol());
     }
 
     @Override
     protected ConnectionContext createConnectionContext(ChannelHandlerContext ctx, Identifier connectionId) {
-        return new HttpConnectionContext(ctx.channel(), connectionId, getTransport());
+        return new HttpConnectionContext(ctx.channel(), connectionId, getSerializer().getProtocol(), getTransport());
     }
 
     static void sendHttpResponse(Channel channel, FullHttpRequest request, FullHttpResponse response) {

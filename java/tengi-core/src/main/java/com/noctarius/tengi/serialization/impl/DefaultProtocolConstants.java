@@ -25,6 +25,5 @@ public interface DefaultProtocolConstants {
     public static final short SERIALIZED_TYPE_BYTE_ARRAY = -208;
 
     public static final short TYPEID_PACKET = -1000;
-    public static final short TYPEID_MESSAGE = -1001;
 
 }

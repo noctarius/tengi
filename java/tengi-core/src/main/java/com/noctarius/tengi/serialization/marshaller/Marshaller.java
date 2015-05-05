@@ -28,21 +28,24 @@ import com.noctarius.tengi.serialization.Protocol;
 public interface Marshaller<O>
         extends MarshallerReader<O>, MarshallerWriter<O> {
 
-    short getMarshallerId();
-
     /**
      * This method is a convenience way to build a <tt>Marshaller</tt> instance from two
      * lambdas. It will wrapped the given two functions into a new <tt>Marshaller</tt>
      * instance.
      *
-     * @param reader the marshall logic implementation (or function)
-     * @param writer the un-marshall logic implementation (or function)
+     * @param marshallerId the protocol id of the marshaller
+     * @param reader       the marshall logic implementation (or function)
+     * @param writer       the un-marshall logic implementation (or function)
      * @return a wrapper Marshaller instance
      */
-    public static <O> Marshaller<O> marshaller(short marshallerId, MarshallerReader<O> reader, MarshallerWriter<O> writer) {
-        return new Marshaller<O>() {
+    public static <O, I> Marshaller<O> marshaller(I marshallerId,  //
+                                                  MarshallerReader<O> reader, MarshallerWriter<O> writer) {
+
+        class JitMarshaller
+                implements Marshaller<O>, Identifiable<I> {
+
             @Override
-            public short getMarshallerId() {
+            public I identifier() {
                 return marshallerId;
             }
 
@@ -59,7 +62,8 @@ public interface Marshaller<O>
 
                 writer.marshall(object, memoryBuffer, protocol);
             }
-        };
+        }
+        return new JitMarshaller();
     }
 
 }

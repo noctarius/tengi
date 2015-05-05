@@ -45,8 +45,9 @@ public class Packet
         memoryBuffer.writeInt(values.size());
         for (Map.Entry<String, Object> entry : values.entrySet()) {
             memoryBuffer.writeString(entry.getKey());
-            memoryBuffer.writeObject(entry.getValue(), protocol);
+            memoryBuffer.writeObject(entry.getValue());
         }
+        marshall0(memoryBuffer, protocol);
     }
 
     @Override
@@ -56,9 +57,10 @@ public class Packet
         int size = memoryBuffer.readInt();
         for (int i = 0; i < size; i++) {
             String key = memoryBuffer.readString();
-            Object value = memoryBuffer.readObject(protocol);
+            Object value = memoryBuffer.readObject();
             values.put(key, value);
         }
+        unmarshall0(memoryBuffer, protocol);
     }
 
     @Override
@@ -93,4 +95,11 @@ public class Packet
     public String toString() {
         return "Packet{" + "values=" + values + ", packetName='" + packetName + '\'' + '}';
     }
+
+    protected void marshall0(WritableMemoryBuffer memoryBuffer, Protocol protocol) {
+    }
+
+    protected void unmarshall0(ReadableMemoryBuffer memoryBuffer, Protocol protocol) {
+    }
+
 }

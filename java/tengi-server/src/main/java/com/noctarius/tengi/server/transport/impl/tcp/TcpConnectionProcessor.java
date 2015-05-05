@@ -22,12 +22,12 @@ public class TcpConnectionProcessor
     protected ReadableMemoryBuffer decode(ChannelHandlerContext ctx, ByteBuf buffer)
             throws Exception {
 
-        return MemoryBufferFactory.unpooled(buffer);
+        return MemoryBufferFactory.unpooled(buffer, getSerializer().getProtocol());
     }
 
     @Override
     protected ConnectionContext createConnectionContext(ChannelHandlerContext ctx, Identifier connectionId) {
-        return new TcpConnectionContext(ctx.channel(), connectionId, getTransport());
+        return new TcpConnectionContext(ctx.channel(), connectionId, getSerializer().getProtocol(), getTransport());
     }
 
 }

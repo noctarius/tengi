@@ -7,6 +7,7 @@ import com.noctarius.tengi.buffer.MemoryBuffer;
 import com.noctarius.tengi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.connection.Connection;
 import com.noctarius.tengi.connection.ConnectionContext;
+import com.noctarius.tengi.serialization.Protocol;
 import com.noctarius.tengi.utils.CompletableFutureUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -18,8 +19,8 @@ class TcpConnectionContext
 
     private final Channel channel;
 
-    TcpConnectionContext(Channel channel, Identifier connectionId, Transport transport) {
-        super(connectionId, transport);
+    TcpConnectionContext(Channel channel, Identifier connectionId, Protocol protocol, Transport transport) {
+        super(connectionId, protocol, transport);
         this.channel = channel;
     }
 
@@ -28,10 +29,10 @@ class TcpConnectionContext
             throws Exception {
 
         ByteBuf buffer = channel.alloc().ioBuffer();
-        MemoryBuffer response = MemoryBufferFactory.unpooled(buffer);
+        MemoryBuffer response = MemoryBufferFactory.unpooled(buffer, getProtocol());
 
         response.writeBoolean(true);
-        response.writeIdentifier(getConnectionId());
+        response.writeObject(getConnectionId());
         response.writeBuffer(memoryBuffer);
 
         return CompletableFutureUtil.executeAsync(() -> {

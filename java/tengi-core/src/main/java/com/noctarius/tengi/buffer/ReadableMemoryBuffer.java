@@ -16,9 +16,6 @@
  */
 package com.noctarius.tengi.buffer;
 
-import com.noctarius.tengi.Identifier;
-import com.noctarius.tengi.serialization.Protocol;
-
 import java.nio.ByteBuffer;
 
 public interface ReadableMemoryBuffer {
@@ -63,10 +60,8 @@ public interface ReadableMemoryBuffer {
 
     String readString();
 
-    <O> O readObject(Protocol protocol)
+    <O> O readObject()
             throws Exception;
-
-    Identifier readIdentifier();
 
     int readerIndex();
 

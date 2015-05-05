@@ -4,6 +4,8 @@ import com.noctarius.tengi.Packet;
 import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
 import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 import com.noctarius.tengi.serialization.Protocol;
+import com.noctarius.tengi.serialization.TypeId;
+import com.noctarius.tengi.serialization.debugger.DebuggableMarshaller;
 import com.noctarius.tengi.serialization.marshaller.Marshaller;
 import com.noctarius.tengi.utils.ExceptionUtil;
 
@@ -11,26 +13,21 @@ import java.lang.reflect.Constructor;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+@TypeId(DefaultProtocolConstants.SERIALIZED_TYPE_PACKET)
 enum PacketMarshaller
-        implements Marshaller<Packet> {
+        implements Marshaller<Packet>, DebuggableMarshaller<Packet> {
 
     INSTANCE;
 
     private final ConcurrentMap<Class<Packet>, Construction> constructors = new ConcurrentHashMap<>();
 
     @Override
-    public short getMarshallerId() {
-        return DefaultProtocolConstants.SERIALIZED_TYPE_PACKET;
-    }
-
-    @Override
     public Packet unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
             throws Exception {
 
-        short typeId = memoryBuffer.readShort();
+        Class<Packet> clazz = protocol.readTypeId(memoryBuffer);
         String packageName = memoryBuffer.readString();
 
-        Class<Packet> clazz = protocol.fromTypeId(typeId);
         Construction constructor = constructors.computeIfAbsent(clazz, this::computeConstructor);
         Packet packet = constructor.create(packageName);
         packet.unmarshall(memoryBuffer, protocol);
@@ -41,10 +38,9 @@ enum PacketMarshaller
     public void marshall(Packet packet, WritableMemoryBuffer memoryBuffer, Protocol protocol)
             throws Exception {
 
-        short typeId = protocol.typeId(packet);
         String packageName = packet.getPacketName();
 
-        memoryBuffer.writeShort(typeId);
+        protocol.writeTypeId(packet, memoryBuffer);
         memoryBuffer.writeString(packageName);
 
         packet.marshall(memoryBuffer, protocol);
@@ -61,6 +57,16 @@ enum PacketMarshaller
         } catch (NoSuchMethodException e) {
             throw ExceptionUtil.rethrow(e);
         }
+    }
+
+    @Override
+    public Class<?> findType(ReadableMemoryBuffer memoryBuffer, Protocol protocol) {
+        return protocol.readTypeId(memoryBuffer);
+    }
+
+    @Override
+    public String debugValue(Object value) {
+        return value.toString();
     }
 
     private static interface Construction {

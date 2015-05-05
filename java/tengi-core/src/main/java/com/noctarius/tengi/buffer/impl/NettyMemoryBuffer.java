@@ -16,43 +16,26 @@
  */
 package com.noctarius.tengi.buffer.impl;
 
-import com.noctarius.tengi.Identifier;
 import com.noctarius.tengi.buffer.MemoryBuffer;
 import com.noctarius.tengi.serialization.Protocol;
-import com.noctarius.tengi.utils.UnsafeUtil;
+import com.noctarius.tengi.serialization.debugger.SerializationDebugger;
 import io.netty.buffer.AbstractReferenceCountedByteBuf;
 import io.netty.buffer.ByteBuf;
-import sun.misc.Unsafe;
 
-import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 
 class NettyMemoryBuffer
         implements MemoryBuffer {
 
-    private static final Unsafe UNSAFE = UnsafeUtil.UNSAFE;
-
-    private static final long IDENTIFIER_DATA_OFFSET;
-
-    static {
-        if (!UnsafeUtil.UNSAFE_AVAILABLE) {
-            throw new RuntimeException("Incompatible JVM - sun.misc.Unsafe support is missing");
-        }
-
-        try {
-            Field identifierData = Identifier.class.getDeclaredField("data");
-            identifierData.setAccessible(true);
-            IDENTIFIER_DATA_OFFSET = UNSAFE.objectFieldOffset(identifierData);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException();
-        }
-    }
-
+    private final SerializationDebugger debugger = SerializationDebugger.create();
     private final AbstractReferenceCountedByteBuf buffer;
+    private final Protocol protocol;
+
     private volatile boolean released = false;
 
-    public NettyMemoryBuffer(AbstractReferenceCountedByteBuf buffer) {
+    public NettyMemoryBuffer(AbstractReferenceCountedByteBuf buffer, Protocol protocol) {
         this.buffer = buffer;
+        this.protocol = protocol;
     }
 
     @Override
@@ -65,6 +48,11 @@ class NettyMemoryBuffer
         if (buffer.release()) {
             released = true;
         }
+    }
+
+    @Override
+    public Protocol getProtocol() {
+        return protocol;
     }
 
     @Override
@@ -134,7 +122,8 @@ class NettyMemoryBuffer
     @Override
     public int readBuffer(ByteBuffer byteBuffer) {
         int remaining = Math.min(byteBuffer.remaining(), readableBytes());
-        return readBuffer(byteBuffer, byteBuffer.position(), remaining);
+        int length = readBuffer(byteBuffer, byteBuffer.position(), remaining);
+        return length;
     }
 
     @Override
@@ -221,17 +210,6 @@ class NettyMemoryBuffer
     @Override
     public String readString() {
         return Unicode.UTF8toUTF16(this);
-    }
-
-    @Override
-    public Identifier readIdentifier() {
-        try {
-            byte[] data = new byte[16];
-            readBytes(data);
-            return Identifier.fromBytes(data);
-        } catch (Exception e) {
-            throw new RuntimeException("Error while de-serializing Identifier", e);
-        }
     }
 
     @Override
@@ -366,27 +344,35 @@ class NettyMemoryBuffer
     }
 
     @Override
-    public void writeIdentifier(Identifier identifier) {
-        try {
-            byte[] data = (byte[]) UNSAFE.getObject(identifier, IDENTIFIER_DATA_OFFSET);
-            writeBytes(data);
-        } catch (Exception e) {
-            throw new RuntimeException("Error while serializing Identifier", e);
-        }
+    public <O> O readObject()
+            throws Exception {
+
+        O value = protocol.readNullable(this, (m, p) -> {
+            if (SerializationDebugger.Debugger.ENABLED) {
+                debugger.push(protocol, m);
+            }
+            O object = p.readObject(m);
+            if (SerializationDebugger.Debugger.ENABLED) {
+                debugger.pop();
+            }
+            return object;
+        });
+        return value;
     }
 
     @Override
-    public <O> O readObject(Protocol protocol)
+    public void writeObject(Object object)
             throws Exception {
 
-        return protocol.readObject(this);
-    }
-
-    @Override
-    public void writeObject(Object object, Protocol protocol)
-            throws Exception {
-
-        protocol.writeObject(object, this);
+        protocol.writeNullable(object, this, (o, m, p) -> {
+            if (SerializationDebugger.Debugger.ENABLED) {
+                debugger.push(protocol, m, object);
+            }
+            protocol.writeObject(object, this);
+            if (SerializationDebugger.Debugger.ENABLED) {
+                debugger.pop();
+            }
+        });
     }
 
     @Override

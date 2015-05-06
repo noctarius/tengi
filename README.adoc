@@ -1,4 +1,6 @@
 = tengi - Near-Realtime Communication Foundation
+
+image:https://badges.gitter.im/Join%20Chat.svg[link="https://gitter.im/noctarius/tengi?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
 Christoph Engelbert <https://github.com/noctarius[@noctarius2k]>
 // Settings:
 :compat-mode!:

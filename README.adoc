@@ -9,7 +9,7 @@ Christoph Engelbert <https://github.com/noctarius[@noctarius2k]>
 :toc:
 
 tengi is designed as a cross-language communication platform. Using several distinct transport layers, tengi always finds the most efficient way to communicate between the client and server. +
-Available transports range from a plain TCP transmission over RDP (a reliable) UDP implementation), standard UDP or HTTP Long-Polling as fallback.
+Available transports range from a plain _TCP_ transmission over _RDP_ (a reliable) UDP implementation), standard _UDP_ or _HTTP Long-Polling_ as fallback.
 
 
 
@@ -27,9 +27,9 @@ tengi, for this reason, hides complexity behind a simple but powerful API. An ec
 
 === Data Protocol and Reliability
 
-tengi's default protocol is a highly bandwidth optimized serialization and transmission solution. Supporting compressed int32 and int64 data types (when 64 bit types are supported by client languages) as well as providing way to customly serialize objects guarantee minimal overhead.
+tengi's default protocol is a highly bandwidth optimized serialization and transmission solution. Supporting compressed _int32_ and _int64_ data types (when 64 bit types are supported by client languages) as well as providing way to customly serialize objects guarantee minimal overhead.
 
-Depending on the selected transport layer additional overhead is necessary (e.g. HTTP, HTTP2). Due to the fact tengi always finds the best communication path, ending up using expensive transports is very unlikely. Still tengi supports communication through corporate firewalls and unreliable networks (e.g. mobile providers).
+Depending on the selected transport layer additional overhead is necessary (e.g. _HTTP_, _HTTP2_). Due to the fact tengi always finds the best communication path, ending up using expensive transports is very unlikely. Still tengi supports communication through corporate firewalls and unreliable networks (e.g. mobile providers).
 
 === Asynchronous and Reactivity
 

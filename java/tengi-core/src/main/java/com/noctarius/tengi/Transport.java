@@ -44,4 +44,8 @@ public interface Transport {
      */
     boolean isStreaming();
 
+    int getDefaultPort();
+
+    TransportLayer getTransportLayer();
+
 }

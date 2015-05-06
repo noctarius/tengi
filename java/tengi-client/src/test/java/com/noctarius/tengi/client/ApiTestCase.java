@@ -16,7 +16,6 @@
  */
 package com.noctarius.tengi.client;
 
-import com.noctarius.tengi.Client;
 import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
 import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 import com.noctarius.tengi.config.Configuration;

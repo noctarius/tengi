@@ -17,20 +17,30 @@
 package com.noctarius.tengi.server.transport.impl.tcp;
 
 import com.noctarius.tengi.Transport;
+import com.noctarius.tengi.TransportLayer;
+import com.noctarius.tengi.connection.TransportConstants;
 
 public class TcpTransport
         implements Transport {
 
-    private static final String TRANSPORT_NAME = "tengi::transport::tcp";
-
     @Override
     public String getName() {
-        return TRANSPORT_NAME;
+        return TransportConstants.TRANSPORT_NAME_TCP;
     }
 
     @Override
     public boolean isStreaming() {
         return true;
+    }
+
+    @Override
+    public int getDefaultPort() {
+        return TransportConstants.DEFAULT_PORT_TCP;
+    }
+
+    @Override
+    public TransportLayer getTransportLayer() {
+        return TransportLayer.TCP;
     }
 
 }

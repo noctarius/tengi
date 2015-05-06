@@ -24,7 +24,9 @@ import com.noctarius.tengi.serialization.marshaller.MarshallerWriter;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static com.noctarius.tengi.serialization.marshaller.Marshaller.marshaller;
@@ -35,10 +37,15 @@ public interface Configuration {
 
     Set<Transport> getTransports();
 
+    Map<Transport, Integer> getTransportPorts();
+
+    int getTransportPort(Transport transport);
+
     public static final class Builder {
 
         private final Set<MarshallerConfiguration> marshallers = new HashSet<>();
         private final Set<Transport> transports = new HashSet<>();
+        private final Map<Transport, Integer> transportPorts = new HashMap<>();
 
         public Builder addMarshaller(MarshallerFilter marshallerFilter, Marshaller marshaller) {
             marshallers.add(new MarshallerConfiguration(marshallerFilter, marshaller));
@@ -46,7 +53,7 @@ public interface Configuration {
         }
 
         public <O, I> Builder addMarshaller(MarshallerFilter marshallerFilter, I marshallerId, //
-                                         MarshallerReader<O> reader, MarshallerWriter<O> writer) {
+                                            MarshallerReader<O> reader, MarshallerWriter<O> writer) {
 
             marshallers.add(new MarshallerConfiguration(marshallerFilter, marshaller(marshallerId, reader, writer)));
             return this;
@@ -62,8 +69,13 @@ public interface Configuration {
             return this;
         }
 
+        public Builder transportPort(Transport transport, int port) {
+            transportPorts.put(transport, port);
+            return this;
+        }
+
         public Configuration build() {
-            return new ConfigurationImpl(marshallers, transports);
+            return new ConfigurationImpl(marshallers, transports, transportPorts);
         }
     }
 
@@ -72,10 +84,14 @@ public interface Configuration {
 
         private final Set<MarshallerConfiguration> marshallers;
         private final Set<Transport> transports;
+        private final Map<Transport, Integer> transportPorts;
 
-        public ConfigurationImpl(Set<MarshallerConfiguration> marshallers, Set<Transport> transports) {
+        public ConfigurationImpl(Set<MarshallerConfiguration> marshallers, Set<Transport> transports,
+                                 Map<Transport, Integer> transportPorts) {
+
             this.marshallers = Collections.unmodifiableSet(marshallers);
             this.transports = Collections.unmodifiableSet(transports);
+            this.transportPorts = Collections.unmodifiableMap(transportPorts);
         }
 
         @Override
@@ -86,6 +102,20 @@ public interface Configuration {
         @Override
         public Set<Transport> getTransports() {
             return transports;
+        }
+
+        @Override
+        public Map<Transport, Integer> getTransportPorts() {
+            return transportPorts;
+        }
+
+        @Override
+        public int getTransportPort(Transport transport) {
+            Integer port = transportPorts.get(transport);
+            if (port != null) {
+                return port;
+            }
+            return transport.getDefaultPort();
         }
     }
 }

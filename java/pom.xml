@@ -35,14 +35,23 @@
 
     <!-- dependency versions -->
     <junit.version>4.11</junit.version>
+    <findbugs.annotations.version>2.0.2</findbugs.annotations.version>
+    <validation.annotations.version>1.0.0.GA</validation.annotations.version>
     <netty.version>4.1.0.Beta5-SNAPSHOT</netty.version>
     <hppc.version>0.6.1</hppc.version>
+    <log4j.version>1.2.17</log4j.version>
+    <log4jv2.version>2.2</log4jv2.version>
+    <slf4j.version>1.7.12</slf4j.version>
   </properties>
 
   <modules>
     <module>tengi-core</module>
     <module>tengi-server</module>
     <module>tengi-client</module>
+    <module>tengi-logger-slf4j</module>
+    <module>tengi-logger-log4j</module>
+    <module>tengi-logger-log4jv2</module>
+    <module>tengi-logger-jul</module>
   </modules>
 
   <dependencyManagement>
@@ -62,6 +71,11 @@
       </dependency>
       <dependency>
         <groupId>io.netty</groupId>
+        <artifactId>netty-codec</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
         <artifactId>netty-codec-http</artifactId>
         <version>${netty.version}</version>
       </dependency>
@@ -77,14 +91,56 @@
         <version>${hppc.version}</version>
       </dependency>
 
+      <!-- logging framework dependencies -->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+        <version>${log4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-api</artifactId>
+        <version>${log4jv2.version}</version>
+      </dependency>
+
       <!-- test dependencies -->
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>${junit.version}</version>
       </dependency>
+
+      <!-- build time dependencies -->
+      <dependency>
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>annotations</artifactId>
+        <version>${findbugs.annotations.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.validation</groupId>
+        <artifactId>validation-api</artifactId>
+        <version>${validation.annotations.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>annotations</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.validation</groupId>
+      <artifactId>validation-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
 
   <scm>
     <connection>scm:git:git://github.com/noctarius/tengi.git</connection>

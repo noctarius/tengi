@@ -17,11 +17,18 @@
 package com.noctarius.tengi.transport;
 
 import com.noctarius.tengi.Transport;
+import com.noctarius.tengi.TransportLayer;
 import com.noctarius.tengi.transport.tcp.TcpTransport;
 
 public enum ClientTransport
         implements Transport {
-    TCP_TRANSPORT(new TcpTransport());
+
+    HTTP_TRANSPORT(null),
+    HTTP2_TRANSPORT(null),
+    WEBSOCKET_TRANSPORT(null),
+    RDP_TRANSPORT(null),
+    TCP_TRANSPORT(new TcpTransport()),
+    UDP_TRANSPORT(null);
 
     private final Transport transport;
 
@@ -37,6 +44,16 @@ public enum ClientTransport
     @Override
     public boolean isStreaming() {
         return transport.isStreaming();
+    }
+
+    @Override
+    public int getDefaultPort() {
+        return transport.getDefaultPort();
+    }
+
+    @Override
+    public TransportLayer getTransportLayer() {
+        return transport.getTransportLayer();
     }
 
 }

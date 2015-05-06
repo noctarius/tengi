@@ -14,24 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi;
+package com.noctarius.tengi.logging;
 
-import com.noctarius.tengi.config.Configuration;
-import com.noctarius.tengi.listener.ConnectionConnectedListener;
-
-import java.net.InetAddress;
-import java.util.concurrent.CompletableFuture;
-
-public interface Client {
-
-    CompletableFuture<Client> connect(String host, ConnectionConnectedListener connectedListener);
-
-    CompletableFuture<Client> connect(InetAddress address, ConnectionConnectedListener connectedListener);
-
-    CompletableFuture<Client> disconnect();
-
-    public static Client create(Configuration configuration) {
-        return null;
-    }
-
+public enum Level {
+    Trace,
+    Debug,
+    Info,
+    Warning,
+    Fatal
 }

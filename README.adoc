@@ -6,11 +6,12 @@ Christoph Engelbert <https://github.com/noctarius[@noctarius2k]>
 // Aliases:
 :project-name: tengi README
 :project-handle: tengi-readme
+:toc:
 
 tengi is designed as a cross-language communication platform. Using several distinct transport layers, tengi always finds the most efficient way to communicate between the client and server. +
-Available transports range from a plain TCP transmission over RDP (a reliable) UDP implementation), standard UDP or HTTP Longpolling as fallback.
+Available transports range from a plain TCP transmission over RDP (a reliable) UDP implementation), standard UDP or HTTP Long-Polling as fallback.
 
-:toc:
+
 
 == Features
 === Cutting-Edge Technology
@@ -37,3 +38,90 @@ Reactive design principles and event driven systems are most common way to start
 === Performance and the Java Power
 
 More and more developers start using Java, or better said the JVM (Java Virtual Machine), as the foundation for their backend technologies. Powerful JIT (Just-In-Time) compilation and optimization based on runtime behavior bundled with the automatic resource management are a perfect base for server systems. In addition tengi is optimized for high performance, low latency and minimal Garbage Collector pressure.
+
+Using latest Java 8 features like Closures (Lambdas), interface evolution and optimized data structures provides a compact and future-oriented external API.
+
+=== Cross-Language Clients
+
+tengi is designed to provide a simple communication protocol. The protocol specification is fully documented and easy to implement on further languages. +
+Currently planned clients include, but are not limited to, C#, C++, HTML5 (using ASM.js) and ActionScript, next to an obvious Java client.
+
+== Getting Started
+
+== Maven Coordinates
+
+== Javadoc
+
+== API Walkthrough
+
+=== Configuration
+
+=== Core
+
+==== Transports
+
+===== TCP
+
+===== UDP
+
+===== RDP
+
+===== WebSocket
+
+===== HTTP2
+
+===== HTTP Long-Polling
+
+==== Connection
+
+==== Listener
+
+===== MessageListener
+
+===== ConnectionListener
+
+===== ConnectionConnectedListener
+
+==== Logging
+
+==== Serialization
+
+===== Packet
+
+===== Marshallable
+
+===== Marshaller and MarshallerFilter
+
+===== Message
+
+===== Debugging
+
+=== Server
+
+==== Transports
+
+==== Server
+
+==== Broadcaster
+
+=== Client
+
+==== Transports
+
+==== Client
+
+== Protocol Specification
+
+=== Data Types
+
+=== Int32 Compression
+
+=== Int64 Compression
+
+=== String Serialization
+
+=== TypeId
+
+=== Protocol Header
+
+=== Object Header

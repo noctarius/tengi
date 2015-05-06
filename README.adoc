@@ -29,7 +29,7 @@ tengi, for this reason, hides complexity behind a simple but powerful API. An ec
 
 === Data Protocol and Reliability
 
-tengi's default protocol is a highly bandwidth optimized serialization and transmission solution. Supporting compressed _int32_ and _int64_ data types (when 64 bit types are supported by client languages) as well as providing way to customly serialize objects guarantee minimal overhead.
+tengi's default protocol is a highly bandwidth optimized serialization and transmission solution. Supporting compressed _int32_ and _int64_ data types (when 64 bit types are supported by client languages) as well as providing way to serialize objects in custom way with guarantee of minimal overhead.
 
 Depending on the selected transport layer additional overhead is necessary (e.g. _HTTP_, _HTTP2_). Due to the fact tengi always finds the best communication path, ending up using expensive transports is very unlikely. Still tengi supports communication through corporate firewalls and unreliable networks (e.g. mobile providers).
 

@@ -1,6 +1,5 @@
 = tengi - Near-Realtime Communication Foundation
 
-image:https://badges.gitter.im/Join%20Chat.svg[link="https://gitter.im/noctarius/tengi?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
 Christoph Engelbert <https://github.com/noctarius[@noctarius2k]>
 // Settings:
 :compat-mode!:
@@ -9,6 +8,8 @@ Christoph Engelbert <https://github.com/noctarius[@noctarius2k]>
 :project-name: tengi README
 :project-handle: tengi-readme
 :toc:
+
+image:https://badges.gitter.im/Join%20Chat.svg[link="https://gitter.im/noctarius/tengi?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
 
 tengi is designed as a cross-language communication platform. Using several distinct transport layers, tengi always finds the most efficient way to communicate between the client and server. +
 Available transports range from a plain _TCP_ transmission over _RDP_ (a reliable UDP implementation), standard _UDP_ or _HTTP Long-Polling_ as fallback.

@@ -1,5 +1,4 @@
 = tengi - Near-Realtime Communication Foundation
-
 Christoph Engelbert <https://github.com/noctarius[@noctarius2k]>
 // Settings:
 :compat-mode!:

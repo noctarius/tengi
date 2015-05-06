@@ -20,7 +20,7 @@ tengi implements industry standards like socket layer communication using _TCP_ 
 
 === Simplicity driven APIs
 
-The famous quote "`if you can't explain it to a six year old, you don't understand it yourself`", by Albert Einstein, is not only true to Physics but also to software APIs. Complex APIs prevent people from using your solution or have a very flat learning curve and getting started is a hard task. +
+The famous quote '`if you can't explain it to a six year old, you don't understand it yourself`', by Albert Einstein, is not only true to Physics but also to software APIs. Complex APIs prevent people from using your solution or have a very flat learning curve and getting started is a hard task. +
 Good APIs are easy readable, self explanatory and fast to get started with.
 
 tengi, for this reason, hides complexity behind a simple but powerful API. An echo-server example is less than 20 lines of code but complex tasks can be achieved using a rich set of system-hooks for advanced users.

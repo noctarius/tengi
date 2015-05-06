@@ -1,0 +1,39 @@
+= tengi - Near-Realtime Communication Foundation
+Christoph Engelbert <https://github.com/noctarius[@noctarius2k]>
+// Settings:
+:compat-mode!:
+:idseparator: -
+// Aliases:
+:project-name: tengi README
+:project-handle: tengi-readme
+
+tengi is designed as a cross-language communication platform. Using several distinct transport layers, tengi always finds the most efficient way to communicate between the client and server. +
+Available transports range from a plain TCP transmission over RDP (a reliable) UDP implementation), standard UDP or HTTP Longpolling as fallback.
+
+:toc:
+
+== Features
+=== Cutting-Edge Technology
+
+tengi implements industry standards like socket layer communication using _TCP_ and _UDP_ but also offers support cutting-edge technologies like _SCTP_ and _HTTP2_ for future perspective. By transparently offering a variety of transportation layers using a common, flexible but simple and easy-to-use API, tengi is class-leading for the cross-language communication sector.
+
+=== Simplicity driven APIs
+
+The famous quote "`if you can't explain it to a six year old, you don't understand it yourself`", by Albert Einstein, is not only true to Physics but also to software APIs. Complex APIs prevent people from using your solution or have a very flat learning curve and getting started is a hard task. +
+Good APIs are easy readable, self explanatory and fast to get started with.
+
+tengi, for this reason, hides complexity behind a simple but powerful API. An echo-server example is less than 20 lines of code but complex tasks can be achieved using a rich set of system-hooks for advanced users.
+
+=== Data Protocol and Reliability
+
+tengi's default protocol is a highly bandwidth optimized serialization and transmission solution. Supporting compressed int32 and int64 data types (when 64 bit types are supported by client languages) as well as providing way to customly serialize objects guarantee minimal overhead.
+
+Depending on the selected transport layer additional overhead is necessary (e.g. HTTP, HTTP2). Due to the fact tengi always finds the best communication path, ending up using expensive transports is very unlikely. Still tengi supports communication through corporate firewalls and unreliable networks (e.g. mobile providers).
+
+=== Asynchronous and Reactivity
+
+Reactive design principles and event driven systems are most common way to start nowadays scalable solutions. Therefore tengi offers full support of the reactive pattern. From bottom up the internal implementation is completely based on a reactive design and this is also passed to the user.
+
+=== Performance and the Java Power
+
+More and more developers start using Java, or better said the JVM (Java Virtual Machine), as the foundation for their backend technologies. Powerful JIT (Just-In-Time) compilation and optimization based on runtime behavior bundled with the automatic resource management are a perfect base for server systems. In addition tengi is optimized for high performance, low latency and minimal Garbage Collector pressure.

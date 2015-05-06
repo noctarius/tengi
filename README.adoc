@@ -9,7 +9,7 @@ Christoph Engelbert <https://github.com/noctarius[@noctarius2k]>
 :toc:
 
 tengi is designed as a cross-language communication platform. Using several distinct transport layers, tengi always finds the most efficient way to communicate between the client and server. +
-Available transports range from a plain _TCP_ transmission over _RDP_ (a reliable) UDP implementation), standard _UDP_ or _HTTP Long-Polling_ as fallback.
+Available transports range from a plain _TCP_ transmission over _RDP_ (a reliable UDP implementation), standard _UDP_ or _HTTP Long-Polling_ as fallback.
 
 
 
@@ -43,10 +43,79 @@ Using latest Java 8 features like Closures (Lambdas), interface evolution and op
 
 === Cross-Language Clients
 
-tengi is designed to provide a simple communication protocol. The protocol specification is fully documented and easy to implement on further languages. +
+tengi is designed to provide a simple communication protocol. The protocol specification is fully documented and easy to implement on further languages.
+
 Currently planned clients include, but are not limited to, C#, C++, HTML5 (using ASM.js) and ActionScript, next to an obvious Java client.
 
 == Getting Started
+
+=== Client Example
+
+[source,java]
+----
+public void createEchoClient() {
+  // Create configuration using Builder
+  Configuration configuration = new Configuration.Builder()
+    // Configure available transports
+    .addTransport(ClientTransport.TCP_TRANSPORT, ClientTransport.HTTP_TRANSPORT)
+
+    // Build final configuration
+    .build();
+
+  // Create client instance using configuration
+  Client client = Client.create(configuration);
+
+  // Connect to remote server
+  client.connect("127.0.0.1", this::onConnect);
+}
+
+private void onConnect(Connection connection) {
+  connection.addMessageListener(this::onMessage);
+
+  Packet packet = new Packet("request");
+  packet.setValue("name", "Steven");
+  connection.writeObject(request);
+}
+
+private void onMessage(Connection connection, Message message) {
+  Packet packet = message.getBody();
+  String helloWorld = packet.getValue("response");
+  System.out.println(helloWorld);
+}
+----
+
+=== Server Example
+
+[source,java]
+----
+public void createEchoServer() {
+  // Create configuration using Builder
+  Configuration configuration = new Configuration.Builder()
+    // Configure available transports
+    .addTransport(ServerTransport.TCP_TRANSPORT, ServerTransport.HTTP2_TRANSPORT,
+                  ServerTransport.HTTP_TRANSPORT)
+
+    // Build final configuration
+    .build();
+
+  // Create server instance using configuration
+  Server server = Server.create(configuration);
+
+  CompletableFuture<Channel> future = server.start(this::onConnect);
+}
+
+private void onConnect(Connection connection) {
+  connection.addMessageListener(this::onMessage);
+}
+
+private void onMessage(Connection connection, Message message) {
+  Packet packet = message.getBody();
+  String name = packet.getValue("name");
+  Packet response = new Packet("response");
+  response.setValue("Hello World " + name);
+  connection.writeObject(response);
+}
+----
 
 == Maven Coordinates
 

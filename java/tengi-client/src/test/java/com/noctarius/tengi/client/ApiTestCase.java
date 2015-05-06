@@ -19,6 +19,7 @@ package com.noctarius.tengi.client;
 import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
 import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 import com.noctarius.tengi.config.Configuration;
+import com.noctarius.tengi.config.ConfigurationBuilder;
 import com.noctarius.tengi.serialization.Protocol;
 import com.noctarius.tengi.serialization.marshaller.MarshallerFilter;
 import com.noctarius.tengi.transport.ClientTransport;
@@ -31,7 +32,7 @@ public class ApiTestCase {
             throws Exception {
 
         // Create configuration using Builder
-        Configuration configuration = new Configuration.Builder()
+        Configuration configuration = new ConfigurationBuilder()
 
                 // Configure custom Marshaller
                 .addMarshaller(ApiTestCase::isMarshallable, (short) 100, ApiTestCase::read, ApiTestCase::write)

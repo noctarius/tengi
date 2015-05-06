@@ -19,6 +19,7 @@ package com.noctarius.tengi.server.transport;
 import com.noctarius.tengi.Message;
 import com.noctarius.tengi.Transport;
 import com.noctarius.tengi.config.Configuration;
+import com.noctarius.tengi.config.ConfigurationBuilder;
 import com.noctarius.tengi.connection.Connection;
 import com.noctarius.tengi.server.server.Server;
 import io.netty.bootstrap.Bootstrap;
@@ -41,7 +42,7 @@ public abstract class AbstractTransportTestCase {
     protected static void practice(Initializer initializer, Runner runner, boolean ssl, Transport... serverTransports)
             throws Exception {
 
-        Configuration configuration = new Configuration.Builder().addTransport(serverTransports).build();
+        Configuration configuration = new ConfigurationBuilder().addTransport(serverTransports).build();
         Server server = Server.create(configuration);
         server.start(AbstractTransportTestCase::onConnection);
 

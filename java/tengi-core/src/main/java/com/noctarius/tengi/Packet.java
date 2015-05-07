@@ -16,11 +16,11 @@
  */
 package com.noctarius.tengi;
 
-import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
-import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 import com.noctarius.tengi.serialization.Marshallable;
 import com.noctarius.tengi.serialization.Protocol;
 import com.noctarius.tengi.serialization.TypeId;
+import com.noctarius.tengi.serialization.codec.Decoder;
+import com.noctarius.tengi.serialization.codec.Encoder;
 import com.noctarius.tengi.serialization.impl.DefaultProtocolConstants;
 import com.noctarius.tengi.utils.Validate;
 
@@ -55,28 +55,28 @@ public class Packet
     }
 
     @Override
-    public final void marshall(WritableMemoryBuffer memoryBuffer, Protocol protocol)
+    public final void marshall(Encoder encoder, Protocol protocol)
             throws Exception {
 
-        memoryBuffer.writeInt(values.size());
+        encoder.writeInt("size", values.size());
         for (Map.Entry<String, Object> entry : values.entrySet()) {
-            memoryBuffer.writeString(entry.getKey());
-            memoryBuffer.writeObject(entry.getValue());
+            encoder.writeString("key", entry.getKey());
+            encoder.writeObject("value", entry.getValue());
         }
-        marshall0(memoryBuffer, protocol);
+        marshall0(encoder, protocol);
     }
 
     @Override
-    public final void unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
+    public final void unmarshall(Decoder decoder, Protocol protocol)
             throws Exception {
 
-        int size = memoryBuffer.readInt();
+        int size = decoder.readInt();
         for (int i = 0; i < size; i++) {
-            String key = memoryBuffer.readString();
-            Object value = memoryBuffer.readObject();
+            String key = decoder.readString();
+            Object value = decoder.readObject();
             values.put(key, value);
         }
-        unmarshall0(memoryBuffer, protocol);
+        unmarshall0(decoder, protocol);
     }
 
     @Override
@@ -112,10 +112,10 @@ public class Packet
         return "Packet{" + "values=" + values + ", packetName='" + packetName + '\'' + '}';
     }
 
-    protected void marshall0(WritableMemoryBuffer memoryBuffer, Protocol protocol) {
+    protected void marshall0(Encoder encoder, Protocol protocol) {
     }
 
-    protected void unmarshall0(ReadableMemoryBuffer memoryBuffer, Protocol protocol) {
+    protected void unmarshall0(Decoder decoder, Protocol protocol) {
     }
 
 }

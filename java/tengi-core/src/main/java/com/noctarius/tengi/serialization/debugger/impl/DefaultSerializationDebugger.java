@@ -17,7 +17,9 @@
 package com.noctarius.tengi.serialization.debugger.impl;
 
 import com.noctarius.tengi.buffer.MemoryBuffer;
+import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
 import com.noctarius.tengi.serialization.Protocol;
+import com.noctarius.tengi.serialization.codec.Codec;
 import com.noctarius.tengi.serialization.debugger.DebuggableProtocol;
 import com.noctarius.tengi.serialization.debugger.SerializationDebugger;
 
@@ -36,9 +38,9 @@ public class DefaultSerializationDebugger
     };
 
     @Override
-    public void push(Protocol protocol, MemoryBuffer memoryBuffer, Process process, Object value) {
+    public void push(Protocol protocol, Codec codec, Process process, Object value) {
         Stack stack = STACK.get();
-        StackTraceElement stackTraceElement = buildStackFrame(protocol, memoryBuffer, process, value);
+        StackTraceElement stackTraceElement = buildStackFrame(protocol, codec, process, value);
         if (stackTraceElement == null) {
             return;
         }
@@ -122,7 +124,7 @@ public class DefaultSerializationDebugger
         }
     }
 
-    private StackTraceElement buildStackFrame(Protocol protocol, MemoryBuffer memoryBuffer, Process process, Object value) {
+    private StackTraceElement buildStackFrame(Protocol protocol, Codec codec, Process process, Object value) {
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
 
         int position = -1;
@@ -139,7 +141,7 @@ public class DefaultSerializationDebugger
         }
 
         StackTraceElement old = stackTrace[position];
-        String methodName = buildMethodName(protocol, memoryBuffer, process, old.getMethodName(), value);
+        String methodName = buildMethodName(protocol, codec, process, old.getMethodName(), value);
         return new StackTraceElement(old.getClassName(), methodName, old.getFileName(), old.getLineNumber());
     }
 
@@ -159,10 +161,10 @@ public class DefaultSerializationDebugger
         }
     }
 
-    private String buildMethodName(Protocol protocol, MemoryBuffer memoryBuffer, //
+    private String buildMethodName(Protocol protocol, Codec codec, //
                                    Process process, String methodName, Object value) {
 
-        Class<?> type = findType(protocol, memoryBuffer, process, value);
+        Class<?> type = findType(protocol, codec, process, value);
         String className = type == null ? "Unknown" : type.getName();
 
         StringBuilder sb = new StringBuilder(methodName);
@@ -175,7 +177,7 @@ public class DefaultSerializationDebugger
         return sb.append("]").toString();
     }
 
-    private Class<?> findType(Protocol protocol, MemoryBuffer memoryBuffer, Process process, Object value) {
+    private Class<?> findType(Protocol protocol, Codec codec, Process process, Object value) {
         if (value != null) {
             return value.getClass();
         }
@@ -186,12 +188,13 @@ public class DefaultSerializationDebugger
 
         if (protocol instanceof DebuggableProtocol) {
             DebuggableProtocol dp = (DebuggableProtocol) protocol;
-            return dp.findType(memoryBuffer);
+            return dp.findType(codec);
 
         } else {
+            ReadableMemoryBuffer memoryBuffer = codec.getReadableMemoryBuffer();
             int readerIndex = memoryBuffer.readerIndex();
             try {
-                return protocol.readTypeId(memoryBuffer);
+                return protocol.readTypeId(codec);
 
             } finally {
                 memoryBuffer.readerIndex(readerIndex);

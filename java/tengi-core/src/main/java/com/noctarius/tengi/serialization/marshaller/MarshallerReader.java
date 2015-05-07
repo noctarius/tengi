@@ -16,12 +16,12 @@
  */
 package com.noctarius.tengi.serialization.marshaller;
 
-import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
 import com.noctarius.tengi.serialization.Protocol;
+import com.noctarius.tengi.serialization.codec.Decoder;
 
 public interface MarshallerReader<O> {
 
-    O unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
+    O unmarshall(Decoder decoder, Protocol protocol)
             throws Exception;
 
 }

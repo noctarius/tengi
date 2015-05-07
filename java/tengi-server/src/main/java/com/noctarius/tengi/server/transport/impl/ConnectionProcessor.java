@@ -19,9 +19,9 @@ package com.noctarius.tengi.server.transport.impl;
 import com.noctarius.tengi.Identifier;
 import com.noctarius.tengi.Message;
 import com.noctarius.tengi.Transport;
-import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
 import com.noctarius.tengi.connection.ConnectionContext;
 import com.noctarius.tengi.serialization.Serializer;
+import com.noctarius.tengi.serialization.codec.AutoClosableDecoder;
 import com.noctarius.tengi.server.server.ConnectionManager;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -43,25 +43,28 @@ public abstract class ConnectionProcessor<T>
     protected final void channelRead0(ChannelHandlerContext ctx, T msg)
             throws Exception {
 
-        ReadableMemoryBuffer memoryBuffer = decode(ctx, msg);
-        if (memoryBuffer == null) {
-            ctx.close().sync();
-            return;
+        try (AutoClosableDecoder decoder = decode(ctx, msg)) {
+            if (decoder == null) {
+                ctx.close().sync();
+                return;
+            }
+
+            boolean loggedIn = decoder.readBoolean();
+
+            Identifier connectionId;
+            if (!loggedIn) {
+                connectionId = Identifier.randomIdentifier();
+                ConnectionContext connectionContext = createConnectionContext(ctx, connectionId);
+                connectionManager.assignConnection(connectionId, connectionContext, transport);
+            } else {
+                byte[] data = new byte[16];
+                decoder.readBytes(data);
+                connectionId = Identifier.fromBytes(data);
+            }
+
+            Message message = decoder.readObject();
+            connectionManager.publishMessage(connectionId, message);
         }
-
-        boolean loggedIn = memoryBuffer.readBoolean();
-
-        Identifier connectionId;
-        if (!loggedIn) {
-            connectionId = Identifier.randomIdentifier();
-            ConnectionContext connectionContext = createConnectionContext(ctx, connectionId);
-            connectionManager.assignConnection(connectionId, connectionContext, transport);
-        } else {
-            connectionId = memoryBuffer.readObject();
-        }
-
-        Message message = memoryBuffer.readObject();
-        connectionManager.publishMessage(connectionId, message);
     }
 
     protected Serializer getSerializer() {
@@ -76,7 +79,7 @@ public abstract class ConnectionProcessor<T>
         return connectionManager;
     }
 
-    protected abstract ReadableMemoryBuffer decode(ChannelHandlerContext ctx, T msg)
+    protected abstract AutoClosableDecoder decode(ChannelHandlerContext ctx, T msg)
             throws Exception;
 
     protected abstract ConnectionContext createConnectionContext(ChannelHandlerContext ctx, Identifier connectionId);

@@ -17,25 +17,22 @@
 package com.noctarius.tengi.buffer.impl;
 
 import com.noctarius.tengi.buffer.MemoryBuffer;
-import com.noctarius.tengi.serialization.Protocol;
-import com.noctarius.tengi.serialization.debugger.SerializationDebugger;
 import io.netty.buffer.AbstractReferenceCountedByteBuf;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.CompositeByteBuf;
 
 import java.nio.ByteBuffer;
 
 class NettyMemoryBuffer
         implements MemoryBuffer {
 
-    private final SerializationDebugger debugger = SerializationDebugger.create();
-    private final AbstractReferenceCountedByteBuf buffer;
-    private final Protocol protocol;
+    private AbstractReferenceCountedByteBuf buffer;
 
     private volatile boolean released = false;
 
-    public NettyMemoryBuffer(AbstractReferenceCountedByteBuf buffer, Protocol protocol) {
+    MemoryBuffer setByteBuf(AbstractReferenceCountedByteBuf buffer) {
         this.buffer = buffer;
-        this.protocol = protocol;
+        return this;
     }
 
     @Override
@@ -48,11 +45,6 @@ class NettyMemoryBuffer
         if (buffer.release()) {
             released = true;
         }
-    }
-
-    @Override
-    public Protocol getProtocol() {
-        return protocol;
     }
 
     @Override
@@ -168,51 +160,6 @@ class NettyMemoryBuffer
     }
 
     @Override
-    public short readShort() {
-        return ByteOrderUtils.getShort(this, true);
-    }
-
-    @Override
-    public char readChar() {
-        return (char) readShort();
-    }
-
-    @Override
-    public int readInt() {
-        return ByteOrderUtils.getInt(this, true);
-    }
-
-    @Override
-    public int readCompressedInt() {
-        return Int32Compressor.readInt32(this);
-    }
-
-    @Override
-    public long readLong() {
-        return ByteOrderUtils.getLong(this, true);
-    }
-
-    @Override
-    public long readCompressedLong() {
-        return Int64Compressor.readInt64(this);
-    }
-
-    @Override
-    public float readFloat() {
-        return Float.intBitsToFloat(readInt());
-    }
-
-    @Override
-    public double readDouble() {
-        return Double.longBitsToDouble(readLong());
-    }
-
-    @Override
-    public String readString() {
-        return Unicode.UTF8toUTF16(this);
-    }
-
-    @Override
     public int readerIndex() {
         return buffer.readerIndex();
     }
@@ -283,6 +230,13 @@ class NettyMemoryBuffer
             NettyMemoryBuffer mb = (NettyMemoryBuffer) memoryBuffer;
             ByteBuf other = mb.buffer;
 
+            /*if (buffer instanceof CompositeByteBuf) {
+                CompositeByteBuf cbb = (CompositeByteBuf) buffer;
+                if (cbb.numComponents() < cbb.maxNumComponents()) {
+                    cbb.addComponent(buffer);
+                    return;
+                }
+            }*/
             buffer.writeBytes(other, offset, realLength);
 
         } else {
@@ -296,83 +250,6 @@ class NettyMemoryBuffer
     @Override
     public void writeUnsignedByte(short value) {
         buffer.writeByte(value);
-    }
-
-    @Override
-    public void writeShort(short value) {
-        ByteOrderUtils.putShort(value, this, true);
-    }
-
-    @Override
-    public void writeChar(char value) {
-        writeShort((short) value);
-    }
-
-    @Override
-    public void writeInt(int value) {
-        ByteOrderUtils.putInt(value, this, true);
-    }
-
-    @Override
-    public void writeCompressedInt(int value) {
-        Int32Compressor.writeInt32(value, this);
-    }
-
-    @Override
-    public void writeLong(long value) {
-        ByteOrderUtils.putLong(value, this, true);
-    }
-
-    @Override
-    public void writeCompressedLong(long value) {
-        Int64Compressor.writeInt64(value, this);
-    }
-
-    @Override
-    public void writeFloat(float value) {
-        writeInt(Float.floatToIntBits(value));
-    }
-
-    @Override
-    public void writeDouble(double value) {
-        writeLong(Double.doubleToLongBits(value));
-    }
-
-    @Override
-    public void writeString(String value) {
-        Unicode.UTF16toUTF8(value, this);
-    }
-
-    @Override
-    public <O> O readObject()
-            throws Exception {
-
-        O value = protocol.readNullable(this, (m, p) -> {
-            if (SerializationDebugger.Debugger.ENABLED) {
-                debugger.push(protocol, m);
-            }
-            O object = p.readObject(m);
-            if (SerializationDebugger.Debugger.ENABLED) {
-                debugger.pop();
-            }
-            return object;
-        });
-        return value;
-    }
-
-    @Override
-    public void writeObject(Object object)
-            throws Exception {
-
-        protocol.writeNullable(object, this, (o, m, p) -> {
-            if (SerializationDebugger.Debugger.ENABLED) {
-                debugger.push(protocol, m, object);
-            }
-            protocol.writeObject(object, this);
-            if (SerializationDebugger.Debugger.ENABLED) {
-                debugger.pop();
-            }
-        });
     }
 
     @Override

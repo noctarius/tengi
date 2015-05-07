@@ -18,12 +18,10 @@ package com.noctarius.tengi.serialization.impl;
 
 import com.noctarius.tengi.Packet;
 import com.noctarius.tengi.buffer.MemoryBuffer;
-import com.noctarius.tengi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.serialization.Protocol;
 import com.noctarius.tengi.serialization.Serializer;
+import com.noctarius.tengi.serialization.codec.impl.DefaultCodec;
 import com.noctarius.tengi.serialization.debugger.SerializationDebugger;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -49,10 +47,8 @@ public class StackTraceFixTestCase {
             Packet throwing = new SubPacketMarshallException("throwing");
             innerPacket.setValue("throwing", throwing);
 
-            ByteBuf buffer = Unpooled.buffer();
-            MemoryBuffer memoryBuffer = MemoryBufferFactory.unpooled(buffer, protocol);
+            serializer.writeObject(packet);
 
-            serializer.writeObject(packet, memoryBuffer);
         } catch (NullPointerException e) {
 
             int serializationFrames = 0;
@@ -91,12 +87,8 @@ public class StackTraceFixTestCase {
             Packet throwing = new SubPacketUnmarshallException("throwing");
             innerPacket.setValue("throwing", throwing);
 
-            ByteBuf buffer = Unpooled.buffer();
-            MemoryBuffer memoryBuffer = MemoryBufferFactory.unpooled(buffer, protocol);
-
-            serializer.writeObject(packet, memoryBuffer);
-
-            serializer.readObject(memoryBuffer);
+            MemoryBuffer memoryBuffer = serializer.writeObject(packet);
+            serializer.readObject(new DefaultCodec(protocol, memoryBuffer));
 
         } catch (NullPointerException e) {
             int serializationFrames = 0;

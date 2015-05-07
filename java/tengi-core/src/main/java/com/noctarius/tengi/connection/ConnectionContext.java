@@ -22,19 +22,25 @@ import com.noctarius.tengi.Transport;
 import com.noctarius.tengi.buffer.MemoryBuffer;
 import com.noctarius.tengi.connection.impl.LongPollingRequest;
 import com.noctarius.tengi.serialization.Protocol;
+import com.noctarius.tengi.serialization.Serializer;
+import com.noctarius.tengi.serialization.codec.AutoClosableEncoder;
+import com.noctarius.tengi.utils.UnsafeUtil;
+import sun.misc.Unsafe;
 
 import java.util.concurrent.CompletableFuture;
 
 public abstract class ConnectionContext {
+    private static final Unsafe UNSAFE = UnsafeUtil.UNSAFE;
+    private static final long IDENTIFIER_DATA_OFFSET = UnsafeUtil.IDENTIFIER_DATA_OFFSET;
 
     private final Identifier connectionId;
     private final Transport transport;
-    private final Protocol protocol;
+    private final Serializer serializer;
 
-    protected ConnectionContext(Identifier connectionId, Protocol protocol, Transport transport) {
+    protected ConnectionContext(Identifier connectionId, Serializer serializer, Transport transport) {
         this.connectionId = connectionId;
+        this.serializer = serializer;
         this.transport = transport;
-        this.protocol = protocol;
     }
 
     public Identifier getConnectionId() {
@@ -46,7 +52,11 @@ public abstract class ConnectionContext {
     }
 
     public Protocol getProtocol() {
-        return protocol;
+        return serializer.getProtocol();
+    }
+
+    public Serializer getSerializer() {
+        return serializer;
     }
 
     public void processLongPollingRequest(LongPollingRequest request) {
@@ -56,4 +66,15 @@ public abstract class ConnectionContext {
             throws Exception;
 
     public abstract CompletableFuture<Connection> close(Connection connection);
+
+    protected MemoryBuffer preparePacket(MemoryBuffer memoryBuffer)
+            throws Exception {
+
+        try (AutoClosableEncoder encoder = serializer.retrieveEncoder(memoryBuffer)) {
+            encoder.writeBoolean("loggedIn", true);
+            encoder.writeObject("connectionId", getConnectionId());
+            return memoryBuffer;
+        }
+    }
+
 }

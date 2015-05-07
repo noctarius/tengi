@@ -16,11 +16,11 @@
  */
 package com.noctarius.tengi.client;
 
-import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
-import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 import com.noctarius.tengi.config.Configuration;
 import com.noctarius.tengi.config.ConfigurationBuilder;
 import com.noctarius.tengi.serialization.Protocol;
+import com.noctarius.tengi.serialization.codec.Decoder;
+import com.noctarius.tengi.serialization.codec.Encoder;
 import com.noctarius.tengi.serialization.marshaller.MarshallerFilter;
 import com.noctarius.tengi.transport.ClientTransport;
 import org.junit.Test;
@@ -50,25 +50,25 @@ public class ApiTestCase {
         client.connect("127.0.0.1", System.out::println);
     }
 
-    private static void write(Object object, WritableMemoryBuffer memoryBuffer, Protocol protocol)
+    private static void write(String fieldName, Object object, Encoder encoder, Protocol protocol)
             throws Exception {
 
-        memoryBuffer.writeByte(10);
-        protocol.writeNullable(object, memoryBuffer, (o, b, p) -> {
-            ((MyWritable) object).write(memoryBuffer);
+        encoder.writeByte("length", 10);
+        protocol.writeNullable("value", object, encoder, (n, o, e, p) -> {
+            ((MyWritable) object).write(encoder);
         });
     }
 
-    private static Object read(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
+    private static Object read(Decoder decoder, Protocol protocol)
             throws Exception {
 
-        int typeId = memoryBuffer.readByte();
+        int typeId = decoder.readByte();
         if (typeId != 10) {
             throw new IllegalStateException();
         }
-        return protocol.readNullable(memoryBuffer, (b, p) -> {
+        return protocol.readNullable(decoder, (d, p) -> {
             MyWritable myWritable = new MyWritable();
-            myWritable.read(memoryBuffer);
+            myWritable.read(decoder);
             return myWritable;
         });
     }
@@ -81,10 +81,10 @@ public class ApiTestCase {
     }
 
     private static class MyWritable {
-        void write(WritableMemoryBuffer memoryBuffer) {
+        void write(Encoder encoder) {
         }
 
-        void read(ReadableMemoryBuffer memoryBuffer) {
+        void read(Decoder decoder) {
         }
     }
 

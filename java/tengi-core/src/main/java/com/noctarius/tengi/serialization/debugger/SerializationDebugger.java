@@ -16,24 +16,24 @@
  */
 package com.noctarius.tengi.serialization.debugger;
 
-import com.noctarius.tengi.buffer.MemoryBuffer;
-import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
-import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 import com.noctarius.tengi.serialization.Protocol;
+import com.noctarius.tengi.serialization.codec.Codec;
+import com.noctarius.tengi.serialization.codec.Decoder;
+import com.noctarius.tengi.serialization.codec.Encoder;
 import com.noctarius.tengi.serialization.debugger.impl.DefaultSerializationDebugger;
 import com.noctarius.tengi.serialization.debugger.impl.NoopSerializationDebugger;
 
 public interface SerializationDebugger {
 
-    default void push(Protocol protocol, ReadableMemoryBuffer memoryBuffer) {
-        push(protocol, (MemoryBuffer) memoryBuffer, Process.DESERIALIZE, null);
+    default void push(Protocol protocol, Decoder decoder) {
+        push(protocol, (Codec) decoder, Process.DESERIALIZE, null);
     }
 
-    default void push(Protocol protocol, WritableMemoryBuffer memoryBuffer, Object value) {
-        push(protocol, (MemoryBuffer) memoryBuffer, Process.SERIALIZE, value);
+    default void push(Protocol protocol, Encoder encoder, Object value) {
+        push(protocol, (Codec) encoder, Process.SERIALIZE, value);
     }
 
-    void push(Protocol protocol, MemoryBuffer memoryBuffer, Process process, Object value);
+    void push(Protocol protocol, Codec codec, Process process, Object value);
 
     void pop();
 

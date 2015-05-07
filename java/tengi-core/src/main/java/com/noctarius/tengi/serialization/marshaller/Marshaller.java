@@ -16,9 +16,9 @@
  */
 package com.noctarius.tengi.serialization.marshaller;
 
-import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
-import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 import com.noctarius.tengi.serialization.Protocol;
+import com.noctarius.tengi.serialization.codec.Decoder;
+import com.noctarius.tengi.serialization.codec.Encoder;
 
 /**
  * The <tt>Marshaller</tt> interface defines a type to be used
@@ -50,17 +50,17 @@ public interface Marshaller<O>
             }
 
             @Override
-            public O unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
+            public O unmarshall(Decoder decoder, Protocol protocol)
                     throws Exception {
 
-                return reader.unmarshall(memoryBuffer, protocol);
+                return reader.unmarshall(decoder, protocol);
             }
 
             @Override
-            public void marshall(O object, WritableMemoryBuffer memoryBuffer, Protocol protocol)
+            public void marshall(String fieldName, O object, Encoder encoder, Protocol protocol)
                     throws Exception {
 
-                writer.marshall(object, memoryBuffer, protocol);
+                writer.marshall(fieldName, object, encoder, protocol);
             }
         }
         return new JitMarshaller();

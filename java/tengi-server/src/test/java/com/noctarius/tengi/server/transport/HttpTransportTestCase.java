@@ -21,6 +21,7 @@ import com.noctarius.tengi.Packet;
 import com.noctarius.tengi.buffer.MemoryBuffer;
 import com.noctarius.tengi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.serialization.Serializer;
+import com.noctarius.tengi.serialization.codec.impl.DefaultCodec;
 import com.noctarius.tengi.serialization.impl.DefaultProtocol;
 import com.noctarius.tengi.serialization.impl.DefaultProtocolConstants;
 import io.netty.buffer.ByteBuf;
@@ -56,15 +57,16 @@ public class HttpTransportTestCase
         Initializer initializer = initializer(serializer, future);
         Runner runner = (channel) -> {
             ByteBuf buffer = Unpooled.buffer();
-            MemoryBuffer memoryBuffer = MemoryBufferFactory.unpooled(buffer, serializer.getProtocol());
+            MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
+            DefaultCodec codec = new DefaultCodec(serializer.getProtocol(), memoryBuffer);
 
-            memoryBuffer.writeBoolean(false);
+            codec.writeBoolean("loggedIn", false);
 
             Packet packet = new Packet("login");
             packet.setValue("username", "Stan");
 
             Message message = Message.create(packet);
-            serializer.writeObject(message, memoryBuffer);
+            serializer.writeObject("message", message, codec);
 
             FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/channel", buffer);
             request.headers().set(HttpHeaderNames.CONTENT_TYPE, DefaultProtocolConstants.PROTOCOL_MIME_TYPE);
@@ -87,8 +89,12 @@ public class HttpTransportTestCase
         return (ctx, object) -> {
             if (object instanceof HttpContent) {
                 HttpContent content = (HttpContent) object;
-                MemoryBuffer memoryBuffer = MemoryBufferFactory.unpooled(content.content(), serializer.getProtocol());
-                Object response = serializer.readObject(memoryBuffer);
+                MemoryBuffer memoryBuffer = MemoryBufferFactory.create(content.content());
+                DefaultCodec codec = new DefaultCodec(serializer.getProtocol(), memoryBuffer);
+
+                boolean loggedIn = codec.readBoolean();
+
+                Object response = serializer.readObject(codec);
                 future.complete(response);
             }
         };

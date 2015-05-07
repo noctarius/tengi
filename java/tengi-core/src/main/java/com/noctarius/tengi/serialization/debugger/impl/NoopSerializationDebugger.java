@@ -16,8 +16,8 @@
  */
 package com.noctarius.tengi.serialization.debugger.impl;
 
-import com.noctarius.tengi.buffer.MemoryBuffer;
 import com.noctarius.tengi.serialization.Protocol;
+import com.noctarius.tengi.serialization.codec.Codec;
 import com.noctarius.tengi.serialization.debugger.SerializationDebugger;
 
 public enum NoopSerializationDebugger
@@ -26,7 +26,7 @@ public enum NoopSerializationDebugger
     INSTANCE;
 
     @Override
-    public void push(Protocol protocol, MemoryBuffer memoryBuffer, Process process, Object value) {
+    public void push(Protocol protocol, Codec codec, Process process, Object value) {
     }
 
     @Override

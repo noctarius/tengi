@@ -17,9 +17,11 @@
 package com.noctarius.tengi.serialization;
 
 import com.noctarius.tengi.buffer.MemoryBuffer;
-import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
-import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 import com.noctarius.tengi.config.MarshallerConfiguration;
+import com.noctarius.tengi.serialization.codec.AutoClosableDecoder;
+import com.noctarius.tengi.serialization.codec.AutoClosableEncoder;
+import com.noctarius.tengi.serialization.codec.Decoder;
+import com.noctarius.tengi.serialization.codec.Encoder;
 import com.noctarius.tengi.serialization.impl.DefaultProtocol;
 import com.noctarius.tengi.serialization.impl.DefaultSerializer;
 
@@ -29,14 +31,18 @@ public interface Serializer {
 
     Protocol getProtocol();
 
-    <O> O readObject(ReadableMemoryBuffer memoryBuffer)
+    <O> O readObject(Decoder decoder)
             throws Exception;
 
     <O> MemoryBuffer writeObject(O object)
             throws Exception;
 
-    <O> void writeObject(O object, WritableMemoryBuffer memoryBuffer)
+    <O> void writeObject(String fieldName, O object, Encoder encoder)
             throws Exception;
+
+    AutoClosableEncoder retrieveEncoder(MemoryBuffer memoryBuffer);
+
+    AutoClosableDecoder retrieveDecoder(MemoryBuffer memoryBuffer);
 
     public static Serializer create(Collection<MarshallerConfiguration> marshallerConfigurations) {
         return create(new DefaultProtocol(marshallerConfigurations));

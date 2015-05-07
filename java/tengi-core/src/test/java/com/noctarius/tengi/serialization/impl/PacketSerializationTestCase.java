@@ -22,6 +22,8 @@ import com.noctarius.tengi.buffer.MemoryBuffer;
 import com.noctarius.tengi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.serialization.Protocol;
 import com.noctarius.tengi.serialization.Serializer;
+import com.noctarius.tengi.serialization.codec.Codec;
+import com.noctarius.tengi.serialization.codec.impl.DefaultCodec;
 import com.noctarius.tengi.serialization.debugger.SerializationDebugger;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -46,10 +48,11 @@ public class PacketSerializationTestCase {
         Packet packet = new Packet("Test");
 
         ByteBuf buffer = Unpooled.buffer();
-        MemoryBuffer memoryBuffer = MemoryBufferFactory.unpooled(buffer, protocol);
+        MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
 
-        protocol.writeObject(packet, memoryBuffer);
-        Packet read = protocol.readObject(memoryBuffer);
+        Codec codec = new DefaultCodec(protocol, memoryBuffer);
+        protocol.writeObject("packet", packet, codec);
+        Packet read = protocol.readObject(codec);
 
         assertEquals(packet, read);
     }
@@ -63,10 +66,11 @@ public class PacketSerializationTestCase {
         Packet packet = new SubPacketWithDefaultConstructor();
 
         ByteBuf buffer = Unpooled.buffer();
-        MemoryBuffer memoryBuffer = MemoryBufferFactory.unpooled(buffer, protocol);
+        MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
 
-        protocol.writeObject(packet, memoryBuffer);
-        Packet read = protocol.readObject(memoryBuffer);
+        Codec codec = new DefaultCodec(protocol, memoryBuffer);
+        protocol.writeObject("packet", packet, codec);
+        Packet read = protocol.readObject(codec);
 
         assertEquals(packet, read);
     }
@@ -80,10 +84,11 @@ public class PacketSerializationTestCase {
         Packet packet = new SubPacketWithoutDefaultConstructor("Test");
 
         ByteBuf buffer = Unpooled.buffer();
-        MemoryBuffer memoryBuffer = MemoryBufferFactory.unpooled(buffer, protocol);
+        MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
 
-        protocol.writeObject(packet, memoryBuffer);
-        Packet read = protocol.readObject(memoryBuffer);
+        Codec codec = new DefaultCodec(protocol, memoryBuffer);
+        protocol.writeObject("packet", packet, codec);
+        Packet read = protocol.readObject(codec);
 
         assertEquals(packet, read);
     }
@@ -100,12 +105,11 @@ public class PacketSerializationTestCase {
             Packet packet = new SubPacketMarshallException("Test");
 
             ByteBuf buffer = Unpooled.buffer();
-            MemoryBuffer memoryBuffer = MemoryBufferFactory.unpooled(buffer, protocol);
+            MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
 
-            serializer.writeObject(packet, memoryBuffer);
-            Packet read = protocol.readObject(memoryBuffer);
+            Codec codec = new DefaultCodec(protocol, memoryBuffer);
+            serializer.writeObject("packet", packet, codec);
 
-            assertEquals(packet, read);
         } finally {
             SerializationDebugger.Debugger.ENABLED = false;
         }
@@ -123,10 +127,11 @@ public class PacketSerializationTestCase {
             Packet packet = new SubPacketUnmarshallException("Test");
 
             ByteBuf buffer = Unpooled.buffer();
-            MemoryBuffer memoryBuffer = MemoryBufferFactory.unpooled(buffer, protocol);
+            MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
 
-            serializer.writeObject(packet, memoryBuffer);
-            Packet read = protocol.readObject(memoryBuffer);
+            Codec codec = new DefaultCodec(protocol, memoryBuffer);
+            serializer.writeObject("packet", packet, codec);
+            Packet read = protocol.readObject(codec);
 
             assertEquals(packet, read);
         } finally {

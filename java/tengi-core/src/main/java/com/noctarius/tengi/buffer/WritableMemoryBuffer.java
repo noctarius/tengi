@@ -42,27 +42,6 @@ public interface WritableMemoryBuffer {
 
     void writeUnsignedByte(short value);
 
-    void writeShort(short value);
-
-    void writeChar(char value);
-
-    void writeInt(int value);
-
-    void writeCompressedInt(int value);
-
-    void writeLong(long value);
-
-    void writeCompressedLong(long value);
-
-    void writeFloat(float value);
-
-    void writeDouble(double value);
-
-    void writeString(String value);
-
-    void writeObject(Object object)
-            throws Exception;
-
     int writerIndex();
 
     void writerIndex(int writerIndex);

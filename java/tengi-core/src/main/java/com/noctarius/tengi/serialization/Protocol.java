@@ -16,8 +16,8 @@
  */
 package com.noctarius.tengi.serialization;
 
-import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
-import com.noctarius.tengi.buffer.WritableMemoryBuffer;
+import com.noctarius.tengi.serialization.codec.Decoder;
+import com.noctarius.tengi.serialization.codec.Encoder;
 import com.noctarius.tengi.serialization.marshaller.MarshallerReader;
 import com.noctarius.tengi.serialization.marshaller.MarshallerWriter;
 
@@ -25,34 +25,34 @@ public interface Protocol {
 
     String getMimeType();
 
-    void writeTypeId(Object value, WritableMemoryBuffer memoryBuffer);
+    void writeTypeId(Object value, Encoder encoder);
 
-    <T> Class<T> readTypeId(ReadableMemoryBuffer memoryBuffer);
+    <T> Class<T> readTypeId(Decoder decoder);
 
-    <T> T readTypeObject(ReadableMemoryBuffer memoryBuffer);
+    <T> T readTypeObject(Decoder decoder);
 
-    <O> O readObject(ReadableMemoryBuffer memoryBuffer)
+    <O> O readObject(Decoder decoder)
             throws Exception;
 
-    <O> void writeObject(O object, WritableMemoryBuffer memoryBuffer)
+    <O> void writeObject(String fieldName, O object, Encoder encoder)
             throws Exception;
 
-    default <O> void writeNullable(O object, WritableMemoryBuffer memoryBuffer, MarshallerWriter<O> writer)
+    default <O> void writeNullable(String fieldName, O object, Encoder encoder, MarshallerWriter<O> writer)
             throws Exception {
 
         if (object == null) {
-            memoryBuffer.writeByte(0);
+            encoder.writeByte("nullable", 0);
             return;
         }
-        memoryBuffer.writeByte(1);
-        writer.marshall(object, memoryBuffer, this);
+        encoder.writeByte("nullable", 1);
+        writer.marshall(fieldName, object, encoder, this);
     }
 
-    default <O> O readNullable(ReadableMemoryBuffer memoryBuffer, MarshallerReader<O> reader)
+    default <O> O readNullable(Decoder decoder, MarshallerReader<O> reader)
             throws Exception {
 
-        if (memoryBuffer.readByte() == 1) {
-            return reader.unmarshall(memoryBuffer, this);
+        if (decoder.readByte() == 1) {
+            return reader.unmarshall(decoder, this);
         }
         return null;
     }

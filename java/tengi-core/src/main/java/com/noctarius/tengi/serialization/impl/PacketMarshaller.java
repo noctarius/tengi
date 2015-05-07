@@ -17,10 +17,10 @@
 package com.noctarius.tengi.serialization.impl;
 
 import com.noctarius.tengi.Packet;
-import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
-import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 import com.noctarius.tengi.serialization.Protocol;
 import com.noctarius.tengi.serialization.TypeId;
+import com.noctarius.tengi.serialization.codec.Decoder;
+import com.noctarius.tengi.serialization.codec.Encoder;
 import com.noctarius.tengi.serialization.debugger.DebuggableMarshaller;
 import com.noctarius.tengi.serialization.marshaller.Marshaller;
 import com.noctarius.tengi.utils.ExceptionUtil;
@@ -38,28 +38,28 @@ enum PacketMarshaller
     private final ConcurrentMap<Class<Packet>, Construction> constructors = new ConcurrentHashMap<>();
 
     @Override
-    public Packet unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
+    public Packet unmarshall(Decoder decoder, Protocol protocol)
             throws Exception {
 
-        Class<Packet> clazz = protocol.readTypeId(memoryBuffer);
-        String packageName = memoryBuffer.readString();
+        Class<Packet> clazz = protocol.readTypeId(decoder);
+        String packageName = decoder.readString();
 
         Construction constructor = constructors.computeIfAbsent(clazz, this::computeConstructor);
         Packet packet = constructor.create(packageName);
-        packet.unmarshall(memoryBuffer, protocol);
+        packet.unmarshall(decoder, protocol);
         return packet;
     }
 
     @Override
-    public void marshall(Packet packet, WritableMemoryBuffer memoryBuffer, Protocol protocol)
+    public void marshall(String fieldName, Packet packet, Encoder encoder, Protocol protocol)
             throws Exception {
 
         String packageName = packet.getPacketName();
 
-        protocol.writeTypeId(packet, memoryBuffer);
-        memoryBuffer.writeString(packageName);
+        protocol.writeTypeId(packet, encoder);
+        encoder.writeString("packageName", packageName);
 
-        packet.marshall(memoryBuffer, protocol);
+        packet.marshall(encoder, protocol);
     }
 
     private Construction computeConstructor(Class<Packet> clazz) {
@@ -76,8 +76,8 @@ enum PacketMarshaller
     }
 
     @Override
-    public Class<?> findType(ReadableMemoryBuffer memoryBuffer, Protocol protocol) {
-        return protocol.readTypeId(memoryBuffer);
+    public Class<?> findType(Decoder decoder, Protocol protocol) {
+        return protocol.readTypeId(decoder);
     }
 
     @Override

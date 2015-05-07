@@ -16,8 +16,8 @@
  */
 package com.noctarius.tengi.serialization;
 
-import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
-import com.noctarius.tengi.buffer.WritableMemoryBuffer;
+import com.noctarius.tengi.serialization.codec.Decoder;
+import com.noctarius.tengi.serialization.codec.Encoder;
 
 /**
  * <p>The <tt>Marshallable</tt> interface defines a common type
@@ -34,26 +34,26 @@ public interface Marshallable {
 
     /**
      * This method implements logic to marshall (serialize) this object
-     * into a stream of bytes using the given {@link com.noctarius.tengi.buffer.WritableMemoryBuffer}.
+     * into a stream of bytes using the given {@link com.noctarius.tengi.serialization.codec.Encoder}.
      * The given {@link com.noctarius.tengi.serialization.Protocol} instance
      * might be used to build complex stream graphs.
      *
-     * @param memoryBuffer WritableMemoryBuffer to write to
-     * @param protocol     Protocol instance for additional protocol complexity
+     * @param encoder  Encoder to write to
+     * @param protocol Protocol instance for additional protocol complexity
      */
-    void marshall(WritableMemoryBuffer memoryBuffer, Protocol protocol)
+    void marshall(Encoder encoder, Protocol protocol)
             throws Exception;
 
     /**
      * This method implements logic to un-marshall (de-serialize) this
-     * object from a stream of bytes using the given {@link com.noctarius.tengi.buffer.ReadableMemoryBuffer}.
+     * object from a stream of bytes using the given {@link com.noctarius.tengi.serialization.codec.Decoder}.
      * The given {@link com.noctarius.tengi.serialization.Protocol} instance
      * might be used to handle complex stream graphs.
      *
-     * @param memoryBuffer ReadableMemoryBuffer to read from
-     * @param protocol     Protocol instance for additional protocol complexity
+     * @param decoder  Decoder to read from
+     * @param protocol Protocol instance for additional protocol complexity
      */
-    void unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
+    void unmarshall(Decoder decoder, Protocol protocol)
             throws Exception;
 
 }

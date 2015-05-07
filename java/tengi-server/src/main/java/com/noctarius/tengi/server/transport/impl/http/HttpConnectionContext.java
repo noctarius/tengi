@@ -23,7 +23,7 @@ import com.noctarius.tengi.buffer.MemoryBuffer;
 import com.noctarius.tengi.connection.Connection;
 import com.noctarius.tengi.connection.ConnectionContext;
 import com.noctarius.tengi.connection.impl.LongPollingRequest;
-import com.noctarius.tengi.serialization.Protocol;
+import com.noctarius.tengi.serialization.Serializer;
 import com.noctarius.tengi.utils.CompletableFutureUtil;
 import com.noctarius.tengi.utils.ExceptionUtil;
 import io.netty.channel.Channel;
@@ -41,8 +41,8 @@ class HttpConnectionContext
     private final AtomicReference<Channel> channelRef = new AtomicReference<>();
     private final Queue<QueueEntry> messageQueue = new ConcurrentLinkedQueue<>();
 
-    HttpConnectionContext(Channel channel, Identifier connectionId, Protocol protocol, Transport transport) {
-        super(connectionId, protocol, transport);
+    HttpConnectionContext(Channel channel, Identifier connectionId, Serializer serializer, Transport transport) {
+        super(connectionId, serializer, transport);
         this.channelRef.set(channel);
     }
 

@@ -16,12 +16,12 @@
  */
 package com.noctarius.tengi.serialization.debugger;
 
-import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
 import com.noctarius.tengi.serialization.Protocol;
+import com.noctarius.tengi.serialization.codec.Decoder;
 
 public interface DebuggableProtocol
         extends Protocol {
 
-    <T> Class<T> findType(ReadableMemoryBuffer memoryBuffer);
+    <T> Class<T> findType(Decoder decoder);
 
 }

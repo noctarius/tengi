@@ -20,10 +20,11 @@ import com.noctarius.tengi.Identifier;
 import com.noctarius.tengi.Message;
 import com.noctarius.tengi.SystemException;
 import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
-import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 import com.noctarius.tengi.config.MarshallerConfiguration;
 import com.noctarius.tengi.serialization.Protocol;
 import com.noctarius.tengi.serialization.TypeId;
+import com.noctarius.tengi.serialization.codec.Decoder;
+import com.noctarius.tengi.serialization.codec.Encoder;
 import com.noctarius.tengi.serialization.debugger.DebuggableMarshaller;
 import com.noctarius.tengi.serialization.debugger.DebuggableProtocol;
 import com.noctarius.tengi.serialization.marshaller.Identifiable;
@@ -89,7 +90,7 @@ public class DefaultProtocol
     }
 
     @Override
-    public void writeTypeId(Object value, WritableMemoryBuffer memoryBuffer) {
+    public void writeTypeId(Object value, Encoder encoder) {
         Class<?> type;
         if (value instanceof Class) {
             type = (Class<?>) value;
@@ -101,19 +102,19 @@ public class DefaultProtocol
         if (typeId == null) {
             throw new SystemException("TypeId for type '" + type.getName() + "' not found. Not registered?");
         }
-        memoryBuffer.writeShort(typeId);
+        encoder.writeShort("typeId", typeId);
     }
 
     @Override
-    public <T> Class<T> readTypeId(ReadableMemoryBuffer memoryBuffer) {
-        short typeId = memoryBuffer.readShort();
+    public <T> Class<T> readTypeId(Decoder decoder) {
+        short typeId = decoder.readShort();
         return (Class<T>) typeById.get(typeId);
     }
 
     @Override
-    public Object readTypeObject(ReadableMemoryBuffer memoryBuffer) {
+    public Object readTypeObject(Decoder decoder) {
         try {
-            Class<?> clazz = readTypeId(memoryBuffer);
+            Class<?> clazz = readTypeId(decoder);
             return clazz.newInstance();
         } catch (Exception e) {
             throw ExceptionUtil.rethrow(e);
@@ -121,17 +122,18 @@ public class DefaultProtocol
     }
 
     @Override
-    public Class<?> findType(ReadableMemoryBuffer memoryBuffer) {
+    public Class<?> findType(Decoder decoder) {
+        ReadableMemoryBuffer memoryBuffer = decoder.getReadableMemoryBuffer();
         int readerIndex = memoryBuffer.readerIndex();
         try {
-            short typeId = memoryBuffer.readShort();
+            short typeId = decoder.readShort();
             Class<?> clazz = typeById.get(typeId);
             if (clazz != null) {
                 return clazz;
             }
             Marshaller<?> marshaller = marshallerById.get(typeId);
             if (marshaller != null && marshaller instanceof DebuggableMarshaller) {
-                return ((DebuggableMarshaller<?>) marshaller).findType(memoryBuffer, this);
+                return ((DebuggableMarshaller<?>) marshaller).findType(decoder, this);
             }
             return null;
         } finally {
@@ -140,21 +142,21 @@ public class DefaultProtocol
     }
 
     @Override
-    public <O> O readObject(ReadableMemoryBuffer memoryBuffer)
+    public <O> O readObject(Decoder decoder)
             throws Exception {
 
-        short typeId = memoryBuffer.readShort();
+        short typeId = decoder.readShort();
         Marshaller marshaller = marshallerById.get(typeId);
-        return (O) marshaller.unmarshall(memoryBuffer, this);
+        return (O) marshaller.unmarshall(decoder, this);
     }
 
     @Override
-    public <O> void writeObject(O object, WritableMemoryBuffer memoryBuffer)
+    public <O> void writeObject(String fieldName, O object, Encoder encoder)
             throws Exception {
 
         Marshaller marshaller = computeMarshaller(object);
-        memoryBuffer.writeShort(findMarshallerId(marshaller));
-        marshaller.marshall(object, memoryBuffer, this);
+        encoder.writeShort("marshallerId", findMarshallerId(marshaller));
+        marshaller.marshall(fieldName, object, encoder, this);
     }
 
     private void registerInternalMarshallers() {

@@ -17,9 +17,9 @@
 package com.noctarius.tengi.server.transport.impl.websocket;
 
 import com.noctarius.tengi.Identifier;
-import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
 import com.noctarius.tengi.connection.ConnectionContext;
 import com.noctarius.tengi.serialization.Serializer;
+import com.noctarius.tengi.serialization.codec.AutoClosableDecoder;
 import com.noctarius.tengi.server.server.ConnectionManager;
 import com.noctarius.tengi.server.transport.ServerTransport;
 import com.noctarius.tengi.server.transport.impl.ConnectionProcessor;
@@ -40,7 +40,7 @@ public class WebsocketConnectionProcessor
     }
 
     @Override
-    protected ReadableMemoryBuffer decode(ChannelHandlerContext ctx, WebSocketFrame frame)
+    protected AutoClosableDecoder decode(ChannelHandlerContext ctx, WebSocketFrame frame)
             throws Exception {
 
         return null;

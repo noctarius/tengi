@@ -16,6 +16,7 @@
  */
 package com.noctarius.tengi.utils;
 
+import com.noctarius.tengi.Identifier;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
@@ -25,7 +26,12 @@ import java.security.PrivilegedAction;
 public final class UnsafeUtil {
 
     public static final Unsafe UNSAFE;
-    public static final boolean UNSAFE_AVAILABLE;
+
+    public static final long OBJECT_ARRAY_BASE;
+    public static final long OBJECT_ARRAY_INDEXSCALE;
+    public static final long OBJECT_ARRAY_SHIFT;
+
+    public static final long IDENTIFIER_DATA_OFFSET;
 
     static {
         Unsafe unsafe;
@@ -35,8 +41,24 @@ public final class UnsafeUtil {
         } catch (RuntimeException e) {
             unsafe = null;
         }
+        if (unsafe == null) {
+            throw new RuntimeException("Incompatible JVM - sun.misc.Unsafe support is missing");
+        }
+
+        try {
+            Field identifierData = Identifier.class.getDeclaredField("data");
+            identifierData.setAccessible(true);
+            IDENTIFIER_DATA_OFFSET = unsafe.objectFieldOffset(identifierData);
+
+            OBJECT_ARRAY_BASE = unsafe.arrayBaseOffset(Object[].class);
+            OBJECT_ARRAY_INDEXSCALE = unsafe.arrayIndexScale(Object[].class);
+            OBJECT_ARRAY_SHIFT = 31 - Integer.numberOfLeadingZeros((int) OBJECT_ARRAY_INDEXSCALE);
+
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException();
+        }
+
         UNSAFE = unsafe;
-        UNSAFE_AVAILABLE = UNSAFE != null;
     }
 
     private static Unsafe findUnsafe() {

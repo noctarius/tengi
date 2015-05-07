@@ -16,11 +16,11 @@
  */
 package com.noctarius.tengi.serialization.impl;
 
-import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
-import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 import com.noctarius.tengi.serialization.Marshallable;
 import com.noctarius.tengi.serialization.Protocol;
 import com.noctarius.tengi.serialization.TypeId;
+import com.noctarius.tengi.serialization.codec.Decoder;
+import com.noctarius.tengi.serialization.codec.Encoder;
 import com.noctarius.tengi.serialization.debugger.DebuggableMarshaller;
 import com.noctarius.tengi.serialization.marshaller.Marshaller;
 import com.noctarius.tengi.utils.ExceptionUtil;
@@ -38,22 +38,22 @@ enum MarshallableMarshaller
     private final ConcurrentMap<Class<Marshallable>, Constructor<Marshallable>> constructors = new ConcurrentHashMap<>();
 
     @Override
-    public Marshallable unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
+    public Marshallable unmarshall(Decoder decoder, Protocol protocol)
             throws Exception {
 
-        Class<Marshallable> clazz = protocol.readTypeId(memoryBuffer);
+        Class<Marshallable> clazz = protocol.readTypeId(decoder);
         Constructor<Marshallable> constructor = constructors.computeIfAbsent(clazz, this::computeConstructor);
         Marshallable marshallable = constructor.newInstance();
-        marshallable.unmarshall(memoryBuffer, protocol);
+        marshallable.unmarshall(decoder, protocol);
         return marshallable;
     }
 
     @Override
-    public void marshall(Marshallable marshallable, WritableMemoryBuffer memoryBuffer, Protocol protocol)
+    public void marshall(String fieldName, Marshallable marshallable, Encoder encoder, Protocol protocol)
             throws Exception {
 
-        protocol.writeTypeId(marshallable, memoryBuffer);
-        marshallable.marshall(memoryBuffer, protocol);
+        protocol.writeTypeId(marshallable, encoder);
+        marshallable.marshall(encoder, protocol);
     }
 
     private Constructor<Marshallable> computeConstructor(Class<Marshallable> clazz) {
@@ -65,8 +65,8 @@ enum MarshallableMarshaller
     }
 
     @Override
-    public Class<?> findType(ReadableMemoryBuffer memoryBuffer, Protocol protocol) {
-        return protocol.readTypeId(memoryBuffer);
+    public Class<?> findType(Decoder decoder, Protocol protocol) {
+        return protocol.readTypeId(decoder);
     }
 
     @Override

@@ -42,27 +42,6 @@ public interface ReadableMemoryBuffer {
 
     short readUnsignedByte();
 
-    short readShort();
-
-    char readChar();
-
-    int readInt();
-
-    int readCompressedInt();
-
-    long readLong();
-
-    long readCompressedLong();
-
-    float readFloat();
-
-    double readDouble();
-
-    String readString();
-
-    <O> O readObject()
-            throws Exception;
-
     int readerIndex();
 
     void readerIndex(int readerIndex);

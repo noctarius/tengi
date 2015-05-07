@@ -18,36 +18,19 @@ package com.noctarius.tengi.serialization.impl;
 
 import com.noctarius.tengi.Identifier;
 import com.noctarius.tengi.Message;
-import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
-import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 import com.noctarius.tengi.serialization.Protocol;
 import com.noctarius.tengi.serialization.TypeId;
+import com.noctarius.tengi.serialization.codec.Decoder;
+import com.noctarius.tengi.serialization.codec.Encoder;
 import com.noctarius.tengi.serialization.debugger.DebuggableMarshaller;
 import com.noctarius.tengi.serialization.marshaller.Marshaller;
 import com.noctarius.tengi.utils.UnsafeUtil;
 import sun.misc.Unsafe;
 
-import java.lang.reflect.Field;
-
 final class CommonMarshaller {
 
     private static final Unsafe UNSAFE = UnsafeUtil.UNSAFE;
-
-    private static final long IDENTIFIER_DATA_OFFSET;
-
-    static {
-        if (!UnsafeUtil.UNSAFE_AVAILABLE) {
-            throw new RuntimeException("Incompatible JVM - sun.misc.Unsafe support is missing");
-        }
-
-        try {
-            Field identifierData = Identifier.class.getDeclaredField("data");
-            identifierData.setAccessible(true);
-            IDENTIFIER_DATA_OFFSET = UNSAFE.objectFieldOffset(identifierData);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException();
-        }
-    }
+    private static final long IDENTIFIER_DATA_OFFSET = UnsafeUtil.IDENTIFIER_DATA_OFFSET;
 
     private CommonMarshaller() {
     }
@@ -59,21 +42,21 @@ final class CommonMarshaller {
         INSTANCE;
 
         @Override
-        public Byte unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
+        public Byte unmarshall(Decoder decoder, Protocol protocol)
                 throws Exception {
 
-            return protocol.readNullable(memoryBuffer, (b, p) -> b.readByte());
+            return protocol.readNullable(decoder, (d, p) -> d.readByte());
         }
 
         @Override
-        public void marshall(Byte value, WritableMemoryBuffer memoryBuffer, Protocol protocol)
+        public void marshall(String fieldName, Byte value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
-            protocol.writeNullable(value, memoryBuffer, (v, b, p) -> b.writeByte(v));
+            protocol.writeNullable(fieldName, value, encoder, (n, v, e, p) -> e.writeByte("value", v));
         }
 
         @Override
-        public Class<?> findType(ReadableMemoryBuffer memoryBuffer, Protocol protocol) {
+        public Class<?> findType(Decoder decoder, Protocol protocol) {
             return Byte.class;
         }
 
@@ -91,21 +74,21 @@ final class CommonMarshaller {
         INSTANCE;
 
         @Override
-        public Short unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
+        public Short unmarshall(Decoder decoder, Protocol protocol)
                 throws Exception {
 
-            return protocol.readNullable(memoryBuffer, (b, p) -> b.readShort());
+            return protocol.readNullable(decoder, (d, p) -> d.readShort());
         }
 
         @Override
-        public void marshall(Short value, WritableMemoryBuffer memoryBuffer, Protocol protocol)
+        public void marshall(String fieldName, Short value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
-            protocol.writeNullable(value, memoryBuffer, (v, b, p) -> b.writeShort(v));
+            protocol.writeNullable(fieldName, value, encoder, (n, v, e, p) -> e.writeShort("value", v));
         }
 
         @Override
-        public Class<?> findType(ReadableMemoryBuffer memoryBuffer, Protocol protocol) {
+        public Class<?> findType(Decoder decoder, Protocol protocol) {
             return Short.class;
         }
 
@@ -122,21 +105,21 @@ final class CommonMarshaller {
         INSTANCE;
 
         @Override
-        public Integer unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
+        public Integer unmarshall(Decoder decoder, Protocol protocol)
                 throws Exception {
 
-            return protocol.readNullable(memoryBuffer, (b, p) -> b.readInt());
+            return protocol.readNullable(decoder, (d, p) -> d.readInt());
         }
 
         @Override
-        public void marshall(Integer value, WritableMemoryBuffer memoryBuffer, Protocol protocol)
+        public void marshall(String fieldName, Integer value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
-            protocol.writeNullable(value, memoryBuffer, (v, b, p) -> b.writeInt(v));
+            protocol.writeNullable(fieldName, value, encoder, (n, v, e, p) -> e.writeInt("value", v));
         }
 
         @Override
-        public Class<?> findType(ReadableMemoryBuffer memoryBuffer, Protocol protocol) {
+        public Class<?> findType(Decoder decoder, Protocol protocol) {
             return Integer.class;
         }
 
@@ -153,21 +136,21 @@ final class CommonMarshaller {
         INSTANCE;
 
         @Override
-        public Long unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
+        public Long unmarshall(Decoder decoder, Protocol protocol)
                 throws Exception {
 
-            return protocol.readNullable(memoryBuffer, (b, p) -> b.readLong());
+            return protocol.readNullable(decoder, (d, p) -> d.readLong());
         }
 
         @Override
-        public void marshall(Long value, WritableMemoryBuffer memoryBuffer, Protocol protocol)
+        public void marshall(String fieldName, Long value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
-            protocol.writeNullable(value, memoryBuffer, (v, b, p) -> b.writeLong(v));
+            protocol.writeNullable(fieldName, value, encoder, (n, v, e, p) -> e.writeLong("value", v));
         }
 
         @Override
-        public Class<?> findType(ReadableMemoryBuffer memoryBuffer, Protocol protocol) {
+        public Class<?> findType(Decoder decoder, Protocol protocol) {
             return Long.class;
         }
 
@@ -184,21 +167,21 @@ final class CommonMarshaller {
         INSTANCE;
 
         @Override
-        public Float unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
+        public Float unmarshall(Decoder decoder, Protocol protocol)
                 throws Exception {
 
-            return protocol.readNullable(memoryBuffer, (b, p) -> b.readFloat());
+            return protocol.readNullable(decoder, (d, p) -> d.readFloat());
         }
 
         @Override
-        public void marshall(Float value, WritableMemoryBuffer memoryBuffer, Protocol protocol)
+        public void marshall(String fieldName, Float value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
-            protocol.writeNullable(value, memoryBuffer, (v, b, p) -> b.writeFloat(v));
+            protocol.writeNullable(fieldName, value, encoder, (n, v, e, p) -> e.writeFloat("value", v));
         }
 
         @Override
-        public Class<?> findType(ReadableMemoryBuffer memoryBuffer, Protocol protocol) {
+        public Class<?> findType(Decoder decoder, Protocol protocol) {
             return Float.class;
         }
 
@@ -215,21 +198,21 @@ final class CommonMarshaller {
         INSTANCE;
 
         @Override
-        public Double unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
+        public Double unmarshall(Decoder decoder, Protocol protocol)
                 throws Exception {
 
-            return protocol.readNullable(memoryBuffer, (b, p) -> b.readDouble());
+            return protocol.readNullable(decoder, (d, p) -> d.readDouble());
         }
 
         @Override
-        public void marshall(Double value, WritableMemoryBuffer memoryBuffer, Protocol protocol)
+        public void marshall(String fieldName, Double value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
-            protocol.writeNullable(value, memoryBuffer, (v, b, p) -> b.writeDouble(v));
+            protocol.writeNullable(fieldName, value, encoder, (n, v, e, p) -> e.writeDouble("value", v));
         }
 
         @Override
-        public Class<?> findType(ReadableMemoryBuffer memoryBuffer, Protocol protocol) {
+        public Class<?> findType(Decoder decoder, Protocol protocol) {
             return Double.class;
         }
 
@@ -246,21 +229,21 @@ final class CommonMarshaller {
         INSTANCE;
 
         @Override
-        public String unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
+        public String unmarshall(Decoder decoder, Protocol protocol)
                 throws Exception {
 
-            return protocol.readNullable(memoryBuffer, (b, p) -> b.readString());
+            return protocol.readNullable(decoder, (d, p) -> d.readString());
         }
 
         @Override
-        public void marshall(String value, WritableMemoryBuffer memoryBuffer, Protocol protocol)
+        public void marshall(String fieldName, String value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
-            protocol.writeNullable(value, memoryBuffer, (v, b, p) -> b.writeString(v));
+            protocol.writeNullable(fieldName, value, encoder, (n, v, e, p) -> e.writeString("utf8", v));
         }
 
         @Override
-        public Class<?> findType(ReadableMemoryBuffer memoryBuffer, Protocol protocol) {
+        public Class<?> findType(Decoder decoder, Protocol protocol) {
             return String.class;
         }
 
@@ -270,36 +253,36 @@ final class CommonMarshaller {
         }
     }
 
-    @TypeId(DefaultProtocolConstants.SERIALIZED_TYPE_MARSHALLABLE)
+    @TypeId(DefaultProtocolConstants.SERIALIZED_TYPE_BYTE_ARRAY)
     static enum ByteArrayMarshaller
             implements Marshaller<byte[]>, DebuggableMarshaller<byte[]> {
 
         INSTANCE;
 
         @Override
-        public byte[] unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
+        public byte[] unmarshall(Decoder decoder, Protocol protocol)
                 throws Exception {
 
-            return protocol.readNullable(memoryBuffer, (b, p) -> {
-                int length = b.readCompressedInt();
+            return protocol.readNullable(decoder, (d, p) -> {
+                int length = d.readInt();
                 byte[] array = new byte[length];
-                b.readBytes(array);
+                d.readBytes(array);
                 return array;
             });
         }
 
         @Override
-        public void marshall(byte[] value, WritableMemoryBuffer memoryBuffer, Protocol protocol)
+        public void marshall(String fieldName, byte[] value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
-            protocol.writeNullable(value, memoryBuffer, (v, b, p) -> {
-                b.writeCompressedInt(v.length);
-                b.writeBytes(v);
+            protocol.writeNullable(fieldName, value, encoder, (n, v, e, p) -> {
+                e.writeInt("length", v.length);
+                e.writeBytes("data", v);
             });
         }
 
         @Override
-        public Class<?> findType(ReadableMemoryBuffer memoryBuffer, Protocol protocol) {
+        public Class<?> findType(Decoder decoder, Protocol protocol) {
             return byte[].class;
         }
 
@@ -317,27 +300,27 @@ final class CommonMarshaller {
         INSTANCE;
 
         @Override
-        public Message unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
+        public Message unmarshall(Decoder decoder, Protocol protocol)
                 throws Exception {
 
-            Identifier messageId = memoryBuffer.readObject();
-            Object body = memoryBuffer.readObject();
+            Identifier messageId = decoder.readObject();
+            Object body = decoder.readObject();
             return Message.create(messageId, body);
         }
 
         @Override
-        public void marshall(Message message, WritableMemoryBuffer memoryBuffer, Protocol protocol)
+        public void marshall(String fieldName, Message message, Encoder encoder, Protocol protocol)
                 throws Exception {
 
             Identifier messageId = message.getMessageId();
             Object body = message.getBody();
 
-            memoryBuffer.writeObject(messageId);
-            memoryBuffer.writeObject(body);
+            encoder.writeObject("messageId", messageId);
+            encoder.writeObject("body", body);
         }
 
         @Override
-        public Class<?> findType(ReadableMemoryBuffer memoryBuffer, Protocol protocol) {
+        public Class<?> findType(Decoder decoder, Protocol protocol) {
             return Message.class;
         }
 
@@ -354,24 +337,24 @@ final class CommonMarshaller {
         INSTANCE;
 
         @Override
-        public Identifier unmarshall(ReadableMemoryBuffer memoryBuffer, Protocol protocol)
+        public Identifier unmarshall(Decoder decoder, Protocol protocol)
                 throws Exception {
 
             byte[] data = new byte[16];
-            memoryBuffer.readBytes(data);
+            decoder.readBytes(data);
             return Identifier.fromBytes(data);
         }
 
         @Override
-        public void marshall(Identifier identifier, WritableMemoryBuffer memoryBuffer, Protocol protocol)
+        public void marshall(String fieldName, Identifier identifier, Encoder encoder, Protocol protocol)
                 throws Exception {
 
             byte[] data = (byte[]) UNSAFE.getObject(identifier, IDENTIFIER_DATA_OFFSET);
-            memoryBuffer.writeBytes(data);
+            encoder.writeBytes("identifier", data);
         }
 
         @Override
-        public Class<?> findType(ReadableMemoryBuffer memoryBuffer, Protocol protocol) {
+        public Class<?> findType(Decoder decoder, Protocol protocol) {
             return Identifier.class;
         }
 

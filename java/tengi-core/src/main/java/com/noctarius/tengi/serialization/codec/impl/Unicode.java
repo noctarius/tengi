@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.buffer.impl;
+package com.noctarius.tengi.serialization.codec.impl;
 
 import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
 import com.noctarius.tengi.buffer.WritableMemoryBuffer;
@@ -135,12 +135,8 @@ final class Unicode {
      * Encode characters from the given {@link String}, starting at offset 0 for length chars. Returns length of the
      * encoded String in bytes.
      */
-    static int UTF16toUTF8(String value, WritableMemoryBuffer target) {
-        char[] characters = value.toCharArray();
+    static int UTF16toUTF8(char[] characters, WritableMemoryBuffer target) {
         int length = characters.length;
-
-        // Write string length to target
-        target.writeInt(length);
 
         int i = 0;
         final int end = length;
@@ -252,9 +248,7 @@ final class Unicode {
      * NOTE: Full characters are read, even if this reads past the length passed (and can result in an
      * ArrayOutOfBoundsException if invalid UTF-8 is passed). Explicit checks for valid UTF-8 are not performed.
      */
-    static String UTF8toUTF16(ReadableMemoryBuffer source) {
-        int charLength = source.readInt();
-
+    static String UTF8toUTF16(ReadableMemoryBuffer source, int charLength) {
         int offset = 0;
         final char[] out = new char[charLength];
         while (offset < charLength) {

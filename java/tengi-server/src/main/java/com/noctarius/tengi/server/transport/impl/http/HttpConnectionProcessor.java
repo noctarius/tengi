@@ -17,10 +17,11 @@
 package com.noctarius.tengi.server.transport.impl.http;
 
 import com.noctarius.tengi.Identifier;
-import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
+import com.noctarius.tengi.buffer.MemoryBuffer;
 import com.noctarius.tengi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.connection.ConnectionContext;
 import com.noctarius.tengi.serialization.Serializer;
+import com.noctarius.tengi.serialization.codec.AutoClosableDecoder;
 import com.noctarius.tengi.server.server.ConnectionManager;
 import com.noctarius.tengi.server.transport.ServerTransport;
 import com.noctarius.tengi.server.transport.impl.ConnectionProcessor;
@@ -48,7 +49,7 @@ public class HttpConnectionProcessor
     }
 
     @Override
-    protected ReadableMemoryBuffer decode(ChannelHandlerContext ctx, FullHttpRequest request)
+    protected AutoClosableDecoder decode(ChannelHandlerContext ctx, FullHttpRequest request)
             throws Exception {
 
         // Only POST requests are allowed, kill the request
@@ -78,12 +79,13 @@ public class HttpConnectionProcessor
         sendHttpResponse(ctx.channel(), request, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
 
         // TODO: Pool MemoryBuffers
-        return MemoryBufferFactory.unpooled(request.content(), getSerializer().getProtocol());
+        MemoryBuffer memoryBuffer = MemoryBufferFactory.create(request.content());
+        return getSerializer().retrieveDecoder(memoryBuffer);
     }
 
     @Override
     protected ConnectionContext createConnectionContext(ChannelHandlerContext ctx, Identifier connectionId) {
-        return new HttpConnectionContext(ctx.channel(), connectionId, getSerializer().getProtocol(), getTransport());
+        return new HttpConnectionContext(ctx.channel(), connectionId, getSerializer(), getTransport());
     }
 
     static void sendHttpResponse(Channel channel, FullHttpRequest request, FullHttpResponse response) {

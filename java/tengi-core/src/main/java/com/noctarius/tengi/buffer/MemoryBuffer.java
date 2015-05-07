@@ -16,8 +16,6 @@
  */
 package com.noctarius.tengi.buffer;
 
-import com.noctarius.tengi.serialization.Protocol;
-
 public interface MemoryBuffer
         extends ReadableMemoryBuffer, WritableMemoryBuffer {
 
@@ -36,7 +34,5 @@ public interface MemoryBuffer
     boolean isReleased();
 
     boolean isReleasable();
-
-    Protocol getProtocol();
 
 }

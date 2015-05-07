@@ -17,10 +17,11 @@
 package com.noctarius.tengi.server.transport.impl.tcp;
 
 import com.noctarius.tengi.Identifier;
-import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
+import com.noctarius.tengi.buffer.MemoryBuffer;
 import com.noctarius.tengi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.connection.ConnectionContext;
 import com.noctarius.tengi.serialization.Serializer;
+import com.noctarius.tengi.serialization.codec.AutoClosableDecoder;
 import com.noctarius.tengi.server.server.ConnectionManager;
 import com.noctarius.tengi.server.transport.ServerTransport;
 import com.noctarius.tengi.server.transport.impl.ConnectionProcessor;
@@ -35,15 +36,16 @@ public class TcpConnectionProcessor
     }
 
     @Override
-    protected ReadableMemoryBuffer decode(ChannelHandlerContext ctx, ByteBuf buffer)
+    protected AutoClosableDecoder decode(ChannelHandlerContext ctx, ByteBuf buffer)
             throws Exception {
 
-        return MemoryBufferFactory.unpooled(buffer, getSerializer().getProtocol());
+        MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
+        return getSerializer().retrieveDecoder(memoryBuffer);
     }
 
     @Override
     protected ConnectionContext createConnectionContext(ChannelHandlerContext ctx, Identifier connectionId) {
-        return new TcpConnectionContext(ctx.channel(), connectionId, getSerializer().getProtocol(), getTransport());
+        return new TcpConnectionContext(ctx.channel(), connectionId, getSerializer(), getTransport());
     }
 
 }

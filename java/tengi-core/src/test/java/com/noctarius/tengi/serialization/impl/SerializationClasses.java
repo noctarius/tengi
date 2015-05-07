@@ -17,16 +17,15 @@
 package com.noctarius.tengi.serialization.impl;
 
 import com.noctarius.tengi.Packet;
-import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
-import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 import com.noctarius.tengi.serialization.Protocol;
 import com.noctarius.tengi.serialization.TypeId;
+import com.noctarius.tengi.serialization.codec.Decoder;
+import com.noctarius.tengi.serialization.codec.Encoder;
 
 public final class SerializationClasses {
 
     private SerializationClasses() {
     }
-
 
     @TypeId(1000)
     public static class SubPacketWithDefaultConstructor
@@ -55,7 +54,7 @@ public final class SerializationClasses {
         }
 
         @Override
-        protected void marshall0(WritableMemoryBuffer memoryBuffer, Protocol protocol) {
+        protected void marshall0(Encoder encoder, Protocol protocol) {
             throw new NullPointerException();
         }
     }
@@ -69,7 +68,7 @@ public final class SerializationClasses {
         }
 
         @Override
-        protected void unmarshall0(ReadableMemoryBuffer memoryBuffer, Protocol protocol) {
+        protected void unmarshall0(Decoder decoder, Protocol protocol) {
             throw new NullPointerException();
         }
     }

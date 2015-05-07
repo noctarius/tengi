@@ -159,6 +159,11 @@ public class DefaultSerializer
         }
 
         @Override
+        public boolean[] readBoolArray() {
+            return defaultCodec.readBoolArray();
+        }
+
+        @Override
         public byte readByte() {
             return defaultCodec.readByte();
         }
@@ -235,6 +240,11 @@ public class DefaultSerializer
         @Override
         public void writeBoolean(String fieldName, boolean value) {
             defaultCodec.writeBoolean(fieldName, value);
+        }
+
+        @Override
+        public void writeBoolArray(String fieldName, boolean[] values) {
+            defaultCodec.writeBoolArray(fieldName, values);
         }
 
         @Override

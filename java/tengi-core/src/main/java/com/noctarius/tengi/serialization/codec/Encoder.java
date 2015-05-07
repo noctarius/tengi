@@ -10,6 +10,8 @@ public interface Encoder {
 
     void writeBoolean(String fieldName, boolean value);
 
+    void writeBoolArray(String fieldName, boolean[] values);
+
     void writeByte(String fieldName, int value);
 
     void writeUnsignedByte(String fieldName, short value);

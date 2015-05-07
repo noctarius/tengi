@@ -39,6 +39,8 @@ public interface DefaultProtocolConstants {
     public static final short SERIALIZED_TYPE_DOUBLE = -206;
     public static final short SERIALIZED_TYPE_STRING = -207;
     public static final short SERIALIZED_TYPE_BYTE_ARRAY = -208;
+    public static final short SERIALIZED_TYPE_ENUM = -209;
+    public static final short SERIALIZED_TYPE_ENUMERABLE = -209;
 
     public static final short TYPEID_PACKET = -1000;
 

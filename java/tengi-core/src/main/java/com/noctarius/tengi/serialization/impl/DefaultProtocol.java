@@ -163,6 +163,8 @@ public class DefaultProtocol
         // External types
         registerMarshaller(PacketMarshallerFilter.INSTANCE, PacketMarshaller.INSTANCE);
         registerMarshaller(MarshallableMarshallerFilter.INSTANCE, MarshallableMarshaller.INSTANCE);
+        registerMarshaller(EnumerableMarshallerFilter.INSTANCE, EnumerableMarshaller.INSTANCE);
+        registerMarshaller(EnumMarshallerFilter.INSTANCE, EnumMarshaller.INSTANCE);
 
         // Internal types
         registerMarshaller(Message.class, CommonMarshaller.MessageMarshaller.INSTANCE);

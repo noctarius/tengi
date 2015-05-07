@@ -46,6 +46,12 @@ public class DefaultCodec
     }
 
     @Override
+    public boolean[] readBoolArray() {
+        // TODO
+        return new boolean[0];
+    }
+
+    @Override
     public byte readByte() {
         return memoryBuffer.readByte();
     }
@@ -134,6 +140,11 @@ public class DefaultCodec
     @Override
     public void writeBoolean(String fieldName, boolean value) {
         memoryBuffer.writeBoolean(value);
+    }
+
+    @Override
+    public void writeBoolArray(String fieldName, boolean[] values) {
+        // TODO
     }
 
     @Override

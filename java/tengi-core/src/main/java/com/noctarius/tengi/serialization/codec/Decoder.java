@@ -10,6 +10,8 @@ public interface Decoder {
 
     boolean readBoolean();
 
+    boolean[] readBoolArray();
+
     byte readByte();
 
     short readUnsignedByte();

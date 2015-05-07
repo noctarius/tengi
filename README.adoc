@@ -183,6 +183,8 @@ private void onMessage(Connection connection, Message message) {
 
 == Protocol Specification
 
+=== Codec (Encoder, Decoder)
+
 === Data Types
 
 === Int32 Compression
@@ -195,4 +197,12 @@ private void onMessage(Connection connection, Message message) {
 
 === Protocol Header
 
+==== Initial Packet
+
+==== Last Packet
+
+==== Packet Header
+
 === Object Header
+
+==== Nullable Object

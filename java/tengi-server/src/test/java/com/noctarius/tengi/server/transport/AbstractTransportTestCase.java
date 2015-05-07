@@ -37,6 +37,8 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
+import java.util.concurrent.Future;
+
 public abstract class AbstractTransportTestCase {
 
     protected static void practice(Initializer initializer, Runner runner, boolean ssl, Transport... serverTransports)
@@ -72,9 +74,10 @@ public abstract class AbstractTransportTestCase {
             Channel channel = future.sync().channel();
             runner.run(channel);
 
+            channel.close().sync();
         } finally {
             group.shutdownGracefully();
-            server.stop();
+            server.stop().get();
         }
     }
 

@@ -29,7 +29,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.junit.Test;
 
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
@@ -42,8 +41,7 @@ public class TcpTransportTestCase
     public void testTcpTransport()
             throws Exception {
 
-        InputStream is = getClass().getResourceAsStream("transport.types.manifest");
-        Serializer serializer = Serializer.create(new DefaultProtocol(is, Collections.emptyList()));
+        Serializer serializer = Serializer.create(new DefaultProtocol(Collections.emptyList()));
 
         CompletableFuture<Object> future = new CompletableFuture<>();
 
@@ -71,13 +69,75 @@ public class TcpTransportTestCase
         practice(initializer, runner, false, ServerTransport.TCP_TRANSPORT);
     }
 
+    @Test
+    public void testPingPong()
+            throws Exception {
+
+        Serializer serializer = Serializer.create(new DefaultProtocol(Collections.emptyList()));
+
+        CompletableFuture<Packet> future = new CompletableFuture<>();
+
+        ChannelReader<ByteBuf> channelReader = (ctx, buffer) -> {
+            MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
+            DefaultCodec codec = new DefaultCodec(serializer.getProtocol(), memoryBuffer);
+
+            boolean loggedIn = codec.readBoolean();
+            Identifier connectionId = codec.readObject();
+
+            Message message = codec.readObject();
+            Packet packet = message.getBody();
+
+            int counter = packet.getValue("counter");
+            if (counter == 4) {
+                future.complete(packet);
+            } else {
+                packet.setValue("counter", counter + 1);
+                message = Message.create(packet);
+
+                ByteBuf buffer2 = Unpooled.buffer();
+                MemoryBuffer memoryBuffer2 = MemoryBufferFactory.create(buffer2);
+                DefaultCodec codec2 = new DefaultCodec(serializer.getProtocol(), memoryBuffer2);
+
+                codec2.writeBoolean("loggedIn", loggedIn);
+                codec2.writeObject("connectionId", connectionId);
+                serializer.writeObject("message", message, codec2);
+
+                ctx.channel().writeAndFlush(buffer2);
+            }
+        };
+
+        Initializer initializer = (pipeline) -> pipeline.addLast(inboundHandler(channelReader));
+
+        Runner runner = (channel) -> {
+            ByteBuf buffer = Unpooled.buffer();
+            MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
+            DefaultCodec codec = new DefaultCodec(serializer.getProtocol(), memoryBuffer);
+
+            codec.writeBytes("magic", DefaultProtocolConstants.PROTOCOL_MAGIC_HEADER);
+            codec.writeBoolean("loggedIn", false);
+
+            Packet packet = new Packet("pingpong");
+            packet.setValue("counter", 1);
+
+            Message message = Message.create(packet);
+            serializer.writeObject("message", message, codec);
+
+            channel.writeAndFlush(buffer);
+
+            Packet response = future.get();
+            assertEquals(4, (int) response.getValue("counter"));
+        };
+
+        practice(initializer, runner, false, ServerTransport.TCP_TRANSPORT);
+    }
+
     private static Initializer initializer(Serializer serializer, CompletableFuture<Object> future) {
         return (pipeline) -> pipeline.addLast(inboundHandler(channelReader(serializer, future)));
     }
 
     private static ChannelReader<ByteBuf> channelReader(Serializer serializer, CompletableFuture<Object> future) {
-        return (ctx, object) -> {
-            MemoryBuffer memoryBuffer = MemoryBufferFactory.create(object);
+        return (ctx, buffer) -> {
+            MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
             DefaultCodec codec = new DefaultCodec(serializer.getProtocol(), memoryBuffer);
 
             boolean loggedIn = codec.readBoolean();

@@ -57,9 +57,7 @@ public abstract class ConnectionProcessor<T>
                 ConnectionContext connectionContext = createConnectionContext(ctx, connectionId);
                 connectionManager.assignConnection(connectionId, connectionContext, transport);
             } else {
-                byte[] data = new byte[16];
-                decoder.readBytes(data);
-                connectionId = Identifier.fromBytes(data);
+                connectionId = decoder.readObject();
             }
 
             Message message = decoder.readObject();

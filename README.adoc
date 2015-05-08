@@ -257,7 +257,7 @@ The `Codec` provides reader and writer methods for the distinct data types and t
 | 8 Bit - 40 Bit
 | -2^31^
 | -2^31^ - 1
-| Int32 Compression explained below
+| <<int32-compression,Int32 Compression>>
 
 | Int64
 | long
@@ -271,7 +271,7 @@ The `Codec` provides reader and writer methods for the distinct data types and t
 | 8 Bit - 72 Bit
 | -2^63^
 | 2^63^ - 1
-| Int64 Compression explained below
+| <<int64-compression,Int64 Compression>>
 
 | Float
 | float

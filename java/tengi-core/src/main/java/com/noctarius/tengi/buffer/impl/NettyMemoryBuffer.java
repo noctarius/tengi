@@ -196,7 +196,8 @@ class NettyMemoryBuffer
 
     @Override
     public void writeBytes(byte[] bytes, int offset, int length) {
-        int realLength = Math.min(bytes.length, writableBytes());
+        int realLength = Math.min(length, writableBytes());
+        realLength = Math.min(realLength, bytes.length);
         buffer.writeBytes(bytes, offset, realLength);
     }
 

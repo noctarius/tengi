@@ -58,7 +58,7 @@ public class Packet
     public final void marshall(Encoder encoder, Protocol protocol)
             throws Exception {
 
-        encoder.writeInt("size", values.size());
+        encoder.writeInt32("size", values.size());
         for (Map.Entry<String, Object> entry : values.entrySet()) {
             encoder.writeString("key", entry.getKey());
             encoder.writeObject("value", entry.getValue());
@@ -70,7 +70,7 @@ public class Packet
     public final void unmarshall(Decoder decoder, Protocol protocol)
             throws Exception {
 
-        int size = decoder.readInt();
+        int size = decoder.readInt32();
         for (int i = 0; i < size; i++) {
             String key = decoder.readString();
             Object value = decoder.readObject();

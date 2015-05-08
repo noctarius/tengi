@@ -173,6 +173,8 @@ public class DefaultProtocol
         registerMarshaller(byte.class, CommonMarshaller.ByteMarshaller.INSTANCE);
         registerMarshaller(Short.class, CommonMarshaller.ShortMarshaller.INSTANCE);
         registerMarshaller(short.class, CommonMarshaller.ShortMarshaller.INSTANCE);
+        registerMarshaller(Character.class, CommonMarshaller.CharMarshaller.INSTANCE);
+        registerMarshaller(char.class, CommonMarshaller.CharMarshaller.INSTANCE);
         registerMarshaller(Integer.class, CommonMarshaller.IntegerMarshaller.INSTANCE);
         registerMarshaller(int.class, CommonMarshaller.IntegerMarshaller.INSTANCE);
         registerMarshaller(Long.class, CommonMarshaller.LongMarshaller.INSTANCE);

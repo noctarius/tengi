@@ -10,7 +10,7 @@ public interface Decoder {
 
     boolean readBoolean();
 
-    boolean[] readBoolArray();
+    boolean[] readBitSet();
 
     byte readByte();
 
@@ -20,9 +20,13 @@ public interface Decoder {
 
     char readChar();
 
-    int readInt();
+    int readInt32();
 
-    long readLong();
+    int readCompressedInt32();
+
+    long readInt64();
+
+    long readCompressedInt64();
 
     float readFloat();
 

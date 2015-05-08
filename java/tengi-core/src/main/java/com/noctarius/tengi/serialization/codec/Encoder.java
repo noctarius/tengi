@@ -10,7 +10,7 @@ public interface Encoder {
 
     void writeBoolean(String fieldName, boolean value);
 
-    void writeBoolArray(String fieldName, boolean[] values);
+    void writeBitSet(String fieldName, boolean[] values);
 
     void writeByte(String fieldName, int value);
 
@@ -20,9 +20,13 @@ public interface Encoder {
 
     void writeChar(String fieldName, char value);
 
-    void writeInt(String fieldName, int value);
+    void writeInt32(String fieldName, int value);
 
-    void writeLong(String fieldName, long value);
+    void writeCompressedInt32(String fieldName, int value);
+
+    void writeInt64(String fieldName, long value);
+
+    void writeCompressedInt64(String fieldName, long value);
 
     void writeFloat(String fieldName, float value);
 

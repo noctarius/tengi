@@ -37,7 +37,7 @@ enum EnumerableMarshaller
 
         Class<Enumerable> clazz = protocol.readTypeId(decoder);
 
-        int flag = decoder.readInt();
+        int flag = decoder.readInt32();
         Enumerable constant = Enumerable.value(clazz, flag);
         if (constant != null) {
             return constant;
@@ -50,7 +50,7 @@ enum EnumerableMarshaller
             throws Exception {
 
         protocol.writeTypeId(constant, encoder);
-        encoder.writeInt("flag", constant.flag());
+        encoder.writeInt32("flag", constant.flag());
     }
 
     @Override

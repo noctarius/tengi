@@ -45,14 +45,14 @@ final class CommonMarshaller {
         public Byte unmarshall(Decoder decoder, Protocol protocol)
                 throws Exception {
 
-            return protocol.readNullable(decoder, (d, p) -> d.readByte());
+            return decoder.readByte();
         }
 
         @Override
         public void marshall(String fieldName, Byte value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
-            protocol.writeNullable(fieldName, value, encoder, (n, v, e, p) -> e.writeByte("value", v));
+            encoder.writeByte("value", value);
         }
 
         @Override
@@ -77,14 +77,45 @@ final class CommonMarshaller {
         public Short unmarshall(Decoder decoder, Protocol protocol)
                 throws Exception {
 
-            return protocol.readNullable(decoder, (d, p) -> d.readShort());
+            return decoder.readShort();
         }
 
         @Override
         public void marshall(String fieldName, Short value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
-            protocol.writeNullable(fieldName, value, encoder, (n, v, e, p) -> e.writeShort("value", v));
+            encoder.writeShort("value", value);
+        }
+
+        @Override
+        public Class<?> findType(Decoder decoder, Protocol protocol) {
+            return Short.class;
+        }
+
+        @Override
+        public String debugValue(Object value) {
+            return value.toString();
+        }
+    }
+
+    @TypeId(DefaultProtocolConstants.SERIALIZED_TYPE_CHAR)
+    static enum CharMarshaller
+            implements Marshaller<Character>, DebuggableMarshaller<Character> {
+
+        INSTANCE;
+
+        @Override
+        public Character unmarshall(Decoder decoder, Protocol protocol)
+                throws Exception {
+
+            return decoder.readChar();
+        }
+
+        @Override
+        public void marshall(String fieldName, Character value, Encoder encoder, Protocol protocol)
+                throws Exception {
+
+            encoder.writeChar("value", value);
         }
 
         @Override
@@ -108,14 +139,14 @@ final class CommonMarshaller {
         public Integer unmarshall(Decoder decoder, Protocol protocol)
                 throws Exception {
 
-            return protocol.readNullable(decoder, (d, p) -> d.readInt());
+            return decoder.readInt32();
         }
 
         @Override
         public void marshall(String fieldName, Integer value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
-            protocol.writeNullable(fieldName, value, encoder, (n, v, e, p) -> e.writeInt("value", v));
+            encoder.writeInt32("value", value);
         }
 
         @Override
@@ -139,14 +170,14 @@ final class CommonMarshaller {
         public Long unmarshall(Decoder decoder, Protocol protocol)
                 throws Exception {
 
-            return protocol.readNullable(decoder, (d, p) -> d.readLong());
+            return decoder.readInt64();
         }
 
         @Override
         public void marshall(String fieldName, Long value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
-            protocol.writeNullable(fieldName, value, encoder, (n, v, e, p) -> e.writeLong("value", v));
+            encoder.writeInt64("value", value);
         }
 
         @Override
@@ -170,14 +201,14 @@ final class CommonMarshaller {
         public Float unmarshall(Decoder decoder, Protocol protocol)
                 throws Exception {
 
-            return protocol.readNullable(decoder, (d, p) -> d.readFloat());
+            return decoder.readFloat();
         }
 
         @Override
         public void marshall(String fieldName, Float value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
-            protocol.writeNullable(fieldName, value, encoder, (n, v, e, p) -> e.writeFloat("value", v));
+            encoder.writeFloat("value", value);
         }
 
         @Override
@@ -201,14 +232,14 @@ final class CommonMarshaller {
         public Double unmarshall(Decoder decoder, Protocol protocol)
                 throws Exception {
 
-            return protocol.readNullable(decoder, (d, p) -> d.readDouble());
+            return decoder.readDouble();
         }
 
         @Override
         public void marshall(String fieldName, Double value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
-            protocol.writeNullable(fieldName, value, encoder, (n, v, e, p) -> e.writeDouble("value", v));
+            encoder.writeDouble("value", value);
         }
 
         @Override
@@ -232,14 +263,14 @@ final class CommonMarshaller {
         public String unmarshall(Decoder decoder, Protocol protocol)
                 throws Exception {
 
-            return protocol.readNullable(decoder, (d, p) -> d.readString());
+            return decoder.readString();
         }
 
         @Override
         public void marshall(String fieldName, String value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
-            protocol.writeNullable(fieldName, value, encoder, (n, v, e, p) -> e.writeString("utf8", v));
+            encoder.writeString("utf8", value);
         }
 
         @Override
@@ -263,22 +294,18 @@ final class CommonMarshaller {
         public byte[] unmarshall(Decoder decoder, Protocol protocol)
                 throws Exception {
 
-            return protocol.readNullable(decoder, (d, p) -> {
-                int length = d.readInt();
-                byte[] array = new byte[length];
-                d.readBytes(array);
-                return array;
-            });
+            int length = decoder.readInt32();
+            byte[] array = new byte[length];
+            decoder.readBytes(array);
+            return array;
         }
 
         @Override
         public void marshall(String fieldName, byte[] value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
-            protocol.writeNullable(fieldName, value, encoder, (n, v, e, p) -> {
-                e.writeInt("length", v.length);
-                e.writeBytes("data", v);
-            });
+            encoder.writeInt32("length", value.length);
+            encoder.writeBytes("data", value);
         }
 
         @Override

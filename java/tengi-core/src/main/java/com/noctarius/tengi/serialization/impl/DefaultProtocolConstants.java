@@ -25,22 +25,22 @@ public interface DefaultProtocolConstants {
 
     public static final byte[] PROTOCOL_MAGIC_HEADER = {'T', 'e', 'N', 'g', 'I'};
 
-    public static final short SERIALIZED_TYPE_PACKET = -101;
-    public static final short SERIALIZED_TYPE_MARSHALLABLE = -102;
+    public static final short SERIALIZED_TYPE_BYTE = -1;
+    public static final short SERIALIZED_TYPE_SHORT = -2;
+    public static final short SERIALIZED_TYPE_CHAR = -3;
+    public static final short SERIALIZED_TYPE_INTEGER = -4;
+    public static final short SERIALIZED_TYPE_FLOAT = -5;
+    public static final short SERIALIZED_TYPE_LONG = -6;
+    public static final short SERIALIZED_TYPE_DOUBLE = -7;
+    public static final short SERIALIZED_TYPE_STRING = -8;
+    public static final short SERIALIZED_TYPE_BYTE_ARRAY = -9;
+    public static final short SERIALIZED_TYPE_ENUM = -10;
+    public static final short SERIALIZED_TYPE_ENUMERABLE = -11;
 
-    public static final short SERIALIZED_TYPE_MESSAGE = -301;
-    public static final short SERIALIZED_TYPE_IDENTIFIER = -302;
-
-    public static final short SERIALIZED_TYPE_BYTE = -201;
-    public static final short SERIALIZED_TYPE_SHORT = -202;
-    public static final short SERIALIZED_TYPE_INTEGER = -203;
-    public static final short SERIALIZED_TYPE_LONG = -204;
-    public static final short SERIALIZED_TYPE_FLOAT = -205;
-    public static final short SERIALIZED_TYPE_DOUBLE = -206;
-    public static final short SERIALIZED_TYPE_STRING = -207;
-    public static final short SERIALIZED_TYPE_BYTE_ARRAY = -208;
-    public static final short SERIALIZED_TYPE_ENUM = -209;
-    public static final short SERIALIZED_TYPE_ENUMERABLE = -209;
+    public static final short SERIALIZED_TYPE_IDENTIFIER = -101;
+    public static final short SERIALIZED_TYPE_MESSAGE = -102;
+    public static final short SERIALIZED_TYPE_PACKET = -103;
+    public static final short SERIALIZED_TYPE_MARSHALLABLE = -104;
 
     public static final short TYPEID_PACKET = -1000;
 

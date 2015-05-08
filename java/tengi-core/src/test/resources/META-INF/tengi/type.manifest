@@ -19,3 +19,5 @@ com.noctarius.tengi.serialization.impl.SerializationClasses$SubPacketWithDefault
 com.noctarius.tengi.serialization.impl.SerializationClasses$SubPacketWithoutDefaultConstructor
 com.noctarius.tengi.serialization.impl.SerializationClasses$SubPacketMarshallException
 com.noctarius.tengi.serialization.impl.SerializationClasses$SubPacketUnmarshallException
+com.noctarius.tengi.serialization.impl.SerializationClasses$TestEnum
+com.noctarius.tengi.serialization.impl.SerializationClasses$TestEnumerable

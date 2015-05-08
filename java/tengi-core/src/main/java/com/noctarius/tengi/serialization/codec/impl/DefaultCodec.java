@@ -46,9 +46,8 @@ public class DefaultCodec
     }
 
     @Override
-    public boolean[] readBoolArray() {
-        // TODO
-        return new boolean[0];
+    public boolean[] readBitSet() {
+        return BitSetCompressor.readBitSet(memoryBuffer);
     }
 
     @Override
@@ -72,30 +71,38 @@ public class DefaultCodec
     }
 
     @Override
-    public int readInt() {
-        // TODO Decompress from Int32
+    public int readInt32() {
         return ByteOrderUtils.getInt(memoryBuffer, true);
     }
 
     @Override
-    public long readLong() {
-        // TODO Decompress from Int64
+    public int readCompressedInt32() {
+        return Int32Compressor.readInt32(memoryBuffer);
+    }
+
+    @Override
+    public long readInt64() {
         return ByteOrderUtils.getLong(memoryBuffer, true);
     }
 
     @Override
+    public long readCompressedInt64() {
+        return Int64Compressor.readInt64(memoryBuffer);
+    }
+
+    @Override
     public float readFloat() {
-        return Float.intBitsToFloat(readInt());
+        return Float.intBitsToFloat(readInt32());
     }
 
     @Override
     public double readDouble() {
-        return Double.longBitsToDouble(readLong());
+        return Double.longBitsToDouble(readInt64());
     }
 
     @Override
     public String readString() {
-        int length = readInt();
+        int length = readInt32();
         return Unicode.UTF8toUTF16(memoryBuffer, length);
     }
 
@@ -143,8 +150,8 @@ public class DefaultCodec
     }
 
     @Override
-    public void writeBoolArray(String fieldName, boolean[] values) {
-        // TODO
+    public void writeBitSet(String fieldName, boolean[] values) {
+        BitSetCompressor.writeBitSet(values, memoryBuffer);
     }
 
     @Override
@@ -168,31 +175,39 @@ public class DefaultCodec
     }
 
     @Override
-    public void writeInt(String fieldName, int value) {
-        // TODO Compress as Int32
+    public void writeInt32(String fieldName, int value) {
         ByteOrderUtils.putInt(value, memoryBuffer, true);
     }
 
     @Override
-    public void writeLong(String fieldName, long value) {
-        // TODO Compress as Int64
+    public void writeCompressedInt32(String fieldName, int value) {
+        Int32Compressor.writeInt32(value, memoryBuffer);
+    }
+
+    @Override
+    public void writeInt64(String fieldName, long value) {
         ByteOrderUtils.putLong(value, memoryBuffer, true);
     }
 
     @Override
+    public void writeCompressedInt64(String fieldName, long value) {
+        Int64Compressor.writeInt64(value, memoryBuffer);
+    }
+
+    @Override
     public void writeFloat(String fieldName, float value) {
-        writeInt(fieldName, Float.floatToIntBits(value));
+        writeInt32(fieldName, Float.floatToIntBits(value));
     }
 
     @Override
     public void writeDouble(String fieldName, double value) {
-        writeLong(fieldName, Double.doubleToLongBits(value));
+        writeInt64(fieldName, Double.doubleToLongBits(value));
     }
 
     @Override
     public void writeString(String fieldName, String value) {
         char[] characters = value.toCharArray();
-        writeInt("length", characters.length);
+        writeInt32("length", characters.length);
         Unicode.UTF16toUTF8(characters, memoryBuffer);
     }
 

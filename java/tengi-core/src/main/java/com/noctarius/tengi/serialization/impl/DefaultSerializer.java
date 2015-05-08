@@ -159,8 +159,8 @@ public class DefaultSerializer
         }
 
         @Override
-        public boolean[] readBoolArray() {
-            return defaultCodec.readBoolArray();
+        public boolean[] readBitSet() {
+            return defaultCodec.readBitSet();
         }
 
         @Override
@@ -184,13 +184,23 @@ public class DefaultSerializer
         }
 
         @Override
-        public int readInt() {
-            return defaultCodec.readInt();
+        public int readInt32() {
+            return defaultCodec.readInt32();
         }
 
         @Override
-        public long readLong() {
-            return defaultCodec.readLong();
+        public int readCompressedInt32() {
+            return defaultCodec.readCompressedInt32();
+        }
+
+        @Override
+        public long readInt64() {
+            return defaultCodec.readInt64();
+        }
+
+        @Override
+        public long readCompressedInt64() {
+            return defaultCodec.readCompressedInt64();
         }
 
         @Override
@@ -243,8 +253,8 @@ public class DefaultSerializer
         }
 
         @Override
-        public void writeBoolArray(String fieldName, boolean[] values) {
-            defaultCodec.writeBoolArray(fieldName, values);
+        public void writeBitSet(String fieldName, boolean[] values) {
+            defaultCodec.writeBitSet(fieldName, values);
         }
 
         @Override
@@ -268,13 +278,23 @@ public class DefaultSerializer
         }
 
         @Override
-        public void writeInt(String fieldName, int value) {
-            defaultCodec.writeInt(fieldName, value);
+        public void writeInt32(String fieldName, int value) {
+            defaultCodec.writeInt32(fieldName, value);
         }
 
         @Override
-        public void writeLong(String fieldName, long value) {
-            defaultCodec.writeLong(fieldName, value);
+        public void writeCompressedInt32(String fieldName, int value) {
+            defaultCodec.writeCompressedInt32(fieldName, value);
+        }
+
+        @Override
+        public void writeInt64(String fieldName, long value) {
+            defaultCodec.writeInt64(fieldName, value);
+        }
+
+        @Override
+        public void writeCompressedInt64(String fieldName, long value) {
+            defaultCodec.writeCompressedInt64(fieldName, value);
         }
 
         @Override

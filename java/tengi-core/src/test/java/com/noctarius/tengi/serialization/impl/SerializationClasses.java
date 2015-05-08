@@ -21,6 +21,7 @@ import com.noctarius.tengi.serialization.Protocol;
 import com.noctarius.tengi.serialization.TypeId;
 import com.noctarius.tengi.serialization.codec.Decoder;
 import com.noctarius.tengi.serialization.codec.Encoder;
+import com.noctarius.tengi.serialization.marshaller.Enumerable;
 
 public final class SerializationClasses {
 
@@ -70,6 +71,31 @@ public final class SerializationClasses {
         @Override
         protected void unmarshall0(Decoder decoder, Protocol protocol) {
             throw new NullPointerException();
+        }
+    }
+
+    @TypeId(1005)
+    public static enum TestEnum {
+        Value1,
+        Value2
+    }
+
+    @TypeId(1004)
+    public static enum TestEnumerable
+            implements Enumerable<TestEnumerable> {
+
+        Value1(10),
+        Value2(20);
+
+        private final int flag;
+
+        private TestEnumerable(int flag) {
+            this.flag = flag;
+        }
+
+        @Override
+        public int flag() {
+            return flag;
         }
     }
 

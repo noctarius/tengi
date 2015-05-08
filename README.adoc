@@ -76,7 +76,7 @@ private void onConnect(Connection connection) {
 
   Packet packet = new Packet("request");
   packet.setValue("name", "Steven");
-  connection.writeObject(request);
+  connection.writeObject(packet);
 }
 
 private void onMessage(Connection connection, Message message) {
@@ -188,6 +188,11 @@ This chapter describes the tengi internal default protocol and serialization tec
 It contains information about the available built-in data types, their sizes and value ranges. In addition it describes the the protocol and packet headers, as well as definitions how compression and serialization of certain special types is handled.
 
 The tengi default protocol is designed to be low overhead and any kind of object is expected as *non-null* by default. Values that can be null must be written explicitly and adding a marker byte to the stream.
+
+[NOTE]
+====
+As most computer architecture these days as based on Little Endian, the protocol is completely implemented to the rules of Little Endian. This is important to note, since most network protocols use Big Endian to transmit data. If a system based on Big Endian encoding is used, conversion between Big Endian and Little Endian is necessary before writing or after reading the byte stream.
+====
 
 === Codec (Encoder, Decoder)
 
@@ -336,7 +341,115 @@ The `Codec` provides reader and writer methods for the distinct data types and t
 
 === Int32 Compression
 
+The Int32 Compression can be used to write Int32 values that are expected to be quite small in most cases but might exceed the range of smaller data types in certain cases.
+
+[NOTE]
+====
+Int32 Compression is *not* supported per `Encoder::writeObject` but needs to be used explicitly using `Encoder::writeCompressedInt32` and read by `Decoder::readCompressedInt32`. Integers written with `Encoder::writeObject` will always be written as uncompressed Int32 values.
+====
+
+The actual compression isn't really complex. After counting the leading zeros of the value, the remaining bits are packed in groups of 7 bits, from left to right, and written to bytes. The last bit is either 0 if writing the number is done, otherwise it is 1, to mark another byte to be read.
+
+Bit blocks are always written from right to left, unused leading bits must be set to 0.
+
+Having an extra bit as follow up marker in the worst case results in an additional byte added to the bytestream, therefore it shouldn't be used to generally try to compress everything.
+
+As an example on how to apply this logic in the real world let's have a look at the following section.
+
+Given is a value
+```
+A:Int32=2222
+```
+
+This transformed into the bit representation as an integer looks like:
+
+```
+0               1               2               3               4
+ 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|0 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|0 0 0 0 1 0 0 0|1 0 1 0 1 1 1 0|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+
+Counting the leading zeros results in 20, remaining bits to be compressed is 12.
+
+While breaking down the remaining bits in block of 7 bits, we have a left over of 5 bits after the first block, therefore we end up using the following block schema (filled up with leading zeros).
+
+```
+ 0 1 2 3 4 5 6     0 1 2 3 4 5 6
++-+-+-+-+-+-+-+   +-+-+-+-+-+-+-+
+|0 0 1 0 0 0 1|   |0 1 0 1 1 1 0|
++-+-+-+-+-+-+-+   +-+-+-+-+-+-+-+
+```
+
+Adding the follow up bits we finally end up with our compressed Int32 stream of two bytes instead of four.
+
+```
+0               1               2
+ 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|0 0 1 0 0 0 1 1|0 1 0 1 1 1 0 0|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+
+We see that bit 7 is marked with 1 (another bytes to follow) and bit 15 is marked as 0 (final byte of the compressed Int32).
+
 === Int64 Compression
+
+The Int64 Compression works exactly as the Int32 compression and can be used to write Int64 values that are expected to be quite small in most cases but might exceed the range of smaller data types in certain cases.
+
+[NOTE]
+====
+Int64 Compression is *not* supported per `Encoder::writeObject` but needs to be used explicitly using `Encoder::writeCompressedInt64` and read by `Decoder::readCompressedInt64`. Integers written with `Encoder::writeObject` will always be written as uncompressed Int64 values.
+====
+
+The actual compression isn't really complex. After counting the leading zeros of the value, the remaining bits are packed in groups of 7 bits, from left to right, and written to bytes. The last bit is either 0 if writing the number is done, otherwise it is 1, to mark another byte to be read.
+
+Bit blocks are always written from right to left, unused leading bits must be set to 0.
+
+Having an extra bit as follow up marker in the worst case results in an additional byte added to the bytestream, therefore it shouldn't be used to generally try to compress everything.
+
+As an example on how to apply this logic in the real world let's have a look at the following section.
+
+Given is a value
+```
+A:Int64=2222
+```
+
+This transformed into the bit representation as an integer looks like:
+
+```
+0               1               2               3               4
+ 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|0 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|0 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|0 0 0 0 1 0 0 0|1 0 1 0 1 1 1 0|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+
+Counting the leading zeros results in 36, remaining bits to be compressed is 12.
+
+While breaking down the remaining bits in block of 7 bits, we have a left over of 5 bits after the first block, therefore we end up using the following block schema (filled up with leading zeros).
+
+```
+ 0 1 2 3 4 5 6     0 1 2 3 4 5 6
++-+-+-+-+-+-+-+   +-+-+-+-+-+-+-+
+|0 0 1 0 0 0 1|   |0 1 0 1 1 1 0|
++-+-+-+-+-+-+-+   +-+-+-+-+-+-+-+
+```
+
+Adding the follow up bits we finally end up with our compressed Int64 stream of two bytes instead of eight.
+
+```
+0               1               2
+ 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|0 0 1 0 0 0 1 1|0 1 0 1 1 1 0 0|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+
+We see that bit 7 is marked with 1 (another bytes to follow) and bit 15 is marked as 0 (final byte of the compressed Int64).
 
 === BitSet Compression
 
@@ -374,6 +487,7 @@ A `Single` chunk is represented by a single byte and can hold 1 to 3 content slo
  0 1 2 3 4 5 6 7
 +-+-+-+-+-+-+-+-+
 |CTS|SZ |C    |F|
++-+-+-+-+-+-+-+-+
 ```
 
 .Single Chunk Bits
@@ -410,6 +524,7 @@ Example: +
  0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |CTS| SZ  |      Content      |F|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ```
 
 .Double Chunk Bits
@@ -446,6 +561,7 @@ Example: +
  0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |CTS|   SZ  |                     Content                     |F|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ```
 
 .Quad Chunk Bits

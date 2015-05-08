@@ -183,13 +183,291 @@ private void onMessage(Connection connection, Message message) {
 
 == Protocol Specification
 
+This chapter describes the tengi internal default protocol and serialization techniques.
+
+It contains information about the available built-in data types, their sizes and value ranges. In addition it describes the the protocol and packet headers, as well as definitions how compression and serialization of certain special types is handled.
+
+The tengi default protocol is designed to be low overhead and any kind of object is expected as *non-null* by default. Values that can be null must be written explicitly and adding a marker byte to the stream.
+
 === Codec (Encoder, Decoder)
 
+The `com.noctarius.tengi.serialization.codec.Codec` class consists of two sub-interfaces which should never be implemented independently but always as a complete codec.
+
+A `Codec` defines a way to serialize and de-serialize values of a predefined set of special built-in types and objects of various, user defined types.
+
+tengi, by default, offers a low-overhead and fast codec implementation which is automatically picked up and instantiated.
+
+The `Codec` provides reader and writer methods for the distinct data types and two methods to read or write objects. `Codec::writeObject` writes *non-null* objects and throws an exception when null is passed to the method. `Codec::writeNullableObject` offers an automatic way to handle values that possibly can be null. It adds an extra Byte to the stream to mark the value to be null or not.
+
 === Data Types
+
+.Built In DataTypes
+|===
+| Name | Java | Length | Min | Max | Note
+
+| Byte
+| byte
+| 8 Bit
+| -128
+| 127
+|
+
+| Unsigned Byte
+| short
+| 8 Bit
+| 0
+| 255
+|
+
+| Byte-Array
+| byte[]
+| 8 Bit per index
+|
+|
+|
+
+| Short
+| short
+| 16 Bit
+| −32,768
+| 32,767
+|
+
+| Char
+| char
+| 16 Bit
+| \u0000 (0)
+| \uffff (65,535)
+|
+
+| Int32
+| int
+| 32 Bit
+| -2^31^
+| -2^31^ - 1
+|
+
+| Compressed Int32
+| int
+| 8 Bit - 40 Bit
+| -2^31^
+| -2^31^ - 1
+| Int32 Compression explained below
+
+| Int64
+| long
+| 64 Bit
+| -2^63^
+| 2^63^ - 1
+|
+
+| Compressed Int64
+| long
+| 8 Bit - 72 Bit
+| -2^63^
+| 2^63^ - 1
+| Int64 Compression explained below
+
+| Float
+| float
+| 32 Bit
+| ±1.4e^-45^
+| ±3.4028235e^+38^
+| Single-precision IEEE 754 floating point
+
+| Double
+| double
+| 64 Bit
+| ±4.9e^-324^
+| ±1.7976931348623157e^+308^
+| Double-precision IEEE 754 floating point
+
+| Boolean
+| boolean
+| 1 Bit
+| false
+| true
+| Written as 8 Bit
+
+| BitSet
+| boolean[]
+| 1 Bit
+| false
+| true
+| BitSet Compression explained below
+
+| String
+| String
+| 32 Bit length, + content
+|
+|
+| UTF-8 encoded content
+
+| Identifier
+| Identifier
+| 128 Bit
+|
+|
+| Optimized UUIDv4
+
+|===
+
+==== Byte
+
+==== Unsigned Byte
+
+==== Byte-Array
+
+==== Short
+
+==== Char
+
+==== Int32
+
+==== Int64
+
+==== Float
+
+==== Double
+
+==== Boolean
+
+==== Identifier
 
 === Int32 Compression
 
 === Int64 Compression
+
+=== BitSet Compression
+
+A BitSet is compressed using a chunk based encoding. Every chunk has a minium and maximum size. Chunk types are selected based on the number of necessary content slots.
+
+Chunks are named as `Single`, `Double`, `Quad` after the numbers of bytes used to represent them. A `Single` chunk is the only chunk that can be used to store no element which represents a *NULL* value for the serialized BitSet.
+
+[[chunk-type-signature]] Chunks are marked using the first two bits of a stream as defined in the following table:
+
+.Chunk Type Signature
+|===
+|Chunk Type | Octal | Binary
+
+| Single
+| 0x01
+| 0b01
+
+| Double
+| 0x02
+| 0b10
+
+| Quad
+| 0x03
+| 0b11
+|===
+
+The last bit of a chunk always indicates if another chunk is going to follow or not. If another chunk follows up, the first two following bits again show the chunk type and encoding starts over with the same procedure.
+
+==== Single Chunk
+
+A `Single` chunk is represented by a single byte and can hold 1 to 3 content slots and the special value *NULL* which is represented as a zero-length chunk.
+
+```
+0               1
+ 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+
+|CTS|SZ |C    |F|
+```
+
+.Single Chunk Bits
+|===
+| Bits | Description | Values
+
+| 0-1
+| Chunk Type Signature (CTS)
+| See <<user-content-chunk-type-signature, Chunk Type Signature>>
+
+| 2-3
+| Size (SZ)
+| 1-3, 0 indicates `NULL`
+
+| 4-6
+| Content Slots
+| 1-3 values
+
+| 7
+| Follow (F)
+| 0 if stream ends, 1 if chunk follows
+|===
+
+==== Double Chunk
+
+A `Double` chunk is represented by two byte and can hold between 4 to 10 content slots. Due to the minimum number of content slots and the given number of bits to store the element count, the read element count from the bits need to be added to the minimum.
+
+Example: +
+0b001 = 1 +
+1 + 4 = 5
+
+```
+0               1               2
+ 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|CTS| SZ  |      Content      |F|
+```
+
+.Double Chunk Bits
+|===
+| Bits | Description | Values
+
+| 0-1
+| Chunk Type Signature (CTS)
+| See <<user-content-chunk-type-signature, Chunk Type Signature>>
+
+| 2-4
+| Size (SZ)
+| 4-10
+
+| 5-14
+| Content Slots
+| 4-10 values
+
+| 15
+| Follow (F)
+| 0 if stream ends, 1 if chunk follows
+|===
+
+==== Quad Chunk
+
+A `Quad` chunk is represented by four byte and can hold between 11 to 25 content slots. Due to the minimum number of content slots and the given number of bits to store the element count, the read element count from the bits need to be added to the minimum.
+
+Example: +
+0b0011 = 3 +
+3 + 11 = 14
+
+```
+0               1               2               3               4
+ 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|CTS|   SZ  |                     Content                     |F|
+```
+
+.Quad Chunk Bits
+|===
+| Bits | Description | Values
+
+| 0-1
+| Chunk Type Signature (CTS)
+| See <<user-content-chunk-type-signature, Chunk Type Signature>>
+
+| 2-5
+| Size (SZ)
+| 11-25
+
+| 6-30
+| Content Slots
+| 11-25 values
+
+| 31
+| Follow (F)
+| 0 if stream ends, 1 if chunk follows
+|===
 
 === String Serialization
 

@@ -16,3 +16,7 @@
 ###########################################################################
 
 com.noctarius.tengi.Packet
+com.noctarius.tengi.connection.impl.HandshakeRequest
+com.noctarius.tengi.connection.impl.HandshakeResponse
+com.noctarius.tengi.connection.impl.LongPollingRequest
+com.noctarius.tengi.connection.impl.LongPollingResponse

@@ -17,7 +17,6 @@
 package com.noctarius.tengi.serialization.impl;
 
 import com.noctarius.tengi.Packet;
-import com.noctarius.tengi.SystemException;
 import com.noctarius.tengi.buffer.MemoryBuffer;
 import com.noctarius.tengi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.serialization.Protocol;
@@ -93,7 +92,7 @@ public class PacketSerializationTestCase {
         assertEquals(packet, read);
     }
 
-    @Test(expected = SystemException.class)
+    @Test(expected = NullPointerException.class)
     public void testSubclassMarshallException()
             throws Exception {
 
@@ -115,7 +114,7 @@ public class PacketSerializationTestCase {
         }
     }
 
-    @Test(expected = SystemException.class)
+    @Test(expected = NullPointerException.class)
     public void testSubclassUnmarshallException()
             throws Exception {
 

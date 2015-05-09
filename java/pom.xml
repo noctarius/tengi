@@ -37,11 +37,12 @@
     <junit.version>4.11</junit.version>
     <findbugs.annotations.version>2.0.2</findbugs.annotations.version>
     <validation.annotations.version>1.0.0.GA</validation.annotations.version>
-    <netty.version>4.1.0.Beta5-SNAPSHOT</netty.version>
+    <netty.version>4.1.0.Beta6-SNAPSHOT</netty.version>
     <hppc.version>0.6.1</hppc.version>
     <log4j.version>1.2.17</log4j.version>
     <log4jv2.version>2.2</log4jv2.version>
     <slf4j.version>1.7.12</slf4j.version>
+    <ning.http.client.version>1.9.21</ning.http.client.version>
   </properties>
 
   <modules>
@@ -113,6 +114,11 @@
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>${junit.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.ning</groupId>
+        <artifactId>async-http-client</artifactId>
+        <version>${ning.http.client.version}</version>
       </dependency>
 
       <!-- build time dependencies -->

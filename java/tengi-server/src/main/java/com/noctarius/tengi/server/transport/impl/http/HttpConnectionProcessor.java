@@ -53,7 +53,7 @@ public class HttpConnectionProcessor
             throws Exception {
 
         // Only POST requests are allowed, kill the request
-        if (HttpMethod.POST != request.method() && HttpMethod.GET != request.method()) {
+        if (HttpMethod.POST != request.method()) {
             sendHttpResponse(ctx.channel(), request,
                     new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.METHOD_NOT_ALLOWED));
             return null;
@@ -76,8 +76,6 @@ public class HttpConnectionProcessor
             return null;
         }
 
-        sendHttpResponse(ctx.channel(), request, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
-
         // TODO: Pool MemoryBuffers
         MemoryBuffer memoryBuffer = MemoryBufferFactory.create(request.content());
         return getSerializer().retrieveDecoder(memoryBuffer);
@@ -85,7 +83,7 @@ public class HttpConnectionProcessor
 
     @Override
     protected ConnectionContext createConnectionContext(ChannelHandlerContext ctx, Identifier connectionId) {
-        return new HttpConnectionContext(ctx.channel(), connectionId, getSerializer(), getTransport());
+        return new HttpConnectionContext(connectionId, getSerializer(), getTransport());
     }
 
     static void sendHttpResponse(Channel channel, FullHttpRequest request, FullHttpResponse response) {

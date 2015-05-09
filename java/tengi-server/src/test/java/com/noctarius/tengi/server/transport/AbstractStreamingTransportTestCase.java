@@ -37,16 +37,14 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
-import java.util.concurrent.Future;
+public abstract class AbstractStreamingTransportTestCase {
 
-public abstract class AbstractTransportTestCase {
-
-    protected static void practice(Initializer initializer, Runner runner, boolean ssl, Transport... serverTransports)
+    protected static <T> T practice(Initializer initializer, Runner<T> runner, boolean ssl, Transport... serverTransports)
             throws Exception {
 
         Configuration configuration = new ConfigurationBuilder().addTransport(serverTransports).build();
         Server server = Server.create(configuration);
-        server.start(AbstractTransportTestCase::onConnection);
+        server.start(AbstractStreamingTransportTestCase::onConnection);
 
         EventLoopGroup group = new NioEventLoopGroup();
 
@@ -72,9 +70,9 @@ public abstract class AbstractTransportTestCase {
 
             ChannelFuture future = bootstrap.connect("localhost", 8080);
             Channel channel = future.sync().channel();
-            runner.run(channel);
-
+            T result = runner.run(channel);
             channel.close().sync();
+            return result;
         } finally {
             group.shutdownGracefully();
             server.stop().get();
@@ -93,7 +91,7 @@ public abstract class AbstractTransportTestCase {
     }
 
     private static void onConnection(Connection connection) {
-        connection.addMessageListener(AbstractTransportTestCase::onMessage);
+        connection.addMessageListener(AbstractStreamingTransportTestCase::onMessage);
     }
 
     private static void onMessage(Connection connection, Message message) {
@@ -109,8 +107,8 @@ public abstract class AbstractTransportTestCase {
                 throws Exception;
     }
 
-    protected static interface Runner {
-        void run(Channel channel)
+    protected static interface Runner<T> {
+        T run(Channel channel)
                 throws Exception;
     }
 

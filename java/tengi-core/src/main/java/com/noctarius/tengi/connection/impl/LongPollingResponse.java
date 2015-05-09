@@ -16,6 +16,7 @@
  */
 package com.noctarius.tengi.connection.impl;
 
+import com.noctarius.tengi.Message;
 import com.noctarius.tengi.serialization.Marshallable;
 import com.noctarius.tengi.serialization.Protocol;
 import com.noctarius.tengi.serialization.TypeId;
@@ -23,17 +24,44 @@ import com.noctarius.tengi.serialization.codec.Decoder;
 import com.noctarius.tengi.serialization.codec.Encoder;
 import com.noctarius.tengi.serialization.impl.DefaultProtocolConstants;
 
-@TypeId(DefaultProtocolConstants.TYPEID_LONG_POLLING_REQUEST)
-public final class LongPollingRequest
+import java.util.ArrayList;
+import java.util.Collection;
+
+@TypeId(DefaultProtocolConstants.TYPEID_LONG_POLLING_RESPONSE)
+public final class LongPollingResponse
         implements Marshallable {
+
+    private Collection<Message> messages;
+
+    public LongPollingResponse() {
+    }
+
+    public LongPollingResponse(Collection<Message> messages) {
+        this.messages = messages;
+    }
 
     @Override
     public void marshall(Encoder encoder, Protocol protocol)
             throws Exception {
+
+        encoder.writeInt32("length", messages.size());
+        for (Message message : messages) {
+            encoder.writeObject("message", message);
+        }
     }
 
     @Override
     public void unmarshall(Decoder decoder, Protocol protocol)
             throws Exception {
+
+        int length = decoder.readInt32();
+        messages = new ArrayList<>(length);
+        for (int i = 0; i < length; i++) {
+            messages.add(decoder.readObject());
+        }
+    }
+
+    public Collection<Message> getMessages() {
+        return messages;
     }
 }

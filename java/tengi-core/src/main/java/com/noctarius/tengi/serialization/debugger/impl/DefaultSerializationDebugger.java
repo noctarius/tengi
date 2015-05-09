@@ -16,7 +16,6 @@
  */
 package com.noctarius.tengi.serialization.debugger.impl;
 
-import com.noctarius.tengi.buffer.MemoryBuffer;
 import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
 import com.noctarius.tengi.serialization.Protocol;
 import com.noctarius.tengi.serialization.codec.Codec;
@@ -155,7 +154,7 @@ public class DefaultSerializationDebugger
 
         try {
             Class<?> clazz = Class.forName(stackTraceElement.getClassName());
-            return MemoryBuffer.class.isAssignableFrom(clazz);
+            return Codec.class.isAssignableFrom(clazz);
         } catch (Exception e) {
             return false;
         }

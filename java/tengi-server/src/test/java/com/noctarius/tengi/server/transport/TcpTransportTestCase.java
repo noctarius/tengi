@@ -21,12 +21,16 @@ import com.noctarius.tengi.Message;
 import com.noctarius.tengi.Packet;
 import com.noctarius.tengi.buffer.MemoryBuffer;
 import com.noctarius.tengi.buffer.impl.MemoryBufferFactory;
+import com.noctarius.tengi.connection.impl.HandshakeRequest;
+import com.noctarius.tengi.connection.impl.HandshakeResponse;
 import com.noctarius.tengi.serialization.Serializer;
+import com.noctarius.tengi.serialization.codec.AutoClosableEncoder;
 import com.noctarius.tengi.serialization.codec.impl.DefaultCodec;
 import com.noctarius.tengi.serialization.impl.DefaultProtocol;
 import com.noctarius.tengi.serialization.impl.DefaultProtocolConstants;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelHandlerContext;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -35,7 +39,7 @@ import java.util.concurrent.CompletableFuture;
 import static org.junit.Assert.assertEquals;
 
 public class TcpTransportTestCase
-        extends AbstractTransportTestCase {
+        extends AbstractStreamingTransportTestCase {
 
     @Test
     public void testTcpTransport()
@@ -44,29 +48,42 @@ public class TcpTransportTestCase
         Serializer serializer = Serializer.create(new DefaultProtocol(Collections.emptyList()));
 
         CompletableFuture<Object> future = new CompletableFuture<>();
+        Packet packet = new Packet("login");
+        packet.setValue("username", "Stan");
+        Message message = Message.create(packet);
 
-        Initializer initializer = initializer(serializer, future);
-        Runner runner = (channel) -> {
+        ChannelReader<ByteBuf> channelReader = (ctx, buffer) -> {
+            MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
+            DefaultCodec codec = new DefaultCodec(serializer.getProtocol(), memoryBuffer);
+
+            boolean loggedIn = codec.readBoolean();
+            Identifier connectionId = codec.readObject();
+            Object object = codec.readObject();
+            if (loggedIn && object instanceof HandshakeResponse) {
+                writeChannel(serializer, ctx, connectionId, message);
+                return;
+            }
+
+            future.complete(object);
+        };
+
+        Initializer initializer = (pipeline) -> pipeline.addLast(inboundHandler(channelReader));
+
+        Runner<Object> runner = (channel) -> {
             ByteBuf buffer = Unpooled.buffer();
             MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
             DefaultCodec codec = new DefaultCodec(serializer.getProtocol(), memoryBuffer);
 
             codec.writeBytes("magic", DefaultProtocolConstants.PROTOCOL_MAGIC_HEADER);
             codec.writeBoolean("loggedIn", false);
-
-            Packet packet = new Packet("login");
-            packet.setValue("username", "Stan");
-
-            Message message = Message.create(packet);
-            serializer.writeObject("message", message, codec);
-
+            codec.writeObject("handshake", new HandshakeRequest());
             channel.writeAndFlush(buffer);
 
-            Object response = future.get();
-            assertEquals(message, response);
+            return future.get();
         };
 
-        practice(initializer, runner, false, ServerTransport.TCP_TRANSPORT);
+        Object response = practice(initializer, runner, false, ServerTransport.TCP_TRANSPORT);
+        assertEquals(message, response);
     }
 
     @Test
@@ -84,7 +101,16 @@ public class TcpTransportTestCase
             boolean loggedIn = codec.readBoolean();
             Identifier connectionId = codec.readObject();
 
-            Message message = codec.readObject();
+            Object object = codec.readObject();
+            if (object instanceof HandshakeResponse) {
+                Packet packet = new Packet("pingpong");
+                packet.setValue("counter", 1);
+                Message message = Message.create(packet);
+                writeChannel(serializer, ctx, connectionId, message);
+                return;
+            }
+
+            Message message = (Message) object;
             Packet packet = message.getBody();
 
             int counter = packet.getValue("counter");
@@ -108,44 +134,34 @@ public class TcpTransportTestCase
 
         Initializer initializer = (pipeline) -> pipeline.addLast(inboundHandler(channelReader));
 
-        Runner runner = (channel) -> {
+        Runner<Packet> runner = (channel) -> {
             ByteBuf buffer = Unpooled.buffer();
             MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
             DefaultCodec codec = new DefaultCodec(serializer.getProtocol(), memoryBuffer);
 
             codec.writeBytes("magic", DefaultProtocolConstants.PROTOCOL_MAGIC_HEADER);
             codec.writeBoolean("loggedIn", false);
-
-            Packet packet = new Packet("pingpong");
-            packet.setValue("counter", 1);
-
-            Message message = Message.create(packet);
-            serializer.writeObject("message", message, codec);
-
+            codec.writeObject("handshake", new HandshakeRequest());
             channel.writeAndFlush(buffer);
 
-            Packet response = future.get();
-            assertEquals(4, (int) response.getValue("counter"));
+            return future.get();
         };
 
-        practice(initializer, runner, false, ServerTransport.TCP_TRANSPORT);
+        Packet response = practice(initializer, runner, false, ServerTransport.TCP_TRANSPORT);
+        assertEquals(4, (int) response.getValue("counter"));
     }
 
-    private static Initializer initializer(Serializer serializer, CompletableFuture<Object> future) {
-        return (pipeline) -> pipeline.addLast(inboundHandler(channelReader(serializer, future)));
-    }
+    private static void writeChannel(Serializer serializer, ChannelHandlerContext ctx, Identifier connectionId, Object value)
+            throws Exception {
 
-    private static ChannelReader<ByteBuf> channelReader(Serializer serializer, CompletableFuture<Object> future) {
-        return (ctx, buffer) -> {
-            MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
-            DefaultCodec codec = new DefaultCodec(serializer.getProtocol(), memoryBuffer);
-
-            boolean loggedIn = codec.readBoolean();
-            Identifier connectionId = codec.readObject();
-
-            Object response = serializer.readObject(codec);
-            future.complete(response);
-        };
+        ByteBuf buffer = ctx.alloc().directBuffer();
+        MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
+        try (AutoClosableEncoder encoder = serializer.retrieveEncoder(memoryBuffer)) {
+            encoder.writeBoolean("loggedIn", true);
+            encoder.writeObject("connectionId", connectionId);
+            serializer.writeObject("value", value, encoder);
+        }
+        ctx.channel().writeAndFlush(buffer);
     }
 
 }

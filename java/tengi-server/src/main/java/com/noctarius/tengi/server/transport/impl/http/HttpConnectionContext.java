@@ -20,30 +20,43 @@ import com.noctarius.tengi.Identifier;
 import com.noctarius.tengi.Message;
 import com.noctarius.tengi.Transport;
 import com.noctarius.tengi.buffer.MemoryBuffer;
+import com.noctarius.tengi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.connection.Connection;
 import com.noctarius.tengi.connection.ConnectionContext;
 import com.noctarius.tengi.connection.impl.LongPollingRequest;
+import com.noctarius.tengi.connection.impl.LongPollingResponse;
 import com.noctarius.tengi.serialization.Serializer;
+import com.noctarius.tengi.serialization.codec.AutoClosableEncoder;
+import com.noctarius.tengi.serialization.impl.DefaultProtocolConstants;
 import com.noctarius.tengi.utils.CompletableFutureUtil;
 import com.noctarius.tengi.utils.ExceptionUtil;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
 
+import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicReference;
 
 class HttpConnectionContext
-        extends ConnectionContext {
+        extends ConnectionContext<Channel> {
 
-    private final AtomicReference<Channel> channelRef = new AtomicReference<>();
     private final Queue<QueueEntry> messageQueue = new ConcurrentLinkedQueue<>();
 
-    HttpConnectionContext(Channel channel, Identifier connectionId, Serializer serializer, Transport transport) {
+    HttpConnectionContext(Identifier connectionId, Serializer serializer, Transport transport) {
         super(connectionId, serializer, transport);
-        this.channelRef.set(channel);
     }
 
     @Override
@@ -54,34 +67,61 @@ class HttpConnectionContext
     }
 
     @Override
-    public CompletableFuture<Connection> close(Connection connection) {
+    public CompletableFuture<Connection> writeSocket(Channel channel, Connection connection, MemoryBuffer memoryBuffer)
+            throws Exception {
+
+        ByteBuf bb = channel.alloc().directBuffer();
+        MemoryBuffer buffer = preparePacket(MemoryBufferFactory.create(bb));
+        buffer.writeBuffer(memoryBuffer);
         return CompletableFutureUtil.executeAsync(() -> {
-            getChannel().close().sync();
+            sendHttpResponse(channel, bb);
             return connection;
         });
     }
 
     @Override
-    public void processLongPollingRequest(LongPollingRequest request) {
+    public CompletableFuture<Connection> close(Connection connection) {
+        return CompletableFutureUtil.executeAsync(() -> connection);
+    }
+
+    @Override
+    public void processLongPollingRequest(Channel channel, Connection connection, LongPollingRequest request) {
         try {
-            if (!getConnectionId().equals(request.getConnectionId())) {
-                getChannel().close().sync();
+            if (!getConnectionId().equals(connection.getConnectionId())) {
+                channel.close().sync();
                 return;
             }
 
             Collection<QueueEntry> messages = drainMessageQueue();
+            LongPollingResponse pollingResponse = new LongPollingResponse(new QueueEntryMessageList(messages));
+
+            ByteBuf buffer = channel.alloc().directBuffer();
+            MemoryBuffer memoryBuffer = preparePacket(MemoryBufferFactory.create(buffer));
+            try (AutoClosableEncoder encoder = getSerializer().retrieveEncoder(memoryBuffer)) {
+                encoder.writeObject("response", Message.create(pollingResponse));
+            }
+
+            sendHttpResponse(channel, buffer);
 
         } catch (Exception e) {
             throw ExceptionUtil.rethrow(e);
         }
     }
 
-    void setChannel(Channel channel) {
-        channelRef.set(channel);
-    }
+    private void sendHttpResponse(Channel channel, ByteBuf buffer) {
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, buffer);
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, DefaultProtocolConstants.PROTOCOL_MIME_TYPE);
+        response.headers().set(HttpHeaderNames.CONTENT_LENGTH, buffer.writerIndex());
+        response.headers().set(HttpHeaderNames.CONNECTION, "close");
+        ChannelFuture channelFuture = channel.writeAndFlush(response);
+        channelFuture.addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture future)
+                    throws Exception {
 
-    private Channel getChannel() {
-        return channelRef.get();
+                future.channel().close().sync();
+            }
+        });
     }
 
     private Collection<QueueEntry> drainMessageQueue() {
@@ -94,7 +134,7 @@ class HttpConnectionContext
         return queueEntries;
     }
 
-    static final class QueueEntry {
+    private static final class QueueEntry {
         final MemoryBuffer memoryBuffer;
         final Message message;
         final CompletableFuture<Message> future;
@@ -105,4 +145,88 @@ class HttpConnectionContext
             this.future = future;
         }
     }
+
+    private static final class QueueEntryMessageList
+            extends AbstractCollection<Message>
+            implements List<Message> {
+
+        private final Collection<QueueEntry> messages;
+
+        private QueueEntryMessageList(Collection<QueueEntry> messages) {
+            this.messages = messages;
+        }
+
+        @Override
+        public Iterator<Message> iterator() {
+            final Iterator<QueueEntry> iterator = messages.iterator();
+            return new Iterator<Message>() {
+
+                @Override
+                public boolean hasNext() {
+                    return iterator.hasNext();
+                }
+
+                @Override
+                public Message next() {
+                    return iterator.next().message;
+                }
+            };
+        }
+
+        @Override
+        public boolean addAll(int index, Collection<? extends Message> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Message get(int index) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Message set(int index, Message element) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void add(int index, Message element) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Message remove(int index) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int indexOf(Object o) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int lastIndexOf(Object o) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ListIterator<Message> listIterator() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ListIterator<Message> listIterator(int index) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<Message> subList(int fromIndex, int toIndex) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int size() {
+            return messages.size();
+        }
+    }
+
 }

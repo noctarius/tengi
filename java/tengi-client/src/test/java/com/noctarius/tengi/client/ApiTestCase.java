@@ -23,12 +23,10 @@ import com.noctarius.tengi.serialization.codec.Decoder;
 import com.noctarius.tengi.serialization.codec.Encoder;
 import com.noctarius.tengi.serialization.marshaller.MarshallerFilter;
 import com.noctarius.tengi.transport.ClientTransport;
-import org.junit.Test;
 
 public class ApiTestCase {
 
-    @Test
-    public void testInitialization()
+    public static void main(String[] args)
             throws Exception {
 
         // Create configuration using Builder

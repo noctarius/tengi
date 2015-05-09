@@ -110,7 +110,14 @@ public class DefaultCodec
     public <O> O readObject()
             throws Exception {
 
-        return protocol.readObject(this);
+        if (SerializationDebugger.Debugger.ENABLED) {
+            debugger.push(protocol, this);
+        }
+        O object = protocol.readObject(this);
+        if (SerializationDebugger.Debugger.ENABLED) {
+            debugger.pop();
+        }
+        return object;
     }
 
     @Override
@@ -215,7 +222,13 @@ public class DefaultCodec
     public void writeObject(String fieldName, Object object)
             throws Exception {
 
+        if (SerializationDebugger.Debugger.ENABLED) {
+            debugger.push(protocol, this, object);
+        }
         protocol.writeObject(fieldName, object, this);
+        if (SerializationDebugger.Debugger.ENABLED) {
+            debugger.pop();
+        }
     }
 
     @Override

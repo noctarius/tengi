@@ -24,15 +24,10 @@ import com.noctarius.tengi.connection.impl.LongPollingRequest;
 import com.noctarius.tengi.serialization.Protocol;
 import com.noctarius.tengi.serialization.Serializer;
 import com.noctarius.tengi.serialization.codec.AutoClosableEncoder;
-import com.noctarius.tengi.utils.UnsafeUtil;
-import sun.misc.Unsafe;
 
 import java.util.concurrent.CompletableFuture;
 
-public abstract class ConnectionContext {
-    private static final Unsafe UNSAFE = UnsafeUtil.UNSAFE;
-    private static final long IDENTIFIER_DATA_OFFSET = UnsafeUtil.IDENTIFIER_DATA_OFFSET;
-
+public abstract class ConnectionContext<S> {
     private final Identifier connectionId;
     private final Transport transport;
     private final Serializer serializer;
@@ -59,10 +54,13 @@ public abstract class ConnectionContext {
         return serializer;
     }
 
-    public void processLongPollingRequest(LongPollingRequest request) {
+    public void processLongPollingRequest(S socket, Connection connection, LongPollingRequest request) {
     }
 
     public abstract CompletableFuture<Message> writeMemoryBuffer(MemoryBuffer memoryBuffer, Message object)
+            throws Exception;
+
+    public abstract CompletableFuture<Connection> writeSocket(S socket, Connection connection, MemoryBuffer memoryBuffer)
             throws Exception;
 
     public abstract CompletableFuture<Connection> close(Connection connection);

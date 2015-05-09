@@ -31,7 +31,7 @@ import io.netty.channel.Channel;
 import java.util.concurrent.CompletableFuture;
 
 class TcpConnectionContext
-        extends ConnectionContext {
+        extends ConnectionContext<Channel> {
 
     private final Channel channel;
 
@@ -51,6 +51,19 @@ class TcpConnectionContext
         return CompletableFutureUtil.executeAsync(() -> {
             channel.writeAndFlush(response);
             return message;
+        });
+    }
+
+    @Override
+    public CompletableFuture<Connection> writeSocket(Channel channel, Connection connection, MemoryBuffer memoryBuffer)
+            throws Exception {
+
+        ByteBuf response = channel.alloc().directBuffer();
+        MemoryBuffer buffer = preparePacket(MemoryBufferFactory.create(response));
+        buffer.writeBuffer(memoryBuffer);
+        return CompletableFutureUtil.executeAsync(() -> {
+            channel.writeAndFlush(response);
+            return connection;
         });
     }
 

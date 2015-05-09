@@ -6,12 +6,10 @@ import com.noctarius.tengi.buffer.MemoryBuffer;
 import com.noctarius.tengi.testing.AbstractTestCase;
 import org.junit.Test;
 
-import java.util.Arrays;
-
 import static com.noctarius.tengi.serialization.impl.SerializationClasses.TestEnum;
 import static com.noctarius.tengi.serialization.impl.SerializationClasses.TestEnumerable;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class TypeSerializationTestCase
         extends AbstractTestCase {
@@ -46,7 +44,7 @@ public class TypeSerializationTestCase
 
         byte[] value = {(byte) 't', (byte) 'e', (byte) 'n', (byte) 'g', (byte) 'i'};
         byte[] response = encodeAndDecode(value, 11);
-        assertTrue(Arrays.equals(value, response));
+        assertArrayEquals(value, response);
     }
 
     @Test

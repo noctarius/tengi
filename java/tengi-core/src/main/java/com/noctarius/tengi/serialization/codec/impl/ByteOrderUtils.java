@@ -16,11 +16,12 @@
  */
 package com.noctarius.tengi.serialization.codec.impl;
 
-import com.noctarius.tengi.buffer.MemoryBuffer;
+import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
+import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 
 final class ByteOrderUtils {
 
-    static void putShort(short value, MemoryBuffer memoryBuffer, boolean bigEndian) {
+    static void putShort(short value, WritableMemoryBuffer memoryBuffer, boolean bigEndian) {
         if (bigEndian) {
             memoryBuffer.writeByte((byte) (value >> 8));
             memoryBuffer.writeByte((byte) (value >> 0));
@@ -30,7 +31,7 @@ final class ByteOrderUtils {
         }
     }
 
-    static short getShort(MemoryBuffer memoryBuffer, boolean bigEndian) {
+    static short getShort(ReadableMemoryBuffer memoryBuffer, boolean bigEndian) {
         if (bigEndian) {
             byte b1 = memoryBuffer.readByte();
             byte b0 = memoryBuffer.readByte();
@@ -42,7 +43,7 @@ final class ByteOrderUtils {
         }
     }
 
-    static void putInt(int value, MemoryBuffer memoryBuffer, boolean bigEndian) {
+    static void putInt(int value, WritableMemoryBuffer memoryBuffer, boolean bigEndian) {
         if (bigEndian) {
             memoryBuffer.writeByte((byte) (value >>> 24));
             memoryBuffer.writeByte((byte) (value >>> 16));
@@ -56,7 +57,7 @@ final class ByteOrderUtils {
         }
     }
 
-    static int getInt(MemoryBuffer memoryBuffer, boolean bigEndian) {
+    static int getInt(ReadableMemoryBuffer memoryBuffer, boolean bigEndian) {
         if (bigEndian) {
             byte b3 = memoryBuffer.readByte();
             byte b2 = memoryBuffer.readByte();
@@ -72,7 +73,7 @@ final class ByteOrderUtils {
         }
     }
 
-    static void putLong(long value, MemoryBuffer memoryBuffer, boolean bigEndian) {
+    static void putLong(long value, WritableMemoryBuffer memoryBuffer, boolean bigEndian) {
         if (bigEndian) {
             memoryBuffer.writeByte((byte) (value >> 56));
             memoryBuffer.writeByte((byte) (value >> 48));
@@ -94,7 +95,7 @@ final class ByteOrderUtils {
         }
     }
 
-    static long getLong(MemoryBuffer memoryBuffer, boolean bigEndian) {
+    static long getLong(ReadableMemoryBuffer memoryBuffer, boolean bigEndian) {
         if (bigEndian) {
             byte b7 = memoryBuffer.readByte();
             byte b6 = memoryBuffer.readByte();

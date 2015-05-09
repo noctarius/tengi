@@ -191,7 +191,7 @@ The tengi default protocol is designed to be low overhead and any kind of object
 
 [NOTE]
 ====
-As most computer architecture these days as based on Little Endian, the protocol is completely implemented to the rules of Little Endian. This is important to note, since most network protocols use Big Endian to transmit data. If a system based on Big Endian encoding is used, conversion between Big Endian and Little Endian is necessary before writing or after reading the byte stream.
+Even if most computer architecture these days as based on Little Endian, the protocol is completely implemented to the rules of Big Endian. If a system based on Little Endian encoding is used, conversion between Little Endian and Big Endian is necessary before writing or after reading the byte stream.
 ====
 
 === Codec (Encoder, Decoder)
@@ -277,14 +277,14 @@ The `Codec` provides reader and writer methods for the distinct data types and t
 | float
 | 32 Bit
 | ±1.4e^-45^
-| ±3.4028235e^+38^
+| ±3.4028235e^38^
 | Single-precision IEEE 754 floating point
 
 | Double
 | double
 | 64 Bit
 | ±4.9e^-324^
-| ±1.7976931348623157e^+308^
+| ±1.7976931348623157e^308^
 | Double-precision IEEE 754 floating point
 
 | Boolean
@@ -477,6 +477,8 @@ Chunks are named as `Single`, `Double`, `Quad` after the numbers of bytes used t
 |===
 
 The last bit of a chunk always indicates if another chunk is going to follow or not. If another chunk follows up, the first two following bits again show the chunk type and encoding starts over with the same procedure.
+
+It is up to the compressor implementation on how to select the individual chunks but it is recommended to select the best combination of chunks. For example 11 values can be stored as a `Double` and a `Single`, no matter in which order those two chunks appear, therefore it is optimal to start using `Quad` with at least 14 values.
 
 ==== Single Chunk
 

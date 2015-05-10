@@ -76,6 +76,12 @@ public abstract class AbstractTestCase {
         return encode((encoder, protocol) -> encoder.writeObject("test", value));
     }
 
+    public static MemoryBuffer encodeNullable(Object value)
+            throws Exception {
+
+        return encode((encoder, protocol) -> encoder.writeNullableObject("test", value));
+    }
+
     public static <R> R decode(MemoryBuffer memoryBuffer, SerializationProducer<Decoder, R> consumer)
             throws Exception {
 
@@ -93,12 +99,26 @@ public abstract class AbstractTestCase {
         return decode(memoryBuffer, (decoder, protocol) -> decoder.readObject());
     }
 
+    public static <R> R decodeNullable(MemoryBuffer memoryBuffer)
+            throws Exception {
+
+        return decode(memoryBuffer, (decoder, protocol) -> decoder.readNullableObject());
+    }
+
     public static <R> R encodeAndDecode(R object, int expectedSize)
             throws Exception {
 
         MemoryBuffer memoryBuffer = encode(object);
         assertEquals(expectedSize, memoryBuffer.writerIndex());
         return decode(memoryBuffer);
+    }
+
+    public static <R> R encodeAndDecodeNullable(R object, int expectedSize)
+            throws Exception {
+
+        MemoryBuffer memoryBuffer = encodeNullable(object);
+        assertEquals(expectedSize, memoryBuffer.writerIndex());
+        return decodeNullable(memoryBuffer);
     }
 
     protected interface SerializationConsumer<C> {

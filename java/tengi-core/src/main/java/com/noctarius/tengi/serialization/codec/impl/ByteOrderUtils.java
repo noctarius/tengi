@@ -21,102 +21,53 @@ import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 
 final class ByteOrderUtils {
 
-    static void putShort(short value, WritableMemoryBuffer memoryBuffer, boolean bigEndian) {
-        if (bigEndian) {
-            memoryBuffer.writeByte((byte) (value >> 8));
-            memoryBuffer.writeByte((byte) (value >> 0));
-        } else {
-            memoryBuffer.writeByte((byte) (value >> 0));
-            memoryBuffer.writeByte((byte) (value >> 8));
-        }
+    static void putShort(short value, WritableMemoryBuffer memoryBuffer) {
+        memoryBuffer.writeByte((byte) (value >> 8));
+        memoryBuffer.writeByte((byte) (value >> 0));
     }
 
-    static short getShort(ReadableMemoryBuffer memoryBuffer, boolean bigEndian) {
-        if (bigEndian) {
-            byte b1 = memoryBuffer.readByte();
-            byte b0 = memoryBuffer.readByte();
-            return buildShort(b1, b0);
-        } else {
-            byte b0 = memoryBuffer.readByte();
-            byte b1 = memoryBuffer.readByte();
-            return buildShort(b1, b0);
-        }
+    static short getShort(ReadableMemoryBuffer memoryBuffer) {
+        byte b1 = memoryBuffer.readByte();
+        byte b0 = memoryBuffer.readByte();
+        return buildShort(b1, b0);
     }
 
-    static void putInt(int value, WritableMemoryBuffer memoryBuffer, boolean bigEndian) {
-        if (bigEndian) {
-            memoryBuffer.writeByte((byte) (value >>> 24));
-            memoryBuffer.writeByte((byte) (value >>> 16));
-            memoryBuffer.writeByte((byte) (value >>> 8));
-            memoryBuffer.writeByte((byte) (value >>> 0));
-        } else {
-            memoryBuffer.writeByte((byte) (value >>> 0));
-            memoryBuffer.writeByte((byte) (value >>> 8));
-            memoryBuffer.writeByte((byte) (value >>> 16));
-            memoryBuffer.writeByte((byte) (value >>> 24));
-        }
+    static void putInt(int value, WritableMemoryBuffer memoryBuffer) {
+        memoryBuffer.writeByte((byte) (value >>> 24));
+        memoryBuffer.writeByte((byte) (value >>> 16));
+        memoryBuffer.writeByte((byte) (value >>> 8));
+        memoryBuffer.writeByte((byte) (value >>> 0));
     }
 
-    static int getInt(ReadableMemoryBuffer memoryBuffer, boolean bigEndian) {
-        if (bigEndian) {
-            byte b3 = memoryBuffer.readByte();
-            byte b2 = memoryBuffer.readByte();
-            byte b1 = memoryBuffer.readByte();
-            byte b0 = memoryBuffer.readByte();
-            return buildInt(b3, b2, b1, b0);
-        } else {
-            byte b0 = memoryBuffer.readByte();
-            byte b1 = memoryBuffer.readByte();
-            byte b2 = memoryBuffer.readByte();
-            byte b3 = memoryBuffer.readByte();
-            return buildInt(b3, b2, b1, b0);
-        }
+    static int getInt(ReadableMemoryBuffer memoryBuffer) {
+        byte b3 = memoryBuffer.readByte();
+        byte b2 = memoryBuffer.readByte();
+        byte b1 = memoryBuffer.readByte();
+        byte b0 = memoryBuffer.readByte();
+        return buildInt(b3, b2, b1, b0);
     }
 
-    static void putLong(long value, WritableMemoryBuffer memoryBuffer, boolean bigEndian) {
-        if (bigEndian) {
-            memoryBuffer.writeByte((byte) (value >> 56));
-            memoryBuffer.writeByte((byte) (value >> 48));
-            memoryBuffer.writeByte((byte) (value >> 40));
-            memoryBuffer.writeByte((byte) (value >> 32));
-            memoryBuffer.writeByte((byte) (value >> 24));
-            memoryBuffer.writeByte((byte) (value >> 16));
-            memoryBuffer.writeByte((byte) (value >> 8));
-            memoryBuffer.writeByte((byte) (value >> 0));
-        } else {
-            memoryBuffer.writeByte((byte) (value >> 0));
-            memoryBuffer.writeByte((byte) (value >> 8));
-            memoryBuffer.writeByte((byte) (value >> 16));
-            memoryBuffer.writeByte((byte) (value >> 24));
-            memoryBuffer.writeByte((byte) (value >> 32));
-            memoryBuffer.writeByte((byte) (value >> 40));
-            memoryBuffer.writeByte((byte) (value >> 48));
-            memoryBuffer.writeByte((byte) (value >> 56));
-        }
+    static void putLong(long value, WritableMemoryBuffer memoryBuffer) {
+        memoryBuffer.writeByte((byte) (value >> 56));
+        memoryBuffer.writeByte((byte) (value >> 48));
+        memoryBuffer.writeByte((byte) (value >> 40));
+        memoryBuffer.writeByte((byte) (value >> 32));
+        memoryBuffer.writeByte((byte) (value >> 24));
+        memoryBuffer.writeByte((byte) (value >> 16));
+        memoryBuffer.writeByte((byte) (value >> 8));
+        memoryBuffer.writeByte((byte) (value >> 0));
     }
 
-    static long getLong(ReadableMemoryBuffer memoryBuffer, boolean bigEndian) {
-        if (bigEndian) {
-            byte b7 = memoryBuffer.readByte();
-            byte b6 = memoryBuffer.readByte();
-            byte b5 = memoryBuffer.readByte();
-            byte b4 = memoryBuffer.readByte();
-            byte b3 = memoryBuffer.readByte();
-            byte b2 = memoryBuffer.readByte();
-            byte b1 = memoryBuffer.readByte();
-            byte b0 = memoryBuffer.readByte();
-            return buildLong(b7, b6, b5, b4, b3, b2, b1, b0);
-        } else {
-            byte b0 = memoryBuffer.readByte();
-            byte b1 = memoryBuffer.readByte();
-            byte b2 = memoryBuffer.readByte();
-            byte b3 = memoryBuffer.readByte();
-            byte b4 = memoryBuffer.readByte();
-            byte b5 = memoryBuffer.readByte();
-            byte b6 = memoryBuffer.readByte();
-            byte b7 = memoryBuffer.readByte();
-            return buildLong(b7, b6, b5, b4, b3, b2, b1, b0);
-        }
+    static long getLong(ReadableMemoryBuffer memoryBuffer) {
+        byte b7 = memoryBuffer.readByte();
+        byte b6 = memoryBuffer.readByte();
+        byte b5 = memoryBuffer.readByte();
+        byte b4 = memoryBuffer.readByte();
+        byte b3 = memoryBuffer.readByte();
+        byte b2 = memoryBuffer.readByte();
+        byte b1 = memoryBuffer.readByte();
+        byte b0 = memoryBuffer.readByte();
+        return buildLong(b7, b6, b5, b4, b3, b2, b1, b0);
     }
 
     static short buildShort(byte b1, byte b0) {

@@ -17,10 +17,13 @@
 package com.noctarius.tengi.serialization.codec.impl;
 
 import com.noctarius.tengi.buffer.MemoryBuffer;
+import com.noctarius.tengi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.serialization.Serializer;
 import com.noctarius.tengi.serialization.codec.AutoClosableDecoder;
 import com.noctarius.tengi.serialization.codec.AutoClosableEncoder;
 import com.noctarius.tengi.testing.AbstractTestCase;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -155,6 +158,20 @@ public class BitSetCompressorTestCase
 
         boolean[] result = encodeAndDecode(values, 7);
         assertTrue(Arrays.equals(values, result));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void test_illegal_chunk_type()
+            throws Exception {
+
+        MemoryBuffer memoryBuffer = createMemoryBuffer();
+        Serializer serializer = createSerializer();
+
+        memoryBuffer.writeByte(0);
+
+        try(AutoClosableDecoder decoder = serializer.retrieveDecoder(memoryBuffer)) {
+            decoder.readBitSet();
+        }
     }
 
     private static boolean[] encodeAndDecode(boolean[] bitSet, int expectedSize)

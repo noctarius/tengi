@@ -175,10 +175,10 @@ final class BitSetCompressor {
                 return memoryBuffer.readByte();
 
             case Double:
-                return ByteOrderUtils.getShort(memoryBuffer, true);
+                return ByteOrderUtils.getShort(memoryBuffer);
 
             default:
-                return ByteOrderUtils.getInt(memoryBuffer, true);
+                return ByteOrderUtils.getInt(memoryBuffer);
         }
     }
 
@@ -186,14 +186,14 @@ final class BitSetCompressor {
                                        boolean furtherChunks, WritableMemoryBuffer memoryBuffer) {
 
         int chunk = writeChunk(value, BASE_CHUNK_QUAD, start, useSlots, MIN_SLOTS_QUAD, SHIFT_SIZE_QUAD, furtherChunks);
-        ByteOrderUtils.putInt(chunk, memoryBuffer, true);
+        ByteOrderUtils.putInt(chunk, memoryBuffer);
     }
 
     private static void writeDoubleChunk(boolean[] value, int start, int useSlots, //
                                          boolean furtherChunks, WritableMemoryBuffer memoryBuffer) {
 
         int chunk = writeChunk(value, BASE_CHUNK_DOUBLE, start, useSlots, MIN_SLOTS_DOUBLE, SHIFT_SIZE_DOUBLE, furtherChunks);
-        ByteOrderUtils.putShort((short) chunk, memoryBuffer, true);
+        ByteOrderUtils.putShort((short) chunk, memoryBuffer);
     }
 
     private static void writeSingleChunk(boolean[] value, int start, int useSlots, //
@@ -226,10 +226,6 @@ final class BitSetCompressor {
     private static int minSlots(int remainingSlots, ChunkType chunkType) {
         int maxSlots;
         switch (chunkType) {
-            case Null:
-                maxSlots = 0;
-                break;
-
             case Single:
                 maxSlots = MAX_SLOTS_SINGLE;
                 break;
@@ -250,11 +246,10 @@ final class BitSetCompressor {
         } else if ((header & MASK_CHUNK_TYPE_DOUBLE) == MASK_CHUNK_TYPE_DOUBLE) {
             return ChunkType.Double;
         }
-
-        if ((header & MASK_NULL_CHUNK) == 0) {
-            return ChunkType.Null;
-        }
         if ((header & MASK_CHUNK_TYPE_SINGLE) == MASK_CHUNK_TYPE_SINGLE) {
+            if ((header & MASK_NULL_CHUNK) == 0) {
+                return ChunkType.Null;
+            }
             return ChunkType.Single;
         }
         throw new IllegalStateException("Illegal chunk type detected");

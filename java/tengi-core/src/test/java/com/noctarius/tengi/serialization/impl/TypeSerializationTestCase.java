@@ -26,6 +26,7 @@ import static com.noctarius.tengi.serialization.impl.SerializationClasses.TestEn
 import static com.noctarius.tengi.serialization.impl.SerializationClasses.TestEnumerable;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class TypeSerializationTestCase
         extends AbstractTestCase {
@@ -214,6 +215,31 @@ public class TypeSerializationTestCase
         TestEnumerable value2 = TestEnumerable.Value2;
         TestEnumerable response2 = encodeAndDecode(value2, 8);
         assertEquals(value2, response2);
+    }
+
+    @Test
+    public void test_nullable_with_null_round_trip()
+            throws Exception {
+
+        Object response = encodeAndDecodeNullable(null, 1);
+        assertNull(response);
+    }
+
+    @Test
+    public void test_nullable_with_non_null_round_trip()
+            throws Exception {
+
+        TestEnumerable value = TestEnumerable.Value1;
+        TestEnumerable response = encodeAndDecodeNullable(value, 9);
+        assertEquals(value, response);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void test_non_nullable_with_null_round_trip()
+            throws Exception {
+
+        Object response = encodeAndDecode(null, 0);
+        assertNull(response);
     }
 
 }

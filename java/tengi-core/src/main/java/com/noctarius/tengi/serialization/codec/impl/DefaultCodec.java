@@ -78,7 +78,7 @@ public class DefaultCodec
 
     @Override
     public short readShort() {
-        return ByteOrderUtils.getShort(memoryBuffer, true);
+        return ByteOrderUtils.getShort(memoryBuffer);
     }
 
     @Override
@@ -88,7 +88,7 @@ public class DefaultCodec
 
     @Override
     public int readInt32() {
-        return ByteOrderUtils.getInt(memoryBuffer, true);
+        return ByteOrderUtils.getInt(memoryBuffer);
     }
 
     @Override
@@ -98,7 +98,7 @@ public class DefaultCodec
 
     @Override
     public long readInt64() {
-        return ByteOrderUtils.getLong(memoryBuffer, true);
+        return ByteOrderUtils.getLong(memoryBuffer);
     }
 
     @Override
@@ -189,7 +189,7 @@ public class DefaultCodec
 
     @Override
     public void writeShort(String fieldName, short value) {
-        ByteOrderUtils.putShort(value, memoryBuffer, true);
+        ByteOrderUtils.putShort(value, memoryBuffer);
     }
 
     @Override
@@ -199,7 +199,7 @@ public class DefaultCodec
 
     @Override
     public void writeInt32(String fieldName, int value) {
-        ByteOrderUtils.putInt(value, memoryBuffer, true);
+        ByteOrderUtils.putInt(value, memoryBuffer);
     }
 
     @Override
@@ -209,7 +209,7 @@ public class DefaultCodec
 
     @Override
     public void writeInt64(String fieldName, long value) {
-        ByteOrderUtils.putLong(value, memoryBuffer, true);
+        ByteOrderUtils.putLong(value, memoryBuffer);
     }
 
     @Override
@@ -265,11 +265,6 @@ public class DefaultCodec
     @Override
     public WritableMemoryBuffer getWritableMemoryBuffer() {
         return memoryBuffer;
-    }
-
-    @Override
-    public Protocol getProtocol() {
-        return protocol;
     }
 
 }

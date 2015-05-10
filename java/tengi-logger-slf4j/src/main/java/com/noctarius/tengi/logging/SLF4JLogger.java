@@ -54,7 +54,7 @@ class SLF4JLogger
             params[0] = arg1;
             params[1] = arg2;
             params[2] = arg3;
-            System.arraycopy(args, 0, params, 4, args.length);
+            System.arraycopy(args, 0, params, 3, args.length);
             return String.format(message, params);
         });
     }

@@ -202,7 +202,7 @@ public class NettyMemoryBufferTestCase
     }
 
     @Test
-    public void test_buffer_array_bytebuffer()
+    public void test_write_buffer_array_bytebuffer()
             throws Exception {
 
         ByteBuffer byteBuffer = ByteBuffer.allocate(10);
@@ -222,7 +222,22 @@ public class NettyMemoryBufferTestCase
     }
 
     @Test
-    public void test_buffer_direct_bytebuffer()
+    public void test_read_buffer_array_bytebuffer()
+            throws Exception {
+
+        MemoryBuffer memoryBuffer = createMemoryBuffer();
+        for (int i = 0; i < 10; i++) {
+            memoryBuffer.writeByte((byte) i);
+        }
+        assertEquals(10, memoryBuffer.writerIndex());
+
+        ByteBuffer result = ByteBuffer.allocate(10);
+        memoryBuffer.readBuffer(result);
+        assertEquals(10, result.position());
+    }
+
+    @Test
+    public void test_write_buffer_direct_bytebuffer()
             throws Exception {
 
         ByteBuffer byteBuffer = ByteBuffer.allocateDirect(10);
@@ -242,7 +257,22 @@ public class NettyMemoryBufferTestCase
     }
 
     @Test
-    public void test_buffer_array_bytebuffer_offset_length()
+    public void test_read_buffer_direct_bytebuffer()
+            throws Exception {
+
+        MemoryBuffer memoryBuffer = createMemoryBuffer();
+        for (int i = 0; i < 10; i++) {
+            memoryBuffer.writeByte((byte) i);
+        }
+        assertEquals(10, memoryBuffer.writerIndex());
+
+        ByteBuffer result = ByteBuffer.allocateDirect(10);
+        memoryBuffer.readBuffer(result);
+        assertEquals(10, result.position());
+    }
+
+    @Test
+    public void test_write_buffer_array_bytebuffer_offset_length()
             throws Exception {
 
         ByteBuffer byteBuffer = ByteBuffer.allocate(10);
@@ -262,7 +292,26 @@ public class NettyMemoryBufferTestCase
     }
 
     @Test
-    public void test_buffer_direct_bytebuffer_offset_length()
+    public void test_read_buffer_array_bytebuffer_offset_length()
+            throws Exception {
+
+        MemoryBuffer memoryBuffer = createMemoryBuffer();
+        for (int i = 0; i < 10; i++) {
+            memoryBuffer.writeByte((byte) i);
+        }
+        assertEquals(10, memoryBuffer.writerIndex());
+
+        ByteBuffer result = ByteBuffer.allocate(8);
+        memoryBuffer.readBuffer(result, 1, 8);
+
+        result.flip();
+        for (int i = 1; i < 9; i++) {
+            assertEquals((byte) i, result.get());
+        }
+    }
+
+    @Test
+    public void test_write_buffer_direct_bytebuffer_offset_length()
             throws Exception {
 
         ByteBuffer byteBuffer = ByteBuffer.allocateDirect(10);
@@ -282,7 +331,26 @@ public class NettyMemoryBufferTestCase
     }
 
     @Test
-    public void test_buffer_array_memorybuffer()
+    public void test_read_buffer_direct_bytebuffer_offset_length()
+            throws Exception {
+
+        MemoryBuffer memoryBuffer = createMemoryBuffer();
+        for (int i = 0; i < 10; i++) {
+            memoryBuffer.writeByte((byte) i);
+        }
+        assertEquals(10, memoryBuffer.writerIndex());
+
+        ByteBuffer result = ByteBuffer.allocateDirect(8);
+        memoryBuffer.readBuffer(result, 1, 8);
+
+        result.flip();
+        for (int i = 1; i < 9; i++) {
+            assertEquals((byte) i, result.get());
+        }
+    }
+
+    @Test
+    public void test_write_buffer_array_memorybuffer()
             throws Exception {
 
         ByteBuf byteBuf = Unpooled.buffer();
@@ -303,7 +371,23 @@ public class NettyMemoryBufferTestCase
     }
 
     @Test
-    public void test_buffer_direct_memorybuffer()
+    public void test_read_buffer_array_memorybuffer()
+            throws Exception {
+
+        MemoryBuffer memoryBuffer = createMemoryBuffer();
+        for (int i = 0; i < 10; i++) {
+            memoryBuffer.writeByte((byte) i);
+        }
+        assertEquals(10, memoryBuffer.writerIndex());
+
+        ByteBuf byteBuf = Unpooled.buffer(10);
+        MemoryBuffer buffer = createMemoryBuffer(byteBuf);
+        memoryBuffer.readBuffer(buffer);
+        assertEquals(10, buffer.writerIndex());
+    }
+
+    @Test
+    public void test_write_buffer_direct_memorybuffer()
             throws Exception {
 
         ByteBuf byteBuf = Unpooled.directBuffer();
@@ -324,7 +408,23 @@ public class NettyMemoryBufferTestCase
     }
 
     @Test
-    public void test_buffer_array_memorybuffer_offset_length()
+    public void test_read_buffer_direct_memorybuffer()
+            throws Exception {
+
+        MemoryBuffer memoryBuffer = createMemoryBuffer();
+        for (int i = 0; i < 10; i++) {
+            memoryBuffer.writeByte((byte) i);
+        }
+        assertEquals(10, memoryBuffer.writerIndex());
+
+        ByteBuf byteBuf = Unpooled.directBuffer(10);
+        MemoryBuffer buffer = createMemoryBuffer(byteBuf);
+        memoryBuffer.readBuffer(buffer);
+        assertEquals(10, buffer.writerIndex());
+    }
+
+    @Test
+    public void test_write_buffer_array_memorybuffer_offset_length()
             throws Exception {
 
         ByteBuf byteBuf = Unpooled.buffer();
@@ -345,7 +445,26 @@ public class NettyMemoryBufferTestCase
     }
 
     @Test
-    public void test_buffer_direct_memorybuffer_offset_length()
+    public void test_read_buffer_array_memorybuffer_offset_length()
+            throws Exception {
+
+        MemoryBuffer memoryBuffer = createMemoryBuffer();
+        for (int i = 0; i < 10; i++) {
+            memoryBuffer.writeByte((byte) i);
+        }
+        assertEquals(10, memoryBuffer.writerIndex());
+
+        ByteBuf byteBuf = Unpooled.buffer(8);
+        MemoryBuffer buffer = createMemoryBuffer(byteBuf);
+        memoryBuffer.readBuffer(buffer, 1, 8);
+
+        for (int i = 1; i < 9; i++) {
+            assertEquals((byte) i, buffer.readByte());
+        }
+    }
+
+    @Test
+    public void test_write_buffer_direct_memorybuffer_offset_length()
             throws Exception {
 
         ByteBuf byteBuf = Unpooled.directBuffer();
@@ -362,6 +481,25 @@ public class NettyMemoryBufferTestCase
 
         for (int i = 1; i < 9; i++) {
             assertEquals((byte) i, memoryBuffer.readByte());
+        }
+    }
+
+    @Test
+    public void test_read_buffer_direct_memorybuffer_offset_length()
+            throws Exception {
+
+        MemoryBuffer memoryBuffer = createMemoryBuffer();
+        for (int i = 0; i < 10; i++) {
+            memoryBuffer.writeByte((byte) i);
+        }
+        assertEquals(10, memoryBuffer.writerIndex());
+
+        ByteBuf byteBuf = Unpooled.directBuffer(8);
+        MemoryBuffer buffer = createMemoryBuffer(byteBuf);
+        memoryBuffer.readBuffer(buffer, 1, 8);
+
+        for (int i = 1; i < 9; i++) {
+            assertEquals((byte) i, buffer.readByte());
         }
     }
 

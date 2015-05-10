@@ -105,7 +105,7 @@ class NettyMemoryBuffer
     @Override
     public int readBytes(byte[] bytes, int offset, int length) {
         int realLength = Math.min(length, readableBytes());
-        buffer.readBytes(bytes, 0, realLength);
+        buffer.readBytes(bytes, offset, realLength);
         return realLength;
     }
 
@@ -118,14 +118,19 @@ class NettyMemoryBuffer
 
     @Override
     public int readBuffer(ByteBuffer byteBuffer, int offset, int length) {
+        int realLength = Math.min(byteBuffer.remaining(), readableBytes());
         if (byteBuffer.hasArray()) {
-            readBytes(byteBuffer.array(), offset, length);
+            int readerIndex = buffer.readerIndex();
+            buffer.readerIndex(offset);
+            readBytes(byteBuffer.array(), 0, realLength);
+            buffer.readerIndex(readerIndex);
+            byteBuffer.position(realLength);
         } else {
             for (int pos = offset; pos < offset + length; pos++) {
-                byteBuffer.put(offset, readByte());
+                byteBuffer.put(buffer.getByte(pos));
             }
         }
-        return length;
+        return realLength;
     }
 
     @Override

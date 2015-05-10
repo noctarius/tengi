@@ -348,17 +348,73 @@ The Int32 Compression can be used to write Int32 values that are expected to be 
 Int32 Compression is *not* supported per `Encoder::writeObject` but needs to be used explicitly using `Encoder::writeCompressedInt32` and read by `Decoder::readCompressedInt32`. Integers written with `Encoder::writeObject` will always be written as uncompressed Int32 values.
 ====
 
-The actual compression isn't really complex. After counting the leading zeros of the value, the remaining bits are packed in groups of 7 bits, from left to right, and written to bytes. The last bit is either 0 if writing the number is done, otherwise it is 1, to mark another byte to be read.
+The actual Int32 will be compressed into one to five bytes. Due to the nature of how the compression works the biggest values need a few additional bits to store required metadata, therefore an additional byte is necessary. That said the Compressed Int32 is only recommended for generally small values.
 
-Bit blocks are always written from right to left, unused leading bits must be set to 0.
+Bits of the value are stores left to right. However the first byte can only store 5 bits and uses the most significant bit to store the original signed bit and the second most significant bit stores information if the final value needs to be inverted before being returned.
 
-Having an extra bit as follow up marker in the worst case results in an additional byte added to the bytestream, therefore it shouldn't be used to generally try to compress everything.
+The later information is necessary to nicely compress, near zero, negative  or big values. When values are meant to be stored as an inverted bit sequence is up to the encoder implementation. A recommended way is to compare leading zeros in inverted and non-inverted form to take the better compressable version.
+
+The least signification bit of every byte stores if another byte is about to follow up.
+
+Content bits are stored from right to left in Little Endian encoding, unneccesary content bits in the first byte must be set to 0.
+
+```
+0               1
+ 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+
+|S|I| Content |F|
++-+-+-+-+-+-+-+-+
+```
+
+.First Byte Bits
+|===
+| Bits | Description | Values
+
+| 0
+| Signed Bit
+| Stores the signed bit of the original value
+
+| 1
+| Inverted Bit
+| Stores if the final value needs to be inverted
+
+| 2-6
+| Content Bits
+| Stores up to 5 bits
+
+| 7
+| Follow (F)
+| 0 if stream ends, 1 if chunk follows
+|===
+
+Every following byte stores 7 additional bit of data and again a follow up bit.
+
+```
+0               1
+ 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+
+|   Content   |F|
++-+-+-+-+-+-+-+-+
+```
+
+.Further Byte Bits
+|===
+| Bits | Description | Values
+
+| 0-6
+| Content Bits
+| Stores up to 6 bits
+
+| 7
+| Follow (F)
+| 0 if stream ends, 1 if chunk follows
+|===
 
 As an example on how to apply this logic in the real world let's have a look at the following section.
 
 Given is a value
 ```
-A:Int32=2222
+A:Int32 = -2147483648 (minimal Int32 value)
 ```
 
 This transformed into the bit representation as an integer looks like:
@@ -367,89 +423,198 @@ This transformed into the bit representation as an integer looks like:
 0               1               2               3               4
  0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|0 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|0 0 0 0 1 0 0 0|1 0 1 0 1 1 1 0|
+|1 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ```
 
-Counting the leading zeros results in 20, remaining bits to be compressed is 12.
-
-While breaking down the remaining bits in block of 7 bits, we have a left over of 5 bits after the first block, therefore we end up using the following block schema (filled up with leading zeros).
+After storing the signed bit we can remove it and count the leading zeros which results in another 32 leading zeros and 0 writeable bits. In this example no additional invertation is applied and we store the minimal Int32 in one byte as follows:
 
 ```
- 0 1 2 3 4 5 6     0 1 2 3 4 5 6
-+-+-+-+-+-+-+-+   +-+-+-+-+-+-+-+
-|0 0 1 0 0 0 1|   |0 1 0 1 1 1 0|
-+-+-+-+-+-+-+-+   +-+-+-+-+-+-+-+
+0               1
+ 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+
+|1 0 0 0 0 0 0 0|
++-+-+-+-+-+-+-+-+
 ```
 
-Adding the follow up bits we finally end up with our compressed Int32 stream of two bytes instead of four.
+Another example is:
 
 ```
-0               1               2
- 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|0 0 1 0 0 0 1 1|0 1 0 1 1 1 0 0|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+B:Int32 = -10;
 ```
 
-We see that bit 7 is marked with 1 (another bytes to follow) and bit 15 is marked as 0 (final byte of the compressed Int32).
+In this case the binary representation looks like:
+
+```
+0               1               2               3               4
+ 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|1 1 1 1 1 1 1 1|1 1 1 1 1 1 1 1|1 1 1 1 1 1 1 1|1 1 1 1 0 1 1 0|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+
+Storing the signed bit and applying value invertion we result in:
+
+```
+0               1               2               3               4
+ 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|0 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|0 0 0 0 1 0 0 1|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+
+Obviously the value now can be stored in way less bits again. Counting leading zeros and calculating values to write we end up with `leadingZeros=28` and `writeableBits=4`. After writing the value to the byte stream we again end up with one byte of content.
+
+```
+0               1
+ 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+
+|1 1 0 1 0 0 1 0|
++-+-+-+-+-+-+-+-+
+```
 
 === Int64 Compression
 
-The Int64 Compression works exactly as the Int32 compression and can be used to write Int64 values that are expected to be quite small in most cases but might exceed the range of smaller data types in certain cases.
+The Int64 Compression works exactly as the Int32 compression but can store more information.It is used to write Int64 values that are expected to be quite small in most cases but might exceed the range of smaller data types in certain cases.
 
 [NOTE]
 ====
 Int64 Compression is *not* supported per `Encoder::writeObject` but needs to be used explicitly using `Encoder::writeCompressedInt64` and read by `Decoder::readCompressedInt64`. Integers written with `Encoder::writeObject` will always be written as uncompressed Int64 values.
 ====
 
-The actual compression isn't really complex. After counting the leading zeros of the value, the remaining bits are packed in groups of 7 bits, from left to right, and written to bytes. The last bit is either 0 if writing the number is done, otherwise it is 1, to mark another byte to be read.
+The actual Int64 will be compressed into one to five bytes. Due to the nature of how the compression works the biggest values need a few additional bits to store required metadata, therefore an additional byte is necessary. That said the Compressed Int64 is only recommended for generally small values.
 
-Bit blocks are always written from right to left, unused leading bits must be set to 0.
+Bits of the value are stores left to right. However the first byte can only store 5 bits and uses the most significant bit to store the original signed bit and the second most significant bit stores information if the final value needs to be inverted before being returned.
 
-Having an extra bit as follow up marker in the worst case results in an additional byte added to the bytestream, therefore it shouldn't be used to generally try to compress everything.
+The later information is necessary to nicely compress, near zero, negative  or big values. When values are meant to be stored as an inverted bit sequence is up to the encoder implementation. A recommended way is to compare leading zeros in inverted and non-inverted form to take the better compressable version.
+
+The least signification bit of every byte stores if another byte is about to follow up.
+
+Content bits are stored from right to left in Little Endian encoding, unneccesary content bits in the first byte must be set to 0.
+
+```
+0               1
+ 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+
+|S|I| Content |F|
++-+-+-+-+-+-+-+-+
+```
+
+.First Byte Bits
+|===
+| Bits | Description | Values
+
+| 0
+| Signed Bit
+| Stores the signed bit of the original value
+
+| 1
+| Inverted Bit
+| Stores if the final value needs to be inverted
+
+| 2-6
+| Content Bits
+| Stores up to 5 bits
+
+| 7
+| Follow (F)
+| 0 if stream ends, 1 if chunk follows
+|===
+
+Every following byte stores 7 additional bit of data and again a follow up bit.
+
+```
+0               1
+ 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+
+|   Content   |F|
++-+-+-+-+-+-+-+-+
+```
+
+.Further Byte Bits
+|===
+| Bits | Description | Values
+
+| 0-6
+| Content Bits
+| Stores up to 6 bits
+
+| 7
+| Follow (F)
+| 0 if stream ends, 1 if chunk follows
+|===
 
 As an example on how to apply this logic in the real world let's have a look at the following section.
 
 Given is a value
 ```
-A:Int64=2222
+A:Int64 = -9223372036854775808 (minimal Int64 value)
 ```
 
 This transformed into the bit representation as an integer looks like:
 
 ```
 0               1               2               3               4
+5               6               7               8               9
+ 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|1 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|0 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+
+After storing the signed bit we can remove it and count the leading zeros which results in another 64 leading zeros and 0 writeable bits. In this example no additional invertation is applied and we store the minimal Int32 in one byte as follows:
+
+```
+0               1
+ 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+
+|1 0 0 0 0 0 0 0|
++-+-+-+-+-+-+-+-+
+```
+
+Another example is:
+
+```
+B:Int64 = -10;
+```
+
+In this case the binary representation looks like:
+
+```
+0               1               2               3               4
+5               6               7               8               9
+ 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|1 1 1 1 1 1 1 1|1 1 1 1 1 1 1 1|1 1 1 1 1 1 1 1|1 1 1 1 1 1 1 1|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|1 1 1 1 1 1 1 1|1 1 1 1 1 1 1 1|1 1 1 1 1 1 1 1|1 1 1 1 0 1 1 0|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+
+Storing the signed bit and applying value invertion we result in:
+
+```
+0               1               2               3               4
+5               6               7               8               9
  0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |0 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|0 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|0 0 0 0 1 0 0 0|1 0 1 0 1 1 1 0|
+|0 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|0 0 0 0 0 0 0 0|0 0 0 0 1 0 0 1|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ```
 
-Counting the leading zeros results in 36, remaining bits to be compressed is 12.
-
-While breaking down the remaining bits in block of 7 bits, we have a left over of 5 bits after the first block, therefore we end up using the following block schema (filled up with leading zeros).
+Obviously the value now can be stored in way less bits again. Counting leading zeros and calculating values to write we end up with `leadingZeros=60` and `writeableBits=4`. After writing the value to the byte stream we again end up with one byte of content.
 
 ```
- 0 1 2 3 4 5 6     0 1 2 3 4 5 6
-+-+-+-+-+-+-+-+   +-+-+-+-+-+-+-+
-|0 0 1 0 0 0 1|   |0 1 0 1 1 1 0|
-+-+-+-+-+-+-+-+   +-+-+-+-+-+-+-+
+0               1
+ 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+
+|1 1 0 1 0 0 1 0|
++-+-+-+-+-+-+-+-+
 ```
-
-Adding the follow up bits we finally end up with our compressed Int64 stream of two bytes instead of eight.
-
-```
-0               1               2
- 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|0 0 1 0 0 0 1 1|0 1 0 1 1 1 0 0|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-```
-
-We see that bit 7 is marked with 1 (another bytes to follow) and bit 15 is marked as 0 (final byte of the compressed Int64).
 
 === BitSet Compression
 

@@ -21,161 +21,88 @@ import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 
 final class Int64Compressor {
 
-    private static final byte INT64_FULL = 1;
+    private static final int MASK_SEVEN_BITS = 0b0111_1111;
+    private static final int MASK_FIVE_BITS = 0b0001_1111;
 
-    private static final byte INT64_COMPRESSED_SINGLE = 2;
+    private static final long MASK_NON_SIGNED_VALUE = 0x7FFFFFFFFFFFFFFFL;
 
-    private static final byte INT64_COMPRESSED_DOUBLE = 3;
-
-    private static final byte INT64_COMPRESSED_TRIPPLE = 4;
-
-    private static final byte INT64_COMPRESSED_QUAD = 5;
-
-    private static final byte INT64_COMPRESSED_FIFTH = 6;
-
-    private static final byte INT64_COMPRESSED_SIXTH = 7;
-
-    private static final byte INT64_COMPRESSED_SEVENTH = 8;
-
-    private static final long INT64_MAX_SINGLE = 0x7F;
-
-    private static final long INT64_MIN_SINGLE = ~INT64_MAX_SINGLE + 1;
-
-    private static final long INT64_MAX_DOUBLE = 0x7FFF;
-
-    private static final long INT64_MIN_DOUBLE = ~INT64_MAX_DOUBLE + 1;
-
-    private static final long INT64_MAX_TRIPPLE = 0x7FFFFF;
-
-    private static final long INT64_MIN_TRIPPLE = ~INT64_MAX_TRIPPLE + 1;
-
-    private static final long INT64_MAX_QUAD = 0x7FFFFFFF;
-
-    private static final long INT64_MIN_QUAD = ~INT64_MAX_QUAD + 1;
-
-    private static final long INT64_MAX_FIFTH = 0x7FFFFFFFFFL;
-
-    private static final long INT64_MIN_FIFTH = ~INT64_MAX_FIFTH + 1;
-
-    private static final long INT64_MAX_SIXTH = 0x7FFFFFFFFFFFL;
-
-    private static final long INT64_MIN_SIXTH = ~INT64_MAX_SIXTH + 1;
-
-    private static final long INT64_MAX_SEVENTH = 0x7FFFFFFFFFFFFFL;
-
-    private static final long INT64_MIN_SEVENTH = ~INT64_MAX_SEVENTH + 1;
+    private static final int MASK_SIGNED = 0x80;
+    private static final int MASK_INVERTED = 0x40;
 
     static void writeInt64(long value, WritableMemoryBuffer memoryBuffer) {
-        if (value >= INT64_MIN_SINGLE && value <= INT64_MAX_SINGLE) {
-            value = value < 0 ? (~value + 1) | (1L << 7) : value;
-            memoryBuffer.writeByte(INT64_COMPRESSED_SINGLE);
-            memoryBuffer.writeByte((byte) value);
-        } else if (value >= INT64_MIN_DOUBLE && value <= INT64_MAX_DOUBLE) {
-            value = value < 0 ? (~value + 1) | (1L << 15) : value;
-            memoryBuffer.writeByte(INT64_COMPRESSED_DOUBLE);
-            memoryBuffer.writeByte((byte) (value >> 8));
-            memoryBuffer.writeByte((byte) value);
-        } else if (value >= INT64_MIN_TRIPPLE && value <= INT64_MAX_TRIPPLE) {
-            value = value < 0 ? (~value + 1) | (1L << 23) : value;
-            memoryBuffer.writeByte(INT64_COMPRESSED_TRIPPLE);
-            memoryBuffer.writeByte((byte) (value >> 16));
-            memoryBuffer.writeByte((byte) (value >> 8));
-            memoryBuffer.writeByte((byte) value);
-        } else if (value >= INT64_MIN_QUAD && value <= INT64_MAX_QUAD) {
-            value = value < 0 ? (~value + 1) | (1L << 31) : value;
-            memoryBuffer.writeByte(INT64_COMPRESSED_QUAD);
-            memoryBuffer.writeByte((byte) (value >> 24));
-            memoryBuffer.writeByte((byte) (value >> 16));
-            memoryBuffer.writeByte((byte) (value >> 8));
-            memoryBuffer.writeByte((byte) value);
-        } else if (value >= INT64_MIN_FIFTH && value <= INT64_MAX_FIFTH) {
-            value = value < 0 ? (~value + 1) | (1L << 39) : value;
-            memoryBuffer.writeByte(INT64_COMPRESSED_FIFTH);
-            memoryBuffer.writeByte((byte) (value >> 32));
-            memoryBuffer.writeByte((byte) (value >> 24));
-            memoryBuffer.writeByte((byte) (value >> 16));
-            memoryBuffer.writeByte((byte) (value >> 8));
-            memoryBuffer.writeByte((byte) value);
-        } else if (value >= INT64_MIN_SIXTH && value <= INT64_MAX_SIXTH) {
-            value = value < 0 ? (~value + 1) | (1L << 47) : value;
-            memoryBuffer.writeByte(INT64_COMPRESSED_SIXTH);
-            memoryBuffer.writeByte((byte) (value >> 40));
-            memoryBuffer.writeByte((byte) (value >> 32));
-            memoryBuffer.writeByte((byte) (value >> 24));
-            memoryBuffer.writeByte((byte) (value >> 16));
-            memoryBuffer.writeByte((byte) (value >> 8));
-            memoryBuffer.writeByte((byte) value);
-        } else if (value >= INT64_MIN_SEVENTH && value <= INT64_MAX_SEVENTH) {
-            value = value < 0 ? (~value + 1) | (1L << 55) : value;
-            memoryBuffer.writeByte(INT64_COMPRESSED_SEVENTH);
-            memoryBuffer.writeByte((byte) (value >> 48));
-            memoryBuffer.writeByte((byte) (value >> 40));
-            memoryBuffer.writeByte((byte) (value >> 32));
-            memoryBuffer.writeByte((byte) (value >> 24));
-            memoryBuffer.writeByte((byte) (value >> 16));
-            memoryBuffer.writeByte((byte) (value >> 8));
-            memoryBuffer.writeByte((byte) value);
-        } else {
-            memoryBuffer.writeByte(INT64_FULL);
-            memoryBuffer.writeByte((byte) (value >> 56));
-            memoryBuffer.writeByte((byte) (value >> 48));
-            memoryBuffer.writeByte((byte) (value >> 40));
-            memoryBuffer.writeByte((byte) (value >> 32));
-            memoryBuffer.writeByte((byte) (value >> 24));
-            memoryBuffer.writeByte((byte) (value >> 16));
-            memoryBuffer.writeByte((byte) (value >> 8));
-            memoryBuffer.writeByte((byte) value);
+
+        boolean signed = ((value >>> 63) & 0x1) == 1;
+        boolean inverted = storeInverted(value);
+
+        if (inverted) {
+            value = ~value;
         }
+
+        long bits = (value & MASK_NON_SIGNED_VALUE);
+        int leadingZeros = Long.numberOfLeadingZeros(bits);
+        int writeableBits = 64 - leadingZeros;
+
+        int chunks = 1;
+        if (writeableBits - 5 > 0) {
+            int furtherBits = writeableBits - 5;
+            int mostSignificantBits = furtherBits % 7;
+            chunks += furtherBits / 7 + (mostSignificantBits != 0 ? 1 : 0);
+        }
+
+        byte[] data = new byte[chunks];
+
+        // Store signed and inverted information into the first byte
+        data[0] = (byte) ((signed ? 1 : 0) << 7);
+        data[0] |= (byte) ((inverted ? 1 : 0) << 6);
+
+        for (int i = chunks - 1; i >= 0; i--) {
+            if (i == 0) {
+                data[i] |= (byte) ((bits & MASK_FIVE_BITS) << 1);
+            } else {
+                data[i] = (byte) ((bits & MASK_SEVEN_BITS) << 1);
+            }
+            if (i < chunks - 1) {
+                data[i] |= 0x1;
+            }
+            bits >>= i == 0 ? 5 : 7;
+        }
+        memoryBuffer.writeBytes(data);
     }
 
     static long readInt64(ReadableMemoryBuffer memoryBuffer) {
-        byte type = memoryBuffer.readByte();
-        switch (type) {
-            case INT64_COMPRESSED_SINGLE: {
-                long data = memoryBuffer.readByte() & 0xFFL;
-                return ((data >> 7) & 1) == 1 ? ~(data ^ (1L << 7)) + 1 : data;
+        long value = 0;
+        boolean signed = false;
+        boolean inverted = false;
+        for (int i = 0; i < 10; i++) {
+            byte chunk = memoryBuffer.readByte();
+
+            long bits;
+            if (i == 0) {
+                signed = (chunk & MASK_SIGNED) == MASK_SIGNED;
+                inverted = (chunk & MASK_INVERTED) == MASK_INVERTED;
+                bits = ((chunk >> 1) & MASK_FIVE_BITS);
+            } else {
+                bits = ((chunk >> 1) & MASK_SEVEN_BITS);
             }
 
-            case INT64_COMPRESSED_DOUBLE: {
-                long data = ((memoryBuffer.readByte() & 0xFFL) << 8) | (memoryBuffer.readByte() & 0xFFL);
-                return ((data >> 15) & 1) == 1 ? ~(data ^ (1L << 15)) + 1 : data;
+            value |= (byte) bits;
+            if ((chunk & 0x1) == 0) {
+                break;
             }
 
-            case INT64_COMPRESSED_TRIPPLE: {
-                long data = ((memoryBuffer.readByte() & 0xFFL) << 16) | ((memoryBuffer.readByte() & 0xFFL) << 8) | (
-                        memoryBuffer.readByte() & 0xFFL);
-                return ((data >> 23) & 1) == 1 ? ~(data ^ (1L << 23)) + 1 : data;
-            }
-            case INT64_COMPRESSED_QUAD: {
-                long data = ((memoryBuffer.readByte() & 0xFFL) << 24) | ((memoryBuffer.readByte() & 0xFFL) << 16) | (
-                        (memoryBuffer.readByte() & 0xFFL) << 8) | (memoryBuffer.readByte() & 0xFFL);
-                return ((data >> 31) & 1) == 1 ? ~(data ^ (1L << 31)) + 1 : data;
-            }
-            case INT64_COMPRESSED_FIFTH: {
-                long data = ((memoryBuffer.readByte() & 0xFFL) << 32) | ((memoryBuffer.readByte() & 0xFFL) << 24) | (
-                        (memoryBuffer.readByte() & 0xFFL) << 16) | ((memoryBuffer.readByte() & 0xFFL) << 8) | (
-                        memoryBuffer.readByte() & 0xFFL);
-                return ((data >> 39) & 1) == 1 ? ~(data ^ (1L << 39)) + 1 : data;
-            }
-            case INT64_COMPRESSED_SIXTH: {
-                long data = ((memoryBuffer.readByte() & 0xFFL) << 40) | ((memoryBuffer.readByte() & 0xFFL) << 32) | (
-                        (memoryBuffer.readByte() & 0xFFL) << 24) | ((memoryBuffer.readByte() & 0xFFL) << 16) | (
-                        (memoryBuffer.readByte() & 0xFFL) << 8) | (memoryBuffer.readByte() & 0xFFL);
-                return ((data >> 47) & 1) == 1 ? ~(data ^ (1L << 47)) + 1 : data;
-            }
-            case INT64_COMPRESSED_SEVENTH: {
-                long data = ((memoryBuffer.readByte() & 0xFFL) << 48) | ((memoryBuffer.readByte() & 0xFFL) << 40) | (
-                        (memoryBuffer.readByte() & 0xFFL) << 32) | ((memoryBuffer.readByte() & 0xFFL) << 24) | (
-                        (memoryBuffer.readByte() & 0xFFL) << 16) | ((memoryBuffer.readByte() & 0xFFL) << 8) | (
-                        memoryBuffer.readByte() & 0xFFL);
-                return ((data >> 55) & 1) == 1 ? ~(data ^ (1L << 55)) + 1 : data;
-            }
+            value <<= 7;
         }
+        if (inverted) {
+            // Invert and clean most signification bit again
+            value = (~value) & MASK_NON_SIGNED_VALUE;
+        }
+        return (value | ((signed ? 1L : 0L) << 63));
+    }
 
-        return ((memoryBuffer.readByte() & 0xFFL) << 56) | ((memoryBuffer.readByte() & 0xFFL) << 48) | (
-                (memoryBuffer.readByte() & 0xFFL) << 40) | ((memoryBuffer.readByte() & 0xFFL) << 32) | (
-                (memoryBuffer.readByte() & 0xFFL) << 24) | ((memoryBuffer.readByte() & 0xFFL) << 16) | (
-                (memoryBuffer.readByte() & 0xFFL) << 8) | (memoryBuffer.readByte() & 0xFFL);
+    private static boolean storeInverted(long value) {
+        int leadingZerosNonInverted = Long.numberOfLeadingZeros(value & MASK_NON_SIGNED_VALUE);
+        int leadingZerosInverted = Long.numberOfLeadingZeros((~value) & MASK_NON_SIGNED_VALUE);
+        return leadingZerosInverted > leadingZerosNonInverted;
     }
 
     private Int64Compressor() {

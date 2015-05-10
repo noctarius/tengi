@@ -17,20 +17,18 @@
 package com.noctarius.tengi.buffer.impl;
 
 import com.noctarius.tengi.buffer.MemoryBuffer;
-import io.netty.buffer.AbstractReferenceCountedByteBuf;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.CompositeByteBuf;
 
 import java.nio.ByteBuffer;
 
 class NettyMemoryBuffer
         implements MemoryBuffer {
 
-    private AbstractReferenceCountedByteBuf buffer;
+    private ByteBuf buffer;
 
     private volatile boolean released = false;
 
-    MemoryBuffer setByteBuf(AbstractReferenceCountedByteBuf buffer) {
+    MemoryBuffer setByteBuf(ByteBuf buffer) {
         this.buffer = buffer;
         return this;
     }
@@ -74,7 +72,7 @@ class NettyMemoryBuffer
 
     @Override
     public MemoryBuffer duplicate() {
-        return null;
+        return new NettyMemoryBuffer().setByteBuf(buffer.duplicate());
     }
 
     @Override
@@ -203,8 +201,8 @@ class NettyMemoryBuffer
 
     @Override
     public void writeBuffer(ByteBuffer byteBuffer) {
-        int remaining = Math.min(byteBuffer.remaining(), writableBytes());
-        writeBuffer(byteBuffer, byteBuffer.position(), remaining);
+        int remaining = Math.min(byteBuffer.position(), writableBytes());
+        writeBuffer(byteBuffer, 0, remaining);
     }
 
     @Override
@@ -213,7 +211,7 @@ class NettyMemoryBuffer
             writeBytes(byteBuffer.array(), offset, length);
         } else {
             for (int pos = offset; pos < offset + length; pos++) {
-                writeByte(byteBuffer.get(offset));
+                writeByte(byteBuffer.get(pos));
             }
         }
     }

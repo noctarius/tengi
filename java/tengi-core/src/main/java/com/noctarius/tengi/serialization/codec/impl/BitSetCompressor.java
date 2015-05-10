@@ -5,16 +5,20 @@ import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 
 final class BitSetCompressor {
 
-    private static final byte BASE_CHUNK_SINGLE = (byte) (0b01000000);
-    private static final short BASE_CHUNK_DOUBLE = (short) (0b1000000000000000);
-    private static final int BASE_CHUNK_QUAD = 0b11000000000000000000000000000000;
+    private static final byte BASE_CHUNK_SINGLE = (byte) (0b01000_000);
+    private static final short BASE_CHUNK_DOUBLE = (short) (0b1000_0000_0000_0000);
+    private static final int BASE_CHUNK_QUAD = 0b1100_0000_0000_0000_0000_0000_0000_0000;
 
-    private static final byte MASK_CHUNK_TYPE_SINGLE = (byte) 0b01000000;
-    private static final byte MASK_CHUNK_TYPE_DOUBLE = (byte) 0b10000000;
-    private static final byte MASK_CHUNK_TYPE_QUAD = (byte) 0b11000000;
+    private static final byte MASK_CHUNK_TYPE_SINGLE = (byte) 0b0100_0000;
+    private static final byte MASK_CHUNK_TYPE_DOUBLE = (byte) 0b1000_0000;
+    private static final byte MASK_CHUNK_TYPE_QUAD = (byte) 0b1100_0000;
 
     private static final byte NULL_CHUNK = BASE_CHUNK_SINGLE;
-    private static final byte MASK_NULL_CHUNK = (byte) 0b00111110;
+    private static final byte MASK_NULL_CHUNK = (byte) 0b0011_1110;
+
+    private static final int MASK_SIZE_SINGLE = 0b11;
+    private static final int MASK_SIZE_DOUBLE = 0b111;
+    private static final int MASK_SIZE_QUAD = 0b1111;
 
     private static final int SHIFT_SIZE_SINGLE = 4;
     private static final int SHIFT_SIZE_DOUBLE = 11;
@@ -139,13 +143,13 @@ final class BitSetCompressor {
     private static int readSlots(int chunk, ChunkType chunkType) {
         switch (chunkType) {
             case Single:
-                return ((chunk >> SHIFT_SIZE_SINGLE) & 0b11);
+                return ((chunk >> SHIFT_SIZE_SINGLE) & MASK_SIZE_SINGLE);
 
             case Double:
-                return ((chunk >> SHIFT_SIZE_DOUBLE) & 0b111) + MIN_SLOTS_DOUBLE - 1;
+                return ((chunk >> SHIFT_SIZE_DOUBLE) & MASK_SIZE_DOUBLE) + MIN_SLOTS_DOUBLE - 1;
 
             default:
-                return ((chunk >> SHIFT_SIZE_QUAD) & 0b1111) + MIN_SLOTS_QUAD - 1;
+                return ((chunk >> SHIFT_SIZE_QUAD) & MASK_SIZE_QUAD) + MIN_SLOTS_QUAD - 1;
         }
     }
 
@@ -259,6 +263,9 @@ final class BitSetCompressor {
         Single,
         Double,
         Quad
+    }
+
+    private BitSetCompressor() {
     }
 
 }

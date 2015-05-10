@@ -21,73 +21,62 @@ import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 
 final class Int32Compressor {
 
-    private static final byte INT32_FULL = 1;
-
-    private static final byte INT32_COMPRESSED_SINGLE = 2;
-
-    private static final byte INT32_COMPRESSED_DOUBLE = 3;
-
-    private static final byte INT32_COMPRESSED_TRIPPLE = 4;
-
-    private static final int INT32_MAX_SINGLE = 0x7F;
-
-    private static final int INT32_MIN_SINGLE = ~INT32_MAX_SINGLE + 1;
-
-    private static final int INT32_MAX_DOUBLE = 0x7FFF;
-
-    private static final int INT32_MIN_DOUBLE = ~INT32_MAX_DOUBLE + 1;
-
-    private static final int INT32_MAX_TRIPPLE = 0x7FFFFF;
-
-    private static final int INT32_MIN_TRIPPLE = ~INT32_MAX_TRIPPLE + 1;
+    private static final int MASK_SEVEN_BITS = 0b0111_1111;
+    private static final int MASK_SIX_BITS = 0b0011_1111;
 
     static void writeInt32(int value, WritableMemoryBuffer memoryBuffer) {
-        if (value >= INT32_MIN_SINGLE && value <= INT32_MAX_SINGLE) {
-            value = value < 0 ? (~value + 1) | (1 << 7) : value;
-            memoryBuffer.writeByte(INT32_COMPRESSED_SINGLE);
-            memoryBuffer.writeByte((byte) value);
-        } else if (value >= INT32_MIN_DOUBLE && value <= INT32_MAX_DOUBLE) {
-            value = value < 0 ? (~value + 1) | (1 << 15) : value;
-            memoryBuffer.writeByte(INT32_COMPRESSED_DOUBLE);
-            memoryBuffer.writeByte((byte) (value >> 8));
-            memoryBuffer.writeByte((byte) value);
-        } else if (value >= INT32_MIN_TRIPPLE && value <= INT32_MAX_TRIPPLE) {
-            value = value < 0 ? (~value + 1) | (1 << 23) : value;
-            memoryBuffer.writeByte(INT32_COMPRESSED_TRIPPLE);
-            memoryBuffer.writeByte((byte) (value >> 16));
-            memoryBuffer.writeByte((byte) (value >> 8));
-            memoryBuffer.writeByte((byte) value);
-        } else {
-            memoryBuffer.writeByte(INT32_FULL);
-            memoryBuffer.writeByte((byte) (value >> 24));
-            memoryBuffer.writeByte((byte) (value >> 16));
-            memoryBuffer.writeByte((byte) (value >> 8));
-            memoryBuffer.writeByte((byte) value);
+        boolean signed = ((value >>> 31) & 0x1) == 1;
+
+        int bits = (value & 0x7FFFFFFF);
+        int leadingZeros = Integer.numberOfLeadingZeros(bits);
+        int writableBits = 32 - leadingZeros;
+
+        int chunks = 1;
+        if (writableBits - 6 > 0) {
+            int furtherBits = writableBits - 6;
+            int mostSignificantBits = furtherBits % 7;
+            chunks += furtherBits / 7 + (mostSignificantBits != 0 ? 1 : 0);
         }
+
+        byte[] data = new byte[chunks];
+        data[0] = (byte) ((signed ? 1 : 0) << 7);
+
+        for (int i = chunks - 1; i >= 0; i--) {
+            if (i == 0) {
+                data[i] |= (byte) ((bits & MASK_SIX_BITS) << 1);
+            } else {
+                data[i] = (byte) ((bits & MASK_SEVEN_BITS) << 1);
+            }
+            if (i < chunks - 1) {
+                data[i] |= 0x1;
+            }
+            bits >>= i == 0 ? 6 : 7;
+        }
+        memoryBuffer.writeBytes(data);
     }
 
     static int readInt32(ReadableMemoryBuffer memoryBuffer) {
-        byte type = memoryBuffer.readByte();
-        switch (type) {
-            case INT32_COMPRESSED_SINGLE: {
-                int data = memoryBuffer.readByte() & 0xFF;
-                return ((data >> 7) & 1) == 1 ? ~(data ^ (1 << 7)) + 1 : data;
+        int value = 0;
+        boolean signed = false;
+        for (int i = 0; i < 5; i++) {
+            byte chunk = memoryBuffer.readByte();
+
+            int bits;
+            if (i == 0) {
+                signed = (chunk & 0x80) == 0x80;
+                bits = ((chunk >> 1) & MASK_SIX_BITS);
+            } else {
+                bits = ((chunk >> 1) & MASK_SEVEN_BITS);
             }
 
-            case INT32_COMPRESSED_DOUBLE: {
-                int data = ((memoryBuffer.readByte() & 0xFF) << 8) | (memoryBuffer.readByte() & 0xFF);
-                return ((data >> 15) & 1) == 1 ? ~(data ^ (1 << 15)) + 1 : data;
+            value |= (byte) bits;
+            if ((chunk & 0x1) == 0) {
+                break;
             }
 
-            case INT32_COMPRESSED_TRIPPLE: {
-                int data = ((memoryBuffer.readByte() & 0xFF) << 16) | ((memoryBuffer.readByte() & 0xFF) << 8) | (
-                        memoryBuffer.readByte() & 0xFF);
-                return ((data >> 23) & 1) == 1 ? ~(data ^ (1 << 23)) + 1 : data;
-            }
+            value <<= 7;
         }
-
-        return ((memoryBuffer.readByte() & 0xFF) << 24) | ((memoryBuffer.readByte() & 0xFF) << 16) | (
-                (memoryBuffer.readByte() & 0xFF) << 8) | (memoryBuffer.readByte() & 0xFF);
+        return (value | ((signed ? 1 : 0) << 31));
     }
 
     private Int32Compressor() {

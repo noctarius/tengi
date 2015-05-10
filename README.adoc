@@ -356,7 +356,7 @@ The later information is necessary to nicely compress, near zero, negative  or b
 
 The least signification bit of every byte stores if another byte is about to follow up.
 
-Content bits are stored from right to left in Little Endian encoding, unneccesary content bits in the first byte must be set to 0.
+Content bits are stored from right to left in Big Endian encoding, unneccesary content bits in the first byte must be set to 0.
 
 ```
 0               1
@@ -490,7 +490,7 @@ The later information is necessary to nicely compress, near zero, negative  or b
 
 The least signification bit of every byte stores if another byte is about to follow up.
 
-Content bits are stored from right to left in Little Endian encoding, unneccesary content bits in the first byte must be set to 0.
+Content bits are stored from right to left in Big Endian encoding, unneccesary content bits in the first byte must be set to 0.
 
 ```
 0               1

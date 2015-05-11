@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.logging;
+package com.noctarius.tengi.logging.impl;
+
+import com.noctarius.tengi.logging.Level;
+import com.noctarius.tengi.logging.Logger;
 
 import java.util.function.Supplier;
 

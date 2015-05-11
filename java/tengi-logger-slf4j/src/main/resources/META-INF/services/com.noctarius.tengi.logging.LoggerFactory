@@ -15,4 +15,4 @@
 # limitations under the License.
 ###########################################################################
 
-com.noctarius.tengi.logging.SLF4JLoggerFactory
+com.noctarius.tengi.logging.impl.SLF4JLoggerFactory

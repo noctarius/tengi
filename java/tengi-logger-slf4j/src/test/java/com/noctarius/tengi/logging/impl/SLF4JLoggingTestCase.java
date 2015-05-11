@@ -14,16 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.logging;
+package com.noctarius.tengi.logging.impl;
 
-import org.apache.log4j.Level;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
+import com.noctarius.tengi.logging.Logger;
+import com.noctarius.tengi.logging.LoggerManager;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
 import static org.junit.Assert.assertTrue;
 
-public class Log4jLoggingTestCase {
+public class SLF4JLoggingTestCase {
 
     @Test
     public void test_trace_no_param_no_exception_logging()
@@ -169,35 +173,35 @@ public class Log4jLoggingTestCase {
     public void test_fatal_no_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.fatal("test"), Level.FATAL);
+        practice((logger) -> logger.fatal("test"), Level.ERROR);
     }
 
     @Test
     public void test_fatal_1_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.fatal("test, %s", 1), Level.FATAL);
+        practice((logger) -> logger.fatal("test, %s", 1), Level.ERROR);
     }
 
     @Test
     public void test_fatal_2_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.fatal("test, %s, %s", 1, 2), Level.FATAL);
+        practice((logger) -> logger.fatal("test, %s, %s", 1, 2), Level.ERROR);
     }
 
     @Test
     public void test_fatal_3_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.fatal("test, %s, %s, %s", 1, 2, 3), Level.FATAL);
+        practice((logger) -> logger.fatal("test, %s, %s, %s", 1, 2, 3), Level.ERROR);
     }
 
     @Test
     public void test_fatal_5_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.fatal("test, %s, %s, %s, %s, %s", 1, 2, 3, 4, 5), Level.FATAL);
+        practice((logger) -> logger.fatal("test, %s, %s, %s, %s, %s", 1, 2, 3, 4, 5), Level.ERROR);
     }
 
     @Test
@@ -344,47 +348,50 @@ public class Log4jLoggingTestCase {
     public void test_fatal_no_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.fatal(new NullPointerException(), "test"), Level.FATAL);
+        practice((logger) -> logger.fatal(new NullPointerException(), "test"), Level.ERROR);
     }
 
     @Test
     public void test_fatal_1_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.fatal(new NullPointerException(), "test, %s", 1), Level.FATAL);
+        practice((logger) -> logger.fatal(new NullPointerException(), "test, %s", 1), Level.ERROR);
     }
 
     @Test
     public void test_fatal_2_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.fatal(new NullPointerException(), "test, %s, %s", 1, 2), Level.FATAL);
+        practice((logger) -> logger.fatal(new NullPointerException(), "test, %s, %s", 1, 2), Level.ERROR);
     }
 
     @Test
     public void test_fatal_3_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.fatal(new NullPointerException(), "test, %s, %s, %s", 1, 2, 3), Level.FATAL);
+        practice((logger) -> logger.fatal(new NullPointerException(), "test, %s, %s, %s", 1, 2, 3), Level.ERROR);
     }
 
     @Test
     public void test_fatal_5_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.fatal(new NullPointerException(), "test, %s, %s, %s, %s, %s", 1, 2, 3, 4, 5), Level.FATAL);
+        practice((logger) -> logger.fatal(new NullPointerException(), "test, %s, %s, %s, %s, %s", 1, 2, 3, 4, 5), Level.ERROR);
     }
 
     private static void practice(Consumer<Logger> test, Level level) {
-        Logger logger = LoggerManager.getLogger(Log4jLoggingTestCase.class);
-        assertTrue(Log4jLogger.class.isAssignableFrom(logger.getClass()));
+        Logger logger = LoggerManager.getLogger(SLF4JLoggingTestCase.class);
+        assertTrue(SLF4JLogger.class.isAssignableFrom(logger.getClass()));
 
         activateLogLevel(level);
         test.accept(logger);
     }
 
     private static void activateLogLevel(Level level) {
-        org.apache.log4j.Logger.getRootLogger().setLevel(level);
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        for (ch.qos.logback.classic.Logger logger : loggerContext.getLoggerList()) {
+            logger.setLevel(level);
+        }
     }
 
 }

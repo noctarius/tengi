@@ -14,25 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.logging;
+package com.noctarius.tengi.logging.impl;
 
-import org.apache.logging.log4j.LogManager;
+import com.noctarius.tengi.logging.Logger;
+import com.noctarius.tengi.logging.LoggerFactory;
 
-public class Log4jV2LoggerFactory
+public class Log4jLoggerFactory
         implements LoggerFactory {
 
     @Override
     public Logger create(Class<?> binding) {
-        return new Log4jV2Logger(LogManager.getLogger(binding));
+        return new Log4jLogger(org.apache.log4j.Logger.getLogger(binding));
     }
 
     @Override
     public Logger create(String binding) {
-        return new Log4jV2Logger(LogManager.getLogger(binding));
+        return new Log4jLogger(org.apache.log4j.Logger.getLogger(binding));
     }
 
     @Override
     public Class<?> loggerClass() {
-        return org.apache.logging.log4j.Logger.class;
+        return org.apache.log4j.Logger.class;
     }
 }

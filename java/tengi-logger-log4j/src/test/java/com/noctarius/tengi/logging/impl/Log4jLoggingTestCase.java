@@ -14,20 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.logging;
+package com.noctarius.tengi.logging.impl;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
+import com.noctarius.tengi.logging.Logger;
+import com.noctarius.tengi.logging.LoggerManager;
+import org.apache.log4j.Level;
 import org.junit.Test;
 
 import java.util.function.Consumer;
 
 import static org.junit.Assert.assertTrue;
 
-public class Log4jV2LoggingTestCase {
+public class Log4jLoggingTestCase {
 
     @Test
     public void test_trace_no_param_no_exception_logging()
@@ -380,19 +378,15 @@ public class Log4jV2LoggingTestCase {
     }
 
     private static void practice(Consumer<Logger> test, Level level) {
-        Logger logger = LoggerManager.getLogger(Log4jV2LoggingTestCase.class);
-        assertTrue(Log4jV2Logger.class.isAssignableFrom(logger.getClass()));
+        Logger logger = LoggerManager.getLogger(Log4jLoggingTestCase.class);
+        assertTrue(Log4jLogger.class.isAssignableFrom(logger.getClass()));
 
         activateLogLevel(level);
         test.accept(logger);
     }
 
     private static void activateLogLevel(Level level) {
-        LoggerContext loggerContext = (LoggerContext) LogManager.getContext(ClassLoader.getSystemClassLoader(), false, null);
-        Configuration configuration = loggerContext.getConfiguration();
-        LoggerConfig loggerConfig = configuration.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
-        loggerConfig.setLevel(level);
-        loggerContext.updateLoggers(configuration);
+        org.apache.log4j.Logger.getRootLogger().setLevel(level);
     }
 
 }

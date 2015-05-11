@@ -14,23 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.logging;
+package com.noctarius.tengi.logging.impl;
 
-public class SLF4JLoggerFactory
+import com.noctarius.tengi.logging.Logger;
+import com.noctarius.tengi.logging.LoggerFactory;
+
+public class JULLoggerFactory
         implements LoggerFactory {
 
     @Override
     public Logger create(Class<?> binding) {
-        return new SLF4JLogger(org.slf4j.LoggerFactory.getLogger(binding));
+        return new JULLogger(java.util.logging.Logger.getLogger(binding.getName()));
     }
 
     @Override
     public Logger create(String binding) {
-        return new SLF4JLogger(org.slf4j.LoggerFactory.getLogger(binding));
+        return new JULLogger(java.util.logging.Logger.getLogger(binding));
     }
 
     @Override
     public Class<?> loggerClass() {
-        return org.slf4j.Logger.class;
+        return java.util.logging.Logger.class;
     }
 }

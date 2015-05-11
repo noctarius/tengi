@@ -14,87 +14,89 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.logging;
+package com.noctarius.tengi.logging.impl;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
+import com.noctarius.tengi.logging.Logger;
+import com.noctarius.tengi.logging.LoggerManager;
 import org.junit.Test;
-import org.slf4j.LoggerFactory;
 
+import java.util.Enumeration;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
 
 import static org.junit.Assert.assertTrue;
 
-public class SLF4JLoggingTestCase {
+public class JulLoggingTestCase {
 
     @Test
     public void test_trace_no_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.trace("test"), Level.TRACE);
+        practice((logger) -> logger.trace("test"), Level.FINEST);
     }
 
     @Test
     public void test_trace_1_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.trace("test, %s", 1), Level.TRACE);
+        practice((logger) -> logger.trace("test, %s", 1), Level.FINEST);
     }
 
     @Test
     public void test_trace_2_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.trace("test, %s, %s", 1, 2), Level.TRACE);
+        practice((logger) -> logger.trace("test, %s, %s", 1, 2), Level.FINEST);
     }
 
     @Test
     public void test_trace_3_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.trace("test, %s, %s, %s", 1, 2, 3), Level.TRACE);
+        practice((logger) -> logger.trace("test, %s, %s, %s", 1, 2, 3), Level.FINEST);
     }
 
     @Test
     public void test_trace_5_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.trace("test, %s, %s, %s, %s, %s", 1, 2, 3, 4, 5), Level.TRACE);
+        practice((logger) -> logger.trace("test, %s, %s, %s, %s, %s", 1, 2, 3, 4, 5), Level.FINEST);
     }
 
     @Test
     public void test_debug_no_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.debug("test"), Level.DEBUG);
+        practice((logger) -> logger.debug("test"), Level.FINE);
     }
 
     @Test
     public void test_debug_1_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.debug("test, %s", 1), Level.DEBUG);
+        practice((logger) -> logger.debug("test, %s", 1), Level.FINE);
     }
 
     @Test
     public void test_debug_2_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.debug("test, %s, %s", 1, 2), Level.DEBUG);
+        practice((logger) -> logger.debug("test, %s, %s", 1, 2), Level.FINE);
     }
 
     @Test
     public void test_debug_3_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.debug("test, %s, %s, %s", 1, 2, 3), Level.DEBUG);
+        practice((logger) -> logger.debug("test, %s, %s, %s", 1, 2, 3), Level.FINE);
     }
 
     @Test
     public void test_debug_5_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.debug("test, %s, %s, %s, %s, %s", 1, 2, 3, 4, 5), Level.DEBUG);
+        practice((logger) -> logger.debug("test, %s, %s, %s, %s, %s", 1, 2, 3, 4, 5), Level.FINE);
     }
 
     @Test
@@ -136,140 +138,140 @@ public class SLF4JLoggingTestCase {
     public void test_warning_no_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.warning("test"), Level.WARN);
+        practice((logger) -> logger.warning("test"), Level.WARNING);
     }
 
     @Test
     public void test_warning_1_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.warning("test, %s", 1), Level.WARN);
+        practice((logger) -> logger.warning("test, %s", 1), Level.WARNING);
     }
 
     @Test
     public void test_warning_2_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.warning("test, %s, %s", 1, 2), Level.WARN);
+        practice((logger) -> logger.warning("test, %s, %s", 1, 2), Level.WARNING);
     }
 
     @Test
     public void test_warning_3_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.warning("test, %s, %s, %s", 1, 2, 3), Level.WARN);
+        practice((logger) -> logger.warning("test, %s, %s, %s", 1, 2, 3), Level.WARNING);
     }
 
     @Test
     public void test_warning_5_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.warning("test, %s, %s, %s, %s, %s", 1, 2, 3, 4, 5), Level.WARN);
+        practice((logger) -> logger.warning("test, %s, %s, %s, %s, %s", 1, 2, 3, 4, 5), Level.WARNING);
     }
 
     @Test
     public void test_fatal_no_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.fatal("test"), Level.ERROR);
+        practice((logger) -> logger.fatal("test"), Level.SEVERE);
     }
 
     @Test
     public void test_fatal_1_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.fatal("test, %s", 1), Level.ERROR);
+        practice((logger) -> logger.fatal("test, %s", 1), Level.SEVERE);
     }
 
     @Test
     public void test_fatal_2_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.fatal("test, %s, %s", 1, 2), Level.ERROR);
+        practice((logger) -> logger.fatal("test, %s, %s", 1, 2), Level.SEVERE);
     }
 
     @Test
     public void test_fatal_3_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.fatal("test, %s, %s, %s", 1, 2, 3), Level.ERROR);
+        practice((logger) -> logger.fatal("test, %s, %s, %s", 1, 2, 3), Level.SEVERE);
     }
 
     @Test
     public void test_fatal_5_param_no_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.fatal("test, %s, %s, %s, %s, %s", 1, 2, 3, 4, 5), Level.ERROR);
+        practice((logger) -> logger.fatal("test, %s, %s, %s, %s, %s", 1, 2, 3, 4, 5), Level.SEVERE);
     }
 
     @Test
     public void test_trace_no_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.trace(new NullPointerException(), "test"), Level.TRACE);
+        practice((logger) -> logger.trace(new NullPointerException(), "test"), Level.FINEST);
     }
 
     @Test
     public void test_trace_1_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.trace(new NullPointerException(), "test, %s", 1), Level.TRACE);
+        practice((logger) -> logger.trace(new NullPointerException(), "test, %s", 1), Level.FINEST);
     }
 
     @Test
     public void test_trace_2_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.trace(new NullPointerException(), "test, %s, %s", 1, 2), Level.TRACE);
+        practice((logger) -> logger.trace(new NullPointerException(), "test, %s, %s", 1, 2), Level.FINEST);
     }
 
     @Test
     public void test_trace_3_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.trace(new NullPointerException(), "test, %s, %s, %s", 1, 2, 3), Level.TRACE);
+        practice((logger) -> logger.trace(new NullPointerException(), "test, %s, %s, %s", 1, 2, 3), Level.FINEST);
     }
 
     @Test
     public void test_trace_5_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.trace(new NullPointerException(), "test, %s, %s, %s, %s, %s", 1, 2, 3, 4, 5), Level.TRACE);
+        practice((logger) -> logger.trace(new NullPointerException(), "test, %s, %s, %s, %s, %s", 1, 2, 3, 4, 5), Level.FINEST);
     }
 
     @Test
     public void test_debug_no_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.debug(new NullPointerException(), "test"), Level.DEBUG);
+        practice((logger) -> logger.debug(new NullPointerException(), "test"), Level.FINE);
     }
 
     @Test
     public void test_debug_1_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.debug(new NullPointerException(), "test, %s", 1), Level.DEBUG);
+        practice((logger) -> logger.debug(new NullPointerException(), "test, %s", 1), Level.FINE);
     }
 
     @Test
     public void test_debug_2_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.debug(new NullPointerException(), "test, %s, %s", 1, 2), Level.DEBUG);
+        practice((logger) -> logger.debug(new NullPointerException(), "test, %s, %s", 1, 2), Level.FINE);
     }
 
     @Test
     public void test_debug_3_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.debug(new NullPointerException(), "test, %s, %s, %s", 1, 2, 3), Level.DEBUG);
+        practice((logger) -> logger.debug(new NullPointerException(), "test, %s, %s, %s", 1, 2, 3), Level.FINE);
     }
 
     @Test
     public void test_debug_5_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.debug(new NullPointerException(), "test, %s, %s, %s, %s, %s", 1, 2, 3, 4, 5), Level.DEBUG);
+        practice((logger) -> logger.debug(new NullPointerException(), "test, %s, %s, %s, %s, %s", 1, 2, 3, 4, 5), Level.FINE);
     }
 
     @Test
@@ -311,84 +313,85 @@ public class SLF4JLoggingTestCase {
     public void test_warning_no_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.warning(new NullPointerException(), "test"), Level.WARN);
+        practice((logger) -> logger.warning(new NullPointerException(), "test"), Level.WARNING);
     }
 
     @Test
     public void test_warning_1_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.warning(new NullPointerException(), "test, %s", 1), Level.WARN);
+        practice((logger) -> logger.warning(new NullPointerException(), "test, %s", 1), Level.WARNING);
     }
 
     @Test
     public void test_warning_2_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.warning(new NullPointerException(), "test, %s, %s", 1, 2), Level.WARN);
+        practice((logger) -> logger.warning(new NullPointerException(), "test, %s, %s", 1, 2), Level.WARNING);
     }
 
     @Test
     public void test_warning_3_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.warning(new NullPointerException(), "test, %s, %s, %s", 1, 2, 3), Level.WARN);
+        practice((logger) -> logger.warning(new NullPointerException(), "test, %s, %s, %s", 1, 2, 3), Level.WARNING);
     }
 
     @Test
     public void test_warning_5_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.warning(new NullPointerException(), "test, %s, %s, %s, %s, %s", 1, 2, 3, 4, 5), Level.WARN);
+        practice((logger) -> logger.warning(new NullPointerException(), "test, %s, %s, %s, %s, %s", 1, 2, 3, 4, 5),
+                Level.WARNING);
     }
 
     @Test
     public void test_fatal_no_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.fatal(new NullPointerException(), "test"), Level.ERROR);
+        practice((logger) -> logger.fatal(new NullPointerException(), "test"), Level.SEVERE);
     }
 
     @Test
     public void test_fatal_1_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.fatal(new NullPointerException(), "test, %s", 1), Level.ERROR);
+        practice((logger) -> logger.fatal(new NullPointerException(), "test, %s", 1), Level.SEVERE);
     }
 
     @Test
     public void test_fatal_2_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.fatal(new NullPointerException(), "test, %s, %s", 1, 2), Level.ERROR);
+        practice((logger) -> logger.fatal(new NullPointerException(), "test, %s, %s", 1, 2), Level.SEVERE);
     }
 
     @Test
     public void test_fatal_3_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.fatal(new NullPointerException(), "test, %s, %s, %s", 1, 2, 3), Level.ERROR);
+        practice((logger) -> logger.fatal(new NullPointerException(), "test, %s, %s, %s", 1, 2, 3), Level.SEVERE);
     }
 
     @Test
     public void test_fatal_5_param_with_exception_logging()
             throws Exception {
 
-        practice((logger) -> logger.fatal(new NullPointerException(), "test, %s, %s, %s, %s, %s", 1, 2, 3, 4, 5), Level.ERROR);
+        practice((logger) -> logger.fatal(new NullPointerException(), "test, %s, %s, %s, %s, %s", 1, 2, 3, 4, 5), Level.SEVERE);
     }
 
     private static void practice(Consumer<Logger> test, Level level) {
-        Logger logger = LoggerManager.getLogger(SLF4JLoggingTestCase.class);
-        assertTrue(SLF4JLogger.class.isAssignableFrom(logger.getClass()));
+        Logger logger = LoggerManager.getLogger(JulLoggingTestCase.class);
+        assertTrue(JULLogger.class.isAssignableFrom(logger.getClass()));
 
         activateLogLevel(level);
         test.accept(logger);
     }
 
     private static void activateLogLevel(Level level) {
-        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        for (ch.qos.logback.classic.Logger logger : loggerContext.getLoggerList()) {
-            logger.setLevel(level);
+        Enumeration<String> loggerNames = LogManager.getLogManager().getLoggerNames();
+        while (loggerNames.hasMoreElements()) {
+            LogManager.getLogManager().getLogger(loggerNames.nextElement()).setLevel(level);
         }
     }
 

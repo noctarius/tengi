@@ -14,16 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.logging;
+package com.noctarius.tengi.logging.impl;
+
+import com.noctarius.tengi.logging.Level;
+import com.noctarius.tengi.logging.Logger;
 
 import java.util.function.Supplier;
 
-class Log4jLogger
+class SLF4JLogger
         implements Logger {
 
-    private final org.apache.log4j.Logger logger;
+    private final org.slf4j.Logger logger;
 
-    Log4jLogger(org.apache.log4j.Logger logger) {
+    SLF4JLogger(org.slf4j.Logger logger) {
         this.logger = logger;
     }
 
@@ -76,14 +79,14 @@ class Log4jLogger
                 break;
 
             case Warning:
-                if (logger.isEnabledFor(org.apache.log4j.Level.INFO)) {
+                if (logger.isWarnEnabled()) {
                     String logMsg = supplier.get();
                     logger.warn(logMsg, throwable);
                 }
                 break;
 
             case Fatal:
-                if (logger.isEnabledFor(org.apache.log4j.Level.ERROR)) {
+                if (logger.isErrorEnabled()) {
                     String logMsg = supplier.get();
                     logger.error(logMsg, throwable);
                 }

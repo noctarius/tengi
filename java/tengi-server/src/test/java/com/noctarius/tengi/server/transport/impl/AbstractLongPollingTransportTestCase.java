@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.transport;
+package com.noctarius.tengi.server.transport.impl;
 
 import com.noctarius.tengi.Message;
 import com.noctarius.tengi.Transport;

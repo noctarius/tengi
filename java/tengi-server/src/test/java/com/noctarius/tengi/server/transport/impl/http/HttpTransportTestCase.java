@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.transport;
+package com.noctarius.tengi.server.transport.impl.http;
 
 import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
@@ -34,6 +34,8 @@ import com.noctarius.tengi.serialization.codec.AutoClosableDecoder;
 import com.noctarius.tengi.serialization.codec.AutoClosableEncoder;
 import com.noctarius.tengi.serialization.impl.DefaultProtocol;
 import com.noctarius.tengi.serialization.impl.DefaultProtocolConstants;
+import com.noctarius.tengi.server.transport.ServerTransport;
+import com.noctarius.tengi.server.transport.impl.AbstractLongPollingTransportTestCase;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -54,8 +56,8 @@ import static org.junit.Assert.fail;
 public class HttpTransportTestCase
         extends AbstractLongPollingTransportTestCase {
 
-    @Test
-    public void testHttpTransport()
+    @Test(timeout = 120000)
+    public void test_http_transport()
             throws Exception {
 
         InputStream is = getClass().getResourceAsStream("transport.types.manifest");
@@ -67,7 +69,7 @@ public class HttpTransportTestCase
 
         CompletableFuture<Object> future = new CompletableFuture<>();
 
-        Object result = practice(() -> {
+        Object result = AbstractLongPollingTransportTestCase.practice(() -> {
             AsyncHttpClient client = new AsyncHttpClient();
             Response response = handshake(client, serializer).get();
 
@@ -91,10 +93,63 @@ public class HttpTransportTestCase
 
             writeRequest(client, serializer, connectionId, message, null);
 
-            return future.get();
+            return future.get(120, TimeUnit.SECONDS);
         }, false, ServerTransport.HTTP_TRANSPORT);
 
         assertEquals(message, result);
+    }
+
+    @Test(timeout = 120000)
+    public void test_http_transport_ping_pong()
+            throws Exception {
+
+        InputStream is = getClass().getResourceAsStream("transport.types.manifest");
+        Serializer serializer = Serializer.create(new DefaultProtocol(is, Collections.emptyList()));
+
+        Packet packet = new Packet("pingpong");
+        packet.setValue("counter", 1);
+        Message message = Message.create(packet);
+
+        CompletableFuture<Packet> future = new CompletableFuture<>();
+
+        Packet result = AbstractLongPollingTransportTestCase.practice(() -> {
+            AsyncHttpClient client = new AsyncHttpClient();
+            Response response = handshake(client, serializer).get();
+
+            Identifier connectionId;
+            try (AutoClosableDecoder decoder = decodeResponse(serializer, response)) {
+                if (decoder.readBoolean()) {
+                    connectionId = decoder.readObject();
+                } else {
+                    throw new RuntimeException();
+                }
+                if (!(decoder.readObject() instanceof HandshakeResponse)) {
+                    fail("No HandshakeResponse received");
+                }
+            }
+
+            AtomicBoolean stop = new AtomicBoolean(false);
+            ScheduledExecutorService ses = Executors.newScheduledThreadPool(2);
+            startLongPolling(client, serializer, connectionId, ses, stop, (m) -> {
+                Packet p = m.getBody();
+
+                int counter = p.getValue("counter");
+                if (counter == 4) {
+                    stop.set(true);
+                    future.complete(p);
+                } else {
+                    p.setValue("counter", counter + 1);
+                    Message request = Message.create(p);
+                    writeRequest(client, serializer, connectionId, request, null);
+                }
+            });
+
+            writeRequest(client, serializer, connectionId, message, null);
+
+            return future.get(120, TimeUnit.SECONDS);
+        }, false, ServerTransport.HTTP_TRANSPORT);
+
+        assertEquals(4, (int) result.getValue("counter"));
     }
 
     private static AutoClosableDecoder decodeResponse(Serializer serializer, Response response)
@@ -160,7 +215,9 @@ public class HttpTransportTestCase
             Message response = (Message) object;
             Object body = response.getBody();
             if (body instanceof LongPollingResponse) {
-                ((LongPollingResponse) body).getMessages().forEach(messageHandler::handle);
+                for (Message message : ((LongPollingResponse) body).getMessages()) {
+                    messageHandler.handle(message);
+                }
             }
 
             if (stop.get()) {
@@ -198,7 +255,8 @@ public class HttpTransportTestCase
     }
 
     private static interface Handler<T> {
-        void handle(T object);
+        void handle(T object)
+                throws Exception;
     }
 
 }

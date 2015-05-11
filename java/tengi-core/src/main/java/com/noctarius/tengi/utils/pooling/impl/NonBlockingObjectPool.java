@@ -73,7 +73,7 @@ public class NonBlockingObjectPool<T>
         this.handler = handler;
         this.validator = validator;
         this.size = MathUtil.nextPowerOfTwo(size);
-        this.entryPool = createEntryPool(handler, size);
+        this.entryPool = createEntryPool(handler, this.size);
     }
 
     @Override
@@ -101,6 +101,10 @@ public class NonBlockingObjectPool<T>
                 throw new SystemException("ObjectPool already closed");
             }
 
+            if (acquireIndex >= size) {
+                acquireIndex = 0;
+            }
+
             if (entry.casState(ENTRY_FREE, ENTRY_USED)) {
                 LOGGER.trace("Acquired entry from looping, index %s: %s", (acquireIndex - 1), entry);
 
@@ -108,10 +112,6 @@ public class NonBlockingObjectPool<T>
 
                 // Validate object and recreate invalid entries
                 return validateOrRecreateEntry(acquireIndex - 1, entry, activator);
-            }
-
-            if (acquireIndex >= size) {
-                acquireIndex = 0;
             }
         } while (acquireIndex == nextAcquireIndex);
 
@@ -158,7 +158,7 @@ public class NonBlockingObjectPool<T>
     }
 
     private Entry<T>[] createEntryPool(ObjectHandler<T> factory, int size) {
-        Entry<T>[] entryPool = new Entry[this.size];
+        Entry<T>[] entryPool = new Entry[size];
         for (int i = 0; i < size; i++) {
             entryPool[i] = new Entry<>(i, factory.create());
         }

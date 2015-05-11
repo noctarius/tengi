@@ -49,11 +49,18 @@ import java.util.ListIterator;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 class HttpConnectionContext
         extends ConnectionContext<Channel> {
 
     private final Queue<QueueEntry> messageQueue = new ConcurrentLinkedQueue<>();
+
+    private final Lock longPollingLock = new ReentrantLock();
+    private final Condition longPollingWaitCondition = longPollingLock.newCondition();
 
     HttpConnectionContext(Identifier connectionId, Serializer serializer, Transport transport) {
         super(connectionId, serializer, transport);
@@ -63,6 +70,13 @@ class HttpConnectionContext
     public CompletableFuture<Message> writeMemoryBuffer(MemoryBuffer memoryBuffer, Message message) {
         CompletableFuture<Message> future = new CompletableFuture<>();
         messageQueue.add(new QueueEntry(memoryBuffer, message, future));
+
+        longPollingLock.lock();
+        try {
+            longPollingWaitCondition.signal();
+        } finally {
+            longPollingLock.unlock();
+        }
         return future;
     }
 
@@ -93,6 +107,18 @@ class HttpConnectionContext
             }
 
             Collection<QueueEntry> messages = drainMessageQueue();
+            if (messages.size() == 0) {
+                longPollingLock.lock();
+                try {
+                    longPollingWaitCondition.await(5, TimeUnit.SECONDS);
+                    messages = drainMessageQueue();
+                } catch (InterruptedException e) {
+                    // ignore and just return an empty response
+                } finally {
+                    longPollingLock.unlock();
+                }
+            }
+
             LongPollingResponse pollingResponse = new LongPollingResponse(new QueueEntryMessageList(messages));
 
             ByteBuf buffer = channel.alloc().directBuffer();

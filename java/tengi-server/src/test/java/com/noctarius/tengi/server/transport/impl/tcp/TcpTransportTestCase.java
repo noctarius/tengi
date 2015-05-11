@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.transport;
+package com.noctarius.tengi.server.transport.impl.tcp;
 
 import com.noctarius.tengi.Identifier;
 import com.noctarius.tengi.Message;
@@ -28,6 +28,8 @@ import com.noctarius.tengi.serialization.codec.AutoClosableEncoder;
 import com.noctarius.tengi.serialization.codec.impl.DefaultCodec;
 import com.noctarius.tengi.serialization.impl.DefaultProtocol;
 import com.noctarius.tengi.serialization.impl.DefaultProtocolConstants;
+import com.noctarius.tengi.server.transport.ServerTransport;
+import com.noctarius.tengi.server.transport.impl.AbstractStreamingTransportTestCase;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -35,14 +37,15 @@ import org.junit.Test;
 
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
 public class TcpTransportTestCase
         extends AbstractStreamingTransportTestCase {
 
-    @Test
-    public void testTcpTransport()
+    @Test(timeout = 120000)
+    public void test_tcp_transport()
             throws Exception {
 
         Serializer serializer = Serializer.create(new DefaultProtocol(Collections.emptyList()));
@@ -79,15 +82,15 @@ public class TcpTransportTestCase
             codec.writeObject("handshake", new HandshakeRequest());
             channel.writeAndFlush(buffer);
 
-            return future.get();
+            return future.get(120, TimeUnit.SECONDS);
         };
 
-        Object response = practice(initializer, runner, false, ServerTransport.TCP_TRANSPORT);
+        Object response = AbstractStreamingTransportTestCase.practice(initializer, runner, false, ServerTransport.TCP_TRANSPORT);
         assertEquals(message, response);
     }
 
-    @Test
-    public void testPingPong()
+    @Test(timeout = 120000)
+    public void test_tcp_transport_ping_pong()
             throws Exception {
 
         Serializer serializer = Serializer.create(new DefaultProtocol(Collections.emptyList()));
@@ -144,7 +147,7 @@ public class TcpTransportTestCase
             codec.writeObject("handshake", new HandshakeRequest());
             channel.writeAndFlush(buffer);
 
-            return future.get();
+            return future.get(120, TimeUnit.SECONDS);
         };
 
         Packet response = practice(initializer, runner, false, ServerTransport.TCP_TRANSPORT);

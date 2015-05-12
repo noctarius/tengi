@@ -23,7 +23,7 @@ public final class MarshallerConfiguration {
     private final MarshallerFilter marshallerFilter;
     private final Marshaller marshaller;
 
-    MarshallerConfiguration(MarshallerFilter marshallerFilter, Marshaller marshaller) {
+    public MarshallerConfiguration(MarshallerFilter marshallerFilter, Marshaller marshaller) {
         this.marshallerFilter = marshallerFilter;
         this.marshaller = marshaller;
     }

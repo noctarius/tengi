@@ -31,6 +31,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
@@ -52,6 +53,10 @@ public abstract class AbstractTestCase {
 
     public static Protocol createProtocol() {
         return new DefaultProtocol(Collections.<MarshallerConfiguration>emptyList());
+    }
+
+    public static Protocol createProtocol(Collection<MarshallerConfiguration> marshallerConfigurations) {
+        return new DefaultProtocol(marshallerConfigurations);
     }
 
     public static Serializer createSerializer() {

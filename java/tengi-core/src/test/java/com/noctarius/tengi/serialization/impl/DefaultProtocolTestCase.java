@@ -18,6 +18,7 @@ package com.noctarius.tengi.serialization.impl;
 
 import com.noctarius.tengi.SystemException;
 import com.noctarius.tengi.buffer.MemoryBuffer;
+import com.noctarius.tengi.config.MarshallerConfiguration;
 import com.noctarius.tengi.serialization.Marshallable;
 import com.noctarius.tengi.serialization.Protocol;
 import com.noctarius.tengi.serialization.Serializer;
@@ -26,13 +27,20 @@ import com.noctarius.tengi.serialization.codec.AutoClosableDecoder;
 import com.noctarius.tengi.serialization.codec.AutoClosableEncoder;
 import com.noctarius.tengi.serialization.codec.Decoder;
 import com.noctarius.tengi.serialization.codec.Encoder;
+import com.noctarius.tengi.serialization.debugger.DebuggableProtocol;
+import com.noctarius.tengi.serialization.marshaller.Identifiable;
+import com.noctarius.tengi.serialization.marshaller.Marshaller;
+import com.noctarius.tengi.serialization.marshaller.MarshallerFilter;
 import com.noctarius.tengi.testing.AbstractTestCase;
 import org.junit.Test;
 
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 public class DefaultProtocolTestCase
@@ -68,7 +76,38 @@ public class DefaultProtocolTestCase
     }
 
     @Test
-    public void test_write_type_id()
+    public void test_creation_with_custom_marshaller_accept_all_filter()
+            throws Exception {
+
+        Collection<MarshallerConfiguration> marshallerConfigurations = Collections.singletonList(
+                new MarshallerConfiguration((v) -> MarshallerFilter.Result.AcceptedAndCache, new TestIdentifiableMarshaller()));
+
+        DebuggableProtocol protocol = (DebuggableProtocol) createProtocol(marshallerConfigurations);
+        Serializer serializer = createSerializer(protocol);
+
+        MemoryBuffer memoryBuffer = createMemoryBuffer();
+        try (AutoClosableEncoder encoder = serializer.retrieveEncoder(memoryBuffer)) {
+            encoder.writeObject("test", new TestClass3());
+        }
+
+        try (AutoClosableDecoder decoder = serializer.retrieveDecoder(memoryBuffer)) {
+            Class<?> type = protocol.findType(decoder);
+            assertSame(TestIdentifiableMarshaller.class, type);
+        }
+    }
+
+    @Test(expected = SystemException.class)
+    public void test_creation_with_custom_marshaller_without_id()
+            throws Exception {
+
+        Collection<MarshallerConfiguration> marshallerConfigurations = Collections.singletonList(
+                new MarshallerConfiguration((v) -> MarshallerFilter.Result.Accepted, new TestNonIdentifiableMarshaller()));
+
+        createProtocol(marshallerConfigurations);
+    }
+
+    @Test
+    public void test_write_type_id_object_parameter()
             throws Exception {
 
         InputStream testClassStream = DefaultProtocolTestCase.class.getResourceAsStream("DefaultProtocolTestCase");
@@ -78,6 +117,38 @@ public class DefaultProtocolTestCase
         MemoryBuffer memoryBuffer = createMemoryBuffer();
         try (AutoClosableEncoder encoder = serializer.retrieveEncoder(memoryBuffer)) {
             protocol.writeTypeId(new TestClass(), encoder);
+        }
+
+        assertEquals(2, memoryBuffer.writerIndex());
+    }
+
+    @Test
+    public void test_write_type_id_class_parameter()
+            throws Exception {
+
+        InputStream testClassStream = DefaultProtocolTestCase.class.getResourceAsStream("DefaultProtocolTestCase");
+        Protocol protocol = createProtocol(testClassStream);
+        Serializer serializer = createSerializer(protocol);
+
+        MemoryBuffer memoryBuffer = createMemoryBuffer();
+        try (AutoClosableEncoder encoder = serializer.retrieveEncoder(memoryBuffer)) {
+            protocol.writeTypeId(TestClass.class, encoder);
+        }
+
+        assertEquals(2, memoryBuffer.writerIndex());
+    }
+
+    @Test(expected = SystemException.class)
+    public void test_write_type_id_wrong_parameter()
+            throws Exception {
+
+        InputStream testClassStream = DefaultProtocolTestCase.class.getResourceAsStream("DefaultProtocolTestCase");
+        Protocol protocol = createProtocol(testClassStream);
+        Serializer serializer = createSerializer(protocol);
+
+        MemoryBuffer memoryBuffer = createMemoryBuffer();
+        try (AutoClosableEncoder encoder = serializer.retrieveEncoder(memoryBuffer)) {
+            protocol.writeTypeId(DefaultProtocolTestCase.class, encoder);
         }
 
         assertEquals(2, memoryBuffer.writerIndex());
@@ -148,7 +219,6 @@ public class DefaultProtocolTestCase
     public void test_write_object()
             throws Exception {
 
-
         InputStream testClassStream = DefaultProtocolTestCase.class.getResourceAsStream("DefaultProtocolTestCase");
         Protocol protocol = createProtocol(testClassStream);
         Serializer serializer = createSerializer(protocol);
@@ -187,6 +257,46 @@ public class DefaultProtocolTestCase
         @Override
         public void unmarshall(Decoder decoder, Protocol protocol)
                 throws Exception {
+        }
+    }
+
+    public static class TestClass3 {
+    }
+
+    public static class TestIdentifiableMarshaller
+            implements Marshaller<TestClass3>, Identifiable<Short> {
+
+        @Override
+        public Short identifier() {
+            return 9998;
+        }
+
+        @Override
+        public TestClass3 unmarshall(Decoder decoder, Protocol protocol)
+                throws Exception {
+            return null;
+        }
+
+        @Override
+        public void marshall(String fieldName, TestClass3 object, Encoder encoder, Protocol protocol)
+                throws Exception {
+
+        }
+    }
+
+    public static class TestNonIdentifiableMarshaller
+            implements Marshaller<TestClass3> {
+
+        @Override
+        public TestClass3 unmarshall(Decoder decoder, Protocol protocol)
+                throws Exception {
+            return null;
+        }
+
+        @Override
+        public void marshall(String fieldName, TestClass3 object, Encoder encoder, Protocol protocol)
+                throws Exception {
+
         }
     }
 

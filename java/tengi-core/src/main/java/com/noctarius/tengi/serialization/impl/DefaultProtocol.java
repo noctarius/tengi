@@ -123,7 +123,7 @@ public class DefaultProtocol
             if (marshaller != null && marshaller instanceof DebuggableMarshaller) {
                 return ((DebuggableMarshaller<?>) marshaller).findType(decoder, this);
             }
-            return null;
+            return marshaller.getClass();
         } finally {
             memoryBuffer.readerIndex(readerIndex);
         }

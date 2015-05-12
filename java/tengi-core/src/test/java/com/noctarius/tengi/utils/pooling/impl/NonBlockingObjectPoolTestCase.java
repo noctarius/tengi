@@ -22,6 +22,7 @@ import com.noctarius.tengi.utils.pooling.ObjectPool;
 import com.noctarius.tengi.utils.pooling.PooledObject;
 import org.junit.Test;
 
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Set;
@@ -370,10 +371,49 @@ public class NonBlockingObjectPoolTestCase {
         pool.acquire();
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void test_release_null_object()
+            throws Exception {
+
+        ObjectPool<Value> pool = new NonBlockingObjectPool<>(Value::new, 2);
+        pool.release(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void test_release_wrong_typed_object()
+            throws Exception {
+
+        ObjectPool<Value> pool = new NonBlockingObjectPool<>(Value::new, 2);
+        pool.release(new WrongPooledObject<>());
+    }
+
+    @Test(expected = SystemException.class)
+    public void test_release_already_free_object()
+            throws Exception {
+
+        ObjectPool<Value> pool = new NonBlockingObjectPool<>(Value::new, 2);
+        PooledObject<Value> pooledObject = pool.acquire();
+
+        Field field = NonBlockingObjectPool.Entry.class.getDeclaredField("state");
+        field.setAccessible(true);
+        field.set(pooledObject, 0);
+
+        pool.release(pooledObject);
+    }
+
     private static class Value {
 
         private String value;
 
+    }
+
+    private static class WrongPooledObject<T>
+            implements PooledObject<T> {
+
+        @Override
+        public T getObject() {
+            return null;
+        }
     }
 
 }

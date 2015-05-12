@@ -212,7 +212,7 @@ public class NonBlockingObjectPool<T>
         return (index << ARRAY_SHIFT) + ARRAY_BASE;
     }
 
-    private static final class Entry<T>
+    static final class Entry<T>
             implements PooledObject<T> {
 
         private static final long OFFSET;

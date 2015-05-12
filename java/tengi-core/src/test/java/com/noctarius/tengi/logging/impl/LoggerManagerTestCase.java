@@ -35,66 +35,69 @@ public class LoggerManagerTestCase {
     public void test_multiple_logger_implementations_string_binding()
             throws Throwable {
 
-        ClassLoader classLoader = new ServicesAdaptingClassLoader(emptyList(), "com.noctarius.tengi.logging.LoggerManager");
-        Thread.currentThread().setContextClassLoader(classLoader);
-
-        try {
+        practice("com.noctarius.tengi.logging.LoggerManager", (classLoader) -> {
             Class<?> loggerManagerClass = classLoader.loadClass("com.noctarius.tengi.logging.LoggerManager");
             Method getLogger = loggerManagerClass.getMethod("getLogger", String.class);
             getLogger.invoke(loggerManagerClass, "test");
-        } catch (ReflectiveOperationException e) {
-            throw e.getCause();
-        }
+        });
     }
 
     @Test(expected = SystemException.class)
     public void test_multiple_logger_implementations_class_binding()
             throws Throwable {
 
-        ClassLoader classLoader = new ServicesAdaptingClassLoader(emptyList(), "com.noctarius.tengi.logging.LoggerManager");
-        Thread.currentThread().setContextClassLoader(classLoader);
-
-        try {
+        practice("com.noctarius.tengi.logging.LoggerManager", (classLoader) -> {
             Class<?> loggerManagerClass = classLoader.loadClass("com.noctarius.tengi.logging.LoggerManager");
             Method getLogger = loggerManagerClass.getMethod("getLogger", Class.class);
             getLogger.invoke(loggerManagerClass, LoggerManagerTestCase.class);
-        } catch (ReflectiveOperationException e) {
-            throw e.getCause();
-        }
+        });
     }
 
     @Test
     public void test_multiple_logger_implementations_select_specific_string_binding()
             throws Throwable {
 
-        ClassLoader classLoader = new ServicesAdaptingClassLoader(emptyList(), "com.noctarius.tengi.logging.LoggerManager");
-
-        Thread.currentThread().setContextClassLoader(classLoader);
-
-        try {
+        practice("com.noctarius.tengi.logging.LoggerManager", (classLoader) -> {
             Class<?> loggerManagerClass = classLoader.loadClass("com.noctarius.tengi.logging.LoggerManager");
             Method getLogger = loggerManagerClass.getMethod("getLogger", String.class, Class.class);
             getLogger.invoke(loggerManagerClass, "test", SysOutLogger.class);
-        } catch (ReflectiveOperationException e) {
-            throw e.getCause();
-        }
+        });
     }
 
     @Test
     public void test_multiple_logger_implementations_select_specific_class_binding()
             throws Throwable {
 
-        ClassLoader classLoader = new ServicesAdaptingClassLoader(emptyList(), "com.noctarius.tengi.logging.LoggerManager");
-
-        Thread.currentThread().setContextClassLoader(classLoader);
-
-        try {
+        practice("com.noctarius.tengi.logging.LoggerManager", (classLoader) -> {
             Class<?> loggerManagerClass = classLoader.loadClass("com.noctarius.tengi.logging.LoggerManager");
             Method getLogger = loggerManagerClass.getMethod("getLogger", Class.class, Class.class);
             getLogger.invoke(loggerManagerClass, LoggerManagerTestCase.class, SysOutLogger.class);
+        });
+    }
+
+    private static void practice(String blockedPackage, Exercise exercise)
+            throws Throwable {
+
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+
+        ClassLoader classLoader = contextClassLoader;
+        if (blockedPackage != null) {
+            classLoader = new ServicesAdaptingClassLoader(emptyList(), blockedPackage);
+            Thread.currentThread().setContextClassLoader(classLoader);
+        }
+
+        try {
+            exercise.run(classLoader);
         } catch (ReflectiveOperationException e) {
             throw e.getCause();
+        } finally {
+            Thread.currentThread().setContextClassLoader(contextClassLoader);
         }
+    }
+
+    private static interface Exercise {
+        void run(ClassLoader classLoader)
+                throws Exception;
     }
 
     private static class ServicesAdaptingClassLoader

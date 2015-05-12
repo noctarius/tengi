@@ -169,7 +169,7 @@ public class TypeSerializationTestCase
             throws Exception {
 
         String value = "test-value";
-        String response = encodeAndDecode(value, 16);
+        String response = encodeAndDecode(value, 22);
         assertEquals(value, response);
     }
 
@@ -187,7 +187,7 @@ public class TypeSerializationTestCase
             throws Exception {
 
         Message value = Message.create("test");
-        Message response = encodeAndDecode(value, 30);
+        Message response = encodeAndDecode(value, 36);
         assertEquals(value, response);
     }
 
@@ -196,11 +196,11 @@ public class TypeSerializationTestCase
             throws Exception {
 
         TestEnum value1 = TestEnum.Value1;
-        TestEnum response1 = encodeAndDecode(value1, 14);
+        TestEnum response1 = encodeAndDecode(value1, 20);
         assertEquals(value1, response1);
 
         TestEnum value2 = TestEnum.Value2;
-        TestEnum response2 = encodeAndDecode(value2, 14);
+        TestEnum response2 = encodeAndDecode(value2, 20);
         assertEquals(value2, response2);
     }
 

@@ -97,16 +97,14 @@ class NettyMemoryBuffer
 
     @Override
     public int readBytes(byte[] bytes) {
-        int length = Math.min(bytes.length, readableBytes());
-        buffer.readBytes(bytes, 0, length);
-        return length;
+        buffer.readBytes(bytes, 0, bytes.length);
+        return bytes.length;
     }
 
     @Override
     public int readBytes(byte[] bytes, int offset, int length) {
-        int realLength = Math.min(length, readableBytes());
-        buffer.readBytes(bytes, offset, realLength);
-        return realLength;
+        buffer.readBytes(bytes, offset, length);
+        return length;
     }
 
     @Override
@@ -199,9 +197,7 @@ class NettyMemoryBuffer
 
     @Override
     public void writeBytes(byte[] bytes, int offset, int length) {
-        int realLength = Math.min(length, writableBytes());
-        realLength = Math.min(realLength, bytes.length);
-        buffer.writeBytes(bytes, offset, realLength);
+        buffer.writeBytes(bytes, offset, length);
     }
 
     @Override

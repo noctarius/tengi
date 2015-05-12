@@ -21,6 +21,7 @@ import com.noctarius.tengi.buffer.ReadableMemoryBuffer;
 import com.noctarius.tengi.buffer.WritableMemoryBuffer;
 import com.noctarius.tengi.serialization.Protocol;
 import com.noctarius.tengi.serialization.codec.Codec;
+import com.noctarius.tengi.serialization.codec.impl.utf8.UTF8Codec;
 import com.noctarius.tengi.serialization.debugger.SerializationDebugger;
 
 public class DefaultCodec
@@ -118,8 +119,14 @@ public class DefaultCodec
 
     @Override
     public String readString() {
-        int length = readInt32();
-        return Unicode.UTF8toUTF16(memoryBuffer, length);
+        try {
+            // TODO Pool buffers
+            return UTF8Codec.readUTF(this, new byte[1024]);
+        } catch (Exception e) {
+            RuntimeException ex = new IndexOutOfBoundsException(e.getLocalizedMessage());
+            ex.setStackTrace(e.getStackTrace());
+            throw ex;
+        }
     }
 
     @Override
@@ -229,9 +236,14 @@ public class DefaultCodec
 
     @Override
     public void writeString(String fieldName, String value) {
-        char[] characters = value.toCharArray();
-        writeInt32("length", characters.length);
-        Unicode.UTF16toUTF8(characters, memoryBuffer);
+        try {
+            // TODO Pool buffers
+            UTF8Codec.writeUTF(this, value, new byte[1024]);
+        } catch (Exception e) {
+            RuntimeException ex = new IndexOutOfBoundsException(e.getLocalizedMessage());
+            ex.setStackTrace(e.getStackTrace());
+            throw ex;
+        }
     }
 
     @Override

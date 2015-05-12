@@ -60,7 +60,7 @@ public class NonBlockingObjectPool<T>
     private final ObjectHandler<T> handler;
     private final PoolValidator<T> validator;
 
-    private final Entry<T>[] entryPool;
+    private final Object[] entryPool;
     private final int size;
 
     private volatile int nextAcquireIndex = 0;
@@ -78,6 +78,13 @@ public class NonBlockingObjectPool<T>
 
     @Override
     public PooledObject<T> acquire(Consumer<T> activator) {
+        int nextAcquireIndex = this.nextAcquireIndex;
+
+        // ObjectPool closed?
+        if (nextAcquireIndex == -1) {
+            throw new SystemException("ObjectPool already closed");
+        }
+
         // Maybe thread recently released an entry
         Entry<T> cachedEntry = threadCache.get();
         if (cachedEntry != null) {
@@ -92,10 +99,9 @@ public class NonBlockingObjectPool<T>
         }
 
         // Otherwise let's search a free entry
-        int nextAcquireIndex = this.nextAcquireIndex;
         int acquireIndex = nextAcquireIndex;
         do {
-            Entry<T> entry = entryPool[acquireIndex++];
+            Entry<T> entry = (Entry<T>) entryPool[acquireIndex++];
             // ObjectPool closed?
             if (entry == null) {
                 throw new SystemException("ObjectPool already closed");
@@ -113,7 +119,7 @@ public class NonBlockingObjectPool<T>
                 // Validate object and recreate invalid entries
                 return validateOrRecreateEntry(acquireIndex - 1, entry, activator);
             }
-        } while (acquireIndex == nextAcquireIndex);
+        } while (acquireIndex != nextAcquireIndex);
 
         // If pool is full create an intermediate object
         Entry<T> entry = new Entry<>(-1, handler.create(), ENTRY_UNPOOLED).activate(handler, activator);
@@ -151,8 +157,9 @@ public class NonBlockingObjectPool<T>
 
     @Override
     public void close() {
+        nextAcquireIndex = -1;
         for (int index = 0; index < size; index++) {
-            long indexOffset = ARRAY_BASE + (index << ARRAY_SHIFT);
+            long indexOffset = offset(index);
             UNSAFE.putObjectVolatile(entryPool, indexOffset, null);
         }
     }
@@ -193,12 +200,16 @@ public class NonBlockingObjectPool<T>
         Entry<T> newEntry = new Entry<>(index, handler.create(), ENTRY_USED);
 
         if (index != -1) {
-            long indexOffset = ARRAY_BASE + (index << ARRAY_SHIFT);
-            if (UNSAFE.compareAndSwapObject(entryPool, indexOffset, entry, newEntry)) {
+            long indexOffset = offset(index);
+            if (!UNSAFE.compareAndSwapObject(entryPool, indexOffset, entry, newEntry)) {
                 throw new SystemException("Illegal concurrent update on an invalid object pool entry");
             }
         }
         return newEntry.activate(handler, activator);
+    }
+
+    private long offset(long index) {
+        return (index << ARRAY_SHIFT) + ARRAY_BASE;
     }
 
     private static final class Entry<T>

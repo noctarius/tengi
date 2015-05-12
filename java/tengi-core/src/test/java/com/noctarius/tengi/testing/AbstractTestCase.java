@@ -30,6 +30,7 @@ import com.noctarius.tengi.serialization.impl.DefaultSerializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
+import java.io.InputStream;
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
@@ -43,6 +44,10 @@ public abstract class AbstractTestCase {
 
     public static MemoryBuffer createMemoryBuffer(ByteBuf buffer) {
         return MemoryBufferFactory.create(buffer);
+    }
+
+    public static Protocol createProtocol(InputStream is) {
+        return new DefaultProtocol(is, Collections.<MarshallerConfiguration>emptyList());
     }
 
     public static Protocol createProtocol() {

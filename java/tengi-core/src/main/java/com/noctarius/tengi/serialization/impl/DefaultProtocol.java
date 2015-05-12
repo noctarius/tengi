@@ -72,18 +72,6 @@ public class DefaultProtocol
         registerMarshallers(marshallerConfigurations);
     }
 
-    private void registerInternalTypes(ClassLoader classLoader) {
-        try {
-            Enumeration<URL> resources = classLoader.getResources(TYPE_DEFAULT_MANIFEST_FILENAME);
-            while (resources.hasMoreElements()) {
-                typesInitializer(resources.nextElement().openStream());
-            }
-
-        } catch (Exception e) {
-            throw ExceptionUtil.rethrow(e);
-        }
-    }
-
     @Override
     public String getMimeType() {
         return PROTOCOL_MIME_TYPE;
@@ -157,6 +145,18 @@ public class DefaultProtocol
         Marshaller marshaller = computeMarshaller(object);
         encoder.writeShort("marshallerId", findMarshallerId(marshaller));
         marshaller.marshall(fieldName, object, encoder, this);
+    }
+
+    private void registerInternalTypes(ClassLoader classLoader) {
+        try {
+            Enumeration<URL> resources = classLoader.getResources(TYPE_DEFAULT_MANIFEST_FILENAME);
+            while (resources.hasMoreElements()) {
+                typesInitializer(resources.nextElement().openStream());
+            }
+
+        } catch (Exception e) {
+            throw ExceptionUtil.rethrow(e);
+        }
     }
 
     private void registerInternalMarshallers() {

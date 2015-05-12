@@ -28,7 +28,6 @@ public final class UnsafeUtil {
     public static final Unsafe UNSAFE;
 
     public static final long OBJECT_ARRAY_BASE;
-    public static final long OBJECT_ARRAY_INDEXSCALE;
     public static final long OBJECT_ARRAY_SHIFT;
 
     public static final long IDENTIFIER_DATA_OFFSET;
@@ -51,8 +50,8 @@ public final class UnsafeUtil {
             IDENTIFIER_DATA_OFFSET = unsafe.objectFieldOffset(identifierData);
 
             OBJECT_ARRAY_BASE = unsafe.arrayBaseOffset(Object[].class);
-            OBJECT_ARRAY_INDEXSCALE = unsafe.arrayIndexScale(Object[].class);
-            OBJECT_ARRAY_SHIFT = 31 - Integer.numberOfLeadingZeros((int) OBJECT_ARRAY_INDEXSCALE);
+            int indexScale = unsafe.arrayIndexScale(Object[].class);
+            OBJECT_ARRAY_SHIFT = 31 - Integer.numberOfLeadingZeros(indexScale);
 
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException();

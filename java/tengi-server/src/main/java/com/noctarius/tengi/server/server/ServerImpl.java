@@ -21,7 +21,7 @@ import com.noctarius.tengi.listener.ConnectionConnectedListener;
 import com.noctarius.tengi.logging.Logger;
 import com.noctarius.tengi.logging.LoggerManager;
 import com.noctarius.tengi.serialization.Serializer;
-import com.noctarius.tengi.server.transport.impl.negotiation.TcpBinaryNegotiator;
+import com.noctarius.tengi.server.transport.server.impl.negotiation.TcpBinaryNegotiator;
 import com.noctarius.tengi.utils.CompletableFutureUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;

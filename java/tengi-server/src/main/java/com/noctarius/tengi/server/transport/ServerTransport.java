@@ -18,8 +18,8 @@ package com.noctarius.tengi.server.transport;
 
 import com.noctarius.tengi.Transport;
 import com.noctarius.tengi.TransportLayer;
-import com.noctarius.tengi.server.transport.impl.http.HttpTransport;
-import com.noctarius.tengi.server.transport.impl.tcp.TcpTransport;
+import com.noctarius.tengi.server.transport.server.impl.http.HttpTransport;
+import com.noctarius.tengi.server.transport.server.impl.tcp.TcpTransport;
 
 public enum ServerTransport
         implements Transport {

@@ -64,6 +64,11 @@
         <artifactId>tengi-java-core</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>com.noctarius.tengi</groupId>
+        <artifactId>tengi-java-server</artifactId>
+        <version>${project.version}</version>
+      </dependency>
 
       <!-- external dependencies -->
       <dependency>

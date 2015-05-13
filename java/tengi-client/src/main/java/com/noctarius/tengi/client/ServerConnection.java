@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.server;
+package com.noctarius.tengi.client;
 
 import com.noctarius.tengi.Identifier;
 import com.noctarius.tengi.Message;
-import com.noctarius.tengi.Transport;
 import com.noctarius.tengi.connection.AbstractConnection;
 import com.noctarius.tengi.connection.ConnectionContext;
 import com.noctarius.tengi.serialization.Serializer;
+import io.netty.channel.Channel;
 
-public class ClientConnection
+public class ServerConnection
         extends AbstractConnection {
 
-    ClientConnection(ConnectionContext connectionContext, Identifier connectionId, //
-                     Transport transport, Serializer serializer) {
+    protected ServerConnection(ConnectionContext<Channel> connectionContext, Identifier connectionId, //
+                     Connector connector, Serializer serializer) {
 
-        super(connectionContext, connectionId, transport, serializer);
+        super(connectionContext, connectionId, connector, serializer);
     }
 
     public ConnectionContext getConnectionContext() {

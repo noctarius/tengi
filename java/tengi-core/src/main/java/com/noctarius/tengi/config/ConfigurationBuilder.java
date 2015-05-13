@@ -35,6 +35,7 @@ public final class ConfigurationBuilder {
     private final Set<MarshallerConfiguration> marshallers = new HashSet<>();
     private final Set<Transport> transports = new HashSet<>();
     private final Map<Transport, Integer> transportPorts = new HashMap<>();
+    private boolean sslEnabled = false;
 
     public ConfigurationBuilder addMarshaller(MarshallerFilter marshallerFilter, Marshaller marshaller) {
         marshallers.add(new MarshallerConfiguration(marshallerFilter, marshaller));
@@ -63,8 +64,13 @@ public final class ConfigurationBuilder {
         return this;
     }
 
+    public ConfigurationBuilder ssl(boolean sslEnabled) {
+        this.sslEnabled = sslEnabled;
+        return this;
+    }
+
     public Configuration build() {
-        return new ConfigurationImpl(marshallers, transports, transportPorts);
+        return new ConfigurationImpl(marshallers, transports, transportPorts, sslEnabled);
     }
 
     private static class ConfigurationImpl
@@ -73,13 +79,15 @@ public final class ConfigurationBuilder {
         private final Set<MarshallerConfiguration> marshallers;
         private final Set<Transport> transports;
         private final Map<Transport, Integer> transportPorts;
+        private final boolean sslEnabled;
 
         public ConfigurationImpl(Set<MarshallerConfiguration> marshallers, Set<Transport> transports,
-                                 Map<Transport, Integer> transportPorts) {
+                                 Map<Transport, Integer> transportPorts, boolean sslEnabled) {
 
             this.marshallers = Collections.unmodifiableSet(marshallers);
             this.transports = Collections.unmodifiableSet(transports);
             this.transportPorts = Collections.unmodifiableMap(transportPorts);
+            this.sslEnabled = sslEnabled;
         }
 
         @Override
@@ -104,6 +112,11 @@ public final class ConfigurationBuilder {
                 return port;
             }
             return transport.getDefaultPort();
+        }
+
+        @Override
+        public boolean isSslEnabled() {
+            return sslEnabled;
         }
     }
 

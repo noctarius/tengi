@@ -14,23 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.config;
+package com.noctarius.tengi.client;
 
-import com.noctarius.tengi.Transport;
+public interface ConnectorFactory {
 
-import java.util.Map;
-import java.util.Set;
-
-public interface Configuration {
-
-    Set<MarshallerConfiguration> getMarshallers();
-
-    Set<Transport> getTransports();
-
-    Map<Transport, Integer> getTransportPorts();
-
-    int getTransportPort(Transport transport);
-
-    boolean isSslEnabled();
+    Connector create();
 
 }

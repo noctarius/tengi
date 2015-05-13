@@ -14,23 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.config;
+package com.noctarius.tengi.transport.client.impl.tcp;
 
-import com.noctarius.tengi.Transport;
+import com.noctarius.tengi.Identifier;
+import com.noctarius.tengi.client.Connector;
+import com.noctarius.tengi.client.ServerConnection;
+import com.noctarius.tengi.connection.ConnectionContext;
+import com.noctarius.tengi.serialization.Serializer;
+import io.netty.channel.Channel;
 
-import java.util.Map;
-import java.util.Set;
+class TcpServerConnection
+        extends ServerConnection {
 
-public interface Configuration {
+    TcpServerConnection(ConnectionContext<Channel> connectionContext, Identifier connectionId, //
+                        Connector connector, Serializer serializer) {
 
-    Set<MarshallerConfiguration> getMarshallers();
-
-    Set<Transport> getTransports();
-
-    Map<Transport, Integer> getTransportPorts();
-
-    int getTransportPort(Transport transport);
-
-    boolean isSslEnabled();
-
+        super(connectionContext, connectionId, connector, serializer);
+    }
 }

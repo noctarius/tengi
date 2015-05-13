@@ -16,24 +16,29 @@
  */
 package com.noctarius.tengi.client;
 
-import com.noctarius.tengi.config.Configuration;
-import com.noctarius.tengi.listener.ConnectionConnectedListener;
+import com.noctarius.tengi.Transport;
+import com.noctarius.tengi.connection.Connection;
+import com.noctarius.tengi.serialization.Serializer;
+import io.netty.channel.Channel;
+import io.netty.channel.EventLoopGroup;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
-public interface Client {
+public interface Connector
+        extends Transport {
 
-    CompletableFuture<Client> connect(String host, ConnectionConnectedListener connectedListener)
-            throws UnknownHostException;
+    CompletableFuture<Connection> connect(InetAddress address, int port, MessagePublisher messagePublisher, //
+                                          Serializer serializer, EventLoopGroup clientGroup);
 
-    CompletableFuture<Client> connect(InetAddress address, ConnectionConnectedListener connectedListener);
+    Channel getUpstreamChannel();
 
-    CompletableFuture<Client> disconnect();
+    Channel getDownstreamChannel();
 
-    public static Client create(Configuration configuration) {
-        return new ClientImpl(configuration);
-    }
+    Collection<Channel> getCommunicationChannels();
+
+    void destroy()
+            throws Exception;
 
 }

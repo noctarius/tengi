@@ -14,23 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.config;
+package com.noctarius.tengi.server.transport.server.impl.http;
 
 import com.noctarius.tengi.Transport;
+import com.noctarius.tengi.TransportLayer;
+import com.noctarius.tengi.connection.TransportConstants;
 
-import java.util.Map;
-import java.util.Set;
+public class HttpTransport
+        implements Transport {
 
-public interface Configuration {
+    public HttpTransport() {
+    }
 
-    Set<MarshallerConfiguration> getMarshallers();
+    @Override
+    public String getName() {
+        return TransportConstants.TRANSPORT_NAME_HTTP;
+    }
 
-    Set<Transport> getTransports();
+    @Override
+    public boolean isStreaming() {
+        return false;
+    }
 
-    Map<Transport, Integer> getTransportPorts();
+    @Override
+    public int getDefaultPort() {
+        return TransportConstants.DEFAULT_PORT_TCP;
+    }
 
-    int getTransportPort(Transport transport);
-
-    boolean isSslEnabled();
+    @Override
+    public TransportLayer getTransportLayer() {
+        return TransportLayer.TCP;
+    }
 
 }

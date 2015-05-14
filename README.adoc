@@ -53,7 +53,7 @@ Currently planned clients include, but are not limited to, C#, C++, HTML5 (using
 
 === API Description
 
-The Java API (JavaDoc) is available link:++http://noctarius.github.io/tengi/++[here].
+The Java API (JavaDoc) is available link:http://noctarius.github.io/tengi/[here].
 
 === Client Example
 

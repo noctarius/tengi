@@ -51,6 +51,10 @@ Currently planned clients include, but are not limited to, C#, C++, HTML5 (using
 
 == Getting Started
 
+=== API Description
+
+The Java API (JavaDoc) is available link:++http://noctarius.github.io/tengi/++[here].
+
 === Client Example
 
 [source,java]
@@ -318,6 +322,8 @@ The `Codec` provides reader and writer methods for the distinct data types and t
 |===
 
 ==== Byte
+
+
 
 ==== Unsigned Byte
 

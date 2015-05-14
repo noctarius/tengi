@@ -123,22 +123,22 @@ public class DefaultSerializer
     @Override
     public AutoClosableEncoder retrieveEncoder(MemoryBuffer memoryBuffer) {
         PooledObject<DefaultCodec> pooledObject = codecPool.acquire((codec) -> codec.setMemoryBuffer(memoryBuffer));
-        return new AutoClosableCodec(pooledObject);
+        return new AutoClosableCodecDelegate(pooledObject);
     }
 
     @Override
     public AutoClosableDecoder retrieveDecoder(MemoryBuffer memoryBuffer) {
         PooledObject<DefaultCodec> pooledObject = codecPool.acquire((codec) -> codec.setMemoryBuffer(memoryBuffer));
-        return new AutoClosableCodec(pooledObject);
+        return new AutoClosableCodecDelegate(pooledObject);
     }
 
-    private final class AutoClosableCodec
+    private final class AutoClosableCodecDelegate
             implements AutoClosableDecoder, AutoClosableEncoder {
 
         private final PooledObject<DefaultCodec> pooledObject;
         private final DefaultCodec defaultCodec;
 
-        private AutoClosableCodec(PooledObject<DefaultCodec> pooledObject) {
+        private AutoClosableCodecDelegate(PooledObject<DefaultCodec> pooledObject) {
             this.pooledObject = pooledObject;
             this.defaultCodec = pooledObject.getObject();
         }

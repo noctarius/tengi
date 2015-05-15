@@ -16,8 +16,8 @@
  */
 package com.noctarius.tengi.logging.impl;
 
-import com.noctarius.tengi.logging.Logger;
-import com.noctarius.tengi.logging.LoggerFactory;
+import com.noctarius.tengi.spi.logging.Logger;
+import com.noctarius.tengi.spi.logging.LoggerFactory;
 import org.apache.logging.log4j.LogManager;
 
 public class Log4jV2LoggerFactory

@@ -16,8 +16,8 @@
  */
 package com.noctarius.tengi.client;
 
-import com.noctarius.tengi.config.Configuration;
-import com.noctarius.tengi.listener.ConnectionConnectedListener;
+import com.noctarius.tengi.core.config.Configuration;
+import com.noctarius.tengi.core.listener.ConnectionConnectedListener;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi.testing;
 
-import com.noctarius.tengi.utils.Validate;
+import com.noctarius.tengi.core.impl.Validate;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

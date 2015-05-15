@@ -16,8 +16,8 @@
  */
 package com.noctarius.tengi.logging.impl;
 
-import com.noctarius.tengi.logging.Level;
-import com.noctarius.tengi.logging.Logger;
+import com.noctarius.tengi.spi.logging.Level;
+import com.noctarius.tengi.spi.logging.Logger;
 
 import java.util.function.Supplier;
 

@@ -16,8 +16,8 @@
  */
 package com.noctarius.tengi.logging.impl;
 
-import com.noctarius.tengi.logging.Logger;
-import com.noctarius.tengi.logging.LoggerManager;
+import com.noctarius.tengi.spi.logging.Logger;
+import com.noctarius.tengi.spi.logging.LoggerManager;
 import org.apache.log4j.Level;
 import org.junit.Test;
 

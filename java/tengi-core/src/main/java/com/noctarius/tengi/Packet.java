@@ -16,13 +16,13 @@
  */
 package com.noctarius.tengi;
 
-import com.noctarius.tengi.serialization.Marshallable;
-import com.noctarius.tengi.serialization.Protocol;
-import com.noctarius.tengi.serialization.TypeId;
-import com.noctarius.tengi.serialization.codec.Decoder;
-import com.noctarius.tengi.serialization.codec.Encoder;
-import com.noctarius.tengi.serialization.impl.DefaultProtocolConstants;
-import com.noctarius.tengi.utils.Validate;
+import com.noctarius.tengi.core.impl.Validate;
+import com.noctarius.tengi.core.serialization.Marshallable;
+import com.noctarius.tengi.core.serialization.Protocol;
+import com.noctarius.tengi.core.serialization.TypeId;
+import com.noctarius.tengi.core.serialization.codec.Decoder;
+import com.noctarius.tengi.core.serialization.codec.Encoder;
+import com.noctarius.tengi.core.serialization.impl.DefaultProtocolConstants;
 
 import java.util.HashMap;
 import java.util.Map;

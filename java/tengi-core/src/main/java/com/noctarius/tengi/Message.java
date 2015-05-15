@@ -16,12 +16,12 @@
  */
 package com.noctarius.tengi;
 
-import com.noctarius.tengi.utils.Validate;
+import com.noctarius.tengi.core.impl.Validate;
 
 /**
  * The <tt>Message</tt> interface defines a message which consists of an
  * unique identifier and a message body which is any kind of object that
- * have a registered {@link com.noctarius.tengi.serialization.marshaller.Marshaller}
+ * have a registered {@link com.noctarius.tengi.core.serialization.marshaller.Marshaller}
  * or is an internally handled type.
  */
 public final class Message {
@@ -48,7 +48,7 @@ public final class Message {
     /**
      * Returns the messages body object. This object is the real value of
      * the message and can be of any kind of object that
-     * have a registered {@link com.noctarius.tengi.serialization.marshaller.Marshaller}
+     * have a registered {@link com.noctarius.tengi.core.serialization.marshaller.Marshaller}
      * or is an internally handled type.
      *
      * @param <O> the type of the messages object body

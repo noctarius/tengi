@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi;
 
-import com.noctarius.tengi.utils.Validate;
+import com.noctarius.tengi.core.impl.Validate;
 
 import java.util.Arrays;
 import java.util.Random;

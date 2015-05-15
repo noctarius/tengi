@@ -18,8 +18,8 @@ package com.noctarius.tengi.logging.impl;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
-import com.noctarius.tengi.logging.Logger;
-import com.noctarius.tengi.logging.LoggerManager;
+import com.noctarius.tengi.spi.logging.Logger;
+import com.noctarius.tengi.spi.logging.LoggerManager;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 

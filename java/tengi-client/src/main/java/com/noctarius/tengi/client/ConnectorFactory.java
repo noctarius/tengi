@@ -16,8 +16,11 @@
  */
 package com.noctarius.tengi.client;
 
+import com.noctarius.tengi.serialization.Serializer;
+import io.netty.channel.EventLoopGroup;
+
 public interface ConnectorFactory {
 
-    Connector create();
+    Connector create(Serializer serializer, MessagePublisher messagePublisher, EventLoopGroup clientGroup);
 
 }

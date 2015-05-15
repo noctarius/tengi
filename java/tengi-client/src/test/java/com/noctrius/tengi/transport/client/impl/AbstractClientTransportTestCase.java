@@ -23,14 +23,14 @@ import com.noctarius.tengi.config.ConfigurationBuilder;
 import com.noctarius.tengi.connection.Connection;
 import com.noctarius.tengi.server.server.Server;
 
-public abstract class AbstractStreamingTransportTestCase {
+public abstract class AbstractClientTransportTestCase {
 
     protected static <T> T practice(Runner<T> runner, boolean ssl, Transport... serverTransports)
             throws Exception {
 
         Configuration configuration = new ConfigurationBuilder().addTransport(serverTransports).ssl(ssl).build();
         Server server = Server.create(configuration);
-        server.start(AbstractStreamingTransportTestCase::onConnection);
+        server.start(AbstractClientTransportTestCase::onConnection);
 
         try {
             T result = runner.run();
@@ -41,7 +41,7 @@ public abstract class AbstractStreamingTransportTestCase {
     }
 
     private static void onConnection(Connection connection) {
-        connection.addMessageListener(AbstractStreamingTransportTestCase::onMessage);
+        connection.addMessageListener(AbstractClientTransportTestCase::onMessage);
     }
 
     private static void onMessage(Connection connection, Message message) {

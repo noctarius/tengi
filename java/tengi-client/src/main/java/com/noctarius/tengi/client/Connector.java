@@ -18,9 +18,7 @@ package com.noctarius.tengi.client;
 
 import com.noctarius.tengi.Transport;
 import com.noctarius.tengi.connection.Connection;
-import com.noctarius.tengi.serialization.Serializer;
 import io.netty.channel.Channel;
-import io.netty.channel.EventLoopGroup;
 
 import java.net.InetAddress;
 import java.util.Collection;
@@ -29,8 +27,7 @@ import java.util.concurrent.CompletableFuture;
 public interface Connector
         extends Transport {
 
-    CompletableFuture<Connection> connect(InetAddress address, int port, MessagePublisher messagePublisher, //
-                                          Serializer serializer, EventLoopGroup clientGroup);
+    CompletableFuture<Connection> connect(InetAddress address, int port);
 
     Channel getUpstreamChannel();
 

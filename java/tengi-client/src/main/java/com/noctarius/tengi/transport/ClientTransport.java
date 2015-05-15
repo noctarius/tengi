@@ -20,7 +20,11 @@ import com.noctarius.tengi.Transport;
 import com.noctarius.tengi.TransportLayer;
 import com.noctarius.tengi.client.Connector;
 import com.noctarius.tengi.client.ConnectorFactory;
+import com.noctarius.tengi.client.MessagePublisher;
+import com.noctarius.tengi.serialization.Serializer;
+import com.noctarius.tengi.transport.client.impl.http.HttpConnector;
 import com.noctarius.tengi.transport.client.impl.tcp.TcpConnector;
+import io.netty.channel.EventLoopGroup;
 
 import static com.noctarius.tengi.connection.TransportConstants.DEFAULT_PORT_TCP;
 import static com.noctarius.tengi.connection.TransportConstants.DEFAULT_PORT_UDP;
@@ -34,7 +38,7 @@ import static com.noctarius.tengi.connection.TransportConstants.TRANSPORT_NAME_W
 public enum ClientTransport
         implements Transport, ConnectorFactory {
 
-    HTTP_TRANSPORT(null, TRANSPORT_NAME_HTTP, false, DEFAULT_PORT_TCP, TransportLayer.TCP),
+    HTTP_TRANSPORT(HttpConnector::new, TRANSPORT_NAME_HTTP, false, DEFAULT_PORT_TCP, TransportLayer.TCP),
     HTTP2_TRANSPORT(null, TRANSPORT_NAME_HTTP2, true, DEFAULT_PORT_TCP, TransportLayer.TCP),
     WEBSOCKET_TRANSPORT(null, TRANSPORT_NAME_WEBSOCKET, true, DEFAULT_PORT_TCP, TransportLayer.TCP),
     RDP_TRANSPORT(null, TRANSPORT_NAME_RDP, true, DEFAULT_PORT_UDP, TransportLayer.UDP),
@@ -78,8 +82,8 @@ public enum ClientTransport
     }
 
     @Override
-    public Connector create() {
-        return connectorFactory.create();
+    public Connector create(Serializer serializer, MessagePublisher messagePublisher, EventLoopGroup clientGroup) {
+        return connectorFactory.create(serializer, messagePublisher, clientGroup);
     }
 
 }

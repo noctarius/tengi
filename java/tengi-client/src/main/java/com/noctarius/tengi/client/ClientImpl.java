@@ -108,7 +108,7 @@ class ClientImpl
         int pos = 0;
         for (Transport transport : transports) {
             if (transport instanceof ConnectorFactory) {
-                connectors[pos++] = ((ConnectorFactory) transport).create();
+                connectors[pos++] = ((ConnectorFactory) transport).create(serializer, this, clientGroup);
             } else {
                 throw new SystemException("Illegal Transport configured: " + transport);
             }
@@ -130,7 +130,7 @@ class ClientImpl
 
         Connector connector = connectors[index];
         int port = configuration.getTransportPort(connector);
-        CompletableFuture<Connection> connectFuture = connector.connect(address, port, this, serializer, clientGroup);
+        CompletableFuture<Connection> connectFuture = connector.connect(address, port);
         connectFuture.thenAccept(transportHandler(address, future, connectedListener, index));
     }
 

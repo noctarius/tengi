@@ -51,32 +51,20 @@ public class TcpConnector
 
     private final AtomicBoolean destroyed = new AtomicBoolean(false);
 
+    private final Serializer serializer;
+    private final MessagePublisher messagePublisher;
+    private final EventLoopGroup clientGroup;
+
     private volatile Channel channel;
 
-    @Override
-    public String getName() {
-        return TransportConstants.TRANSPORT_NAME_TCP;
+    public TcpConnector(Serializer serializer, MessagePublisher messagePublisher, EventLoopGroup clientGroup) {
+        this.serializer = serializer;
+        this.messagePublisher = messagePublisher;
+        this.clientGroup = clientGroup;
     }
 
     @Override
-    public boolean isStreaming() {
-        return true;
-    }
-
-    @Override
-    public int getDefaultPort() {
-        return TransportConstants.DEFAULT_PORT_TCP;
-    }
-
-    @Override
-    public TransportLayer getTransportLayer() {
-        return TransportLayer.TCP;
-    }
-
-    @Override
-    public CompletableFuture<Connection> connect(InetAddress address, int port, MessagePublisher messagePublisher,
-                                                 Serializer serializer, EventLoopGroup clientGroup) {
-
+    public CompletableFuture<Connection> connect(InetAddress address, int port) {
         CompletableFuture<Connection> connectorFuture = new CompletableFuture<>();
 
         Bootstrap bootstrap = new Bootstrap();
@@ -124,6 +112,26 @@ public class TcpConnector
         }
     }
 
+    @Override
+    public String getName() {
+        return TransportConstants.TRANSPORT_NAME_TCP;
+    }
+
+    @Override
+    public boolean isStreaming() {
+        return true;
+    }
+
+    @Override
+    public int getDefaultPort() {
+        return TransportConstants.DEFAULT_PORT_TCP;
+    }
+
+    @Override
+    public TransportLayer getTransportLayer() {
+        return TransportLayer.TCP;
+    }
+
     private TcpConnectionProcessor buildProcessor(Serializer serializer, MessagePublisher messagePublisher,
                                                   CompletableFuture<Connection> connectorFuture) {
 
@@ -150,6 +158,10 @@ public class TcpConnector
                 channel.writeAndFlush(buffer);
             }
         };
+    }
+
+    private Bootstrap createBootstrap() {
+        return null;
     }
 
 }

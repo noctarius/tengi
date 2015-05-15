@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctrius.tengi.transport.client.impl.tcp;
+package com.noctrius.tengi.transport.client.impl.http;
 
 import com.noctarius.tengi.client.Client;
 import com.noctarius.tengi.config.Configuration;
@@ -29,13 +29,13 @@ import java.util.concurrent.CompletableFuture;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 
-public class TcpTransportTestCase
+public class HttpTransportTestCase
         extends AbstractClientTransportTestCase {
 
     @Test
     public void test_simple_tcp_connection()
             throws Exception {
-        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransport.TCP_TRANSPORT).build();
+        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransport.HTTP_TRANSPORT).build();
         Client client = Client.create(configuration);
 
         try {

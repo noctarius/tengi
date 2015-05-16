@@ -22,6 +22,7 @@ import com.noctarius.tengi.core.config.ConfigurationBuilder;
 import com.noctarius.tengi.server.ServerTransport;
 import com.noctarius.tengi.client.ClientTransport;
 import com.noctarius.tengi.client.impl.transport.AbstractClientTransportTestCase;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.concurrent.CompletableFuture;
@@ -33,7 +34,8 @@ public class HttpTransportTestCase
         extends AbstractClientTransportTestCase {
 
     @Test
-    public void test_simple_tcp_connection()
+    @Ignore
+    public void test_simple_http_connection()
             throws Exception {
         Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransport.HTTP_TRANSPORT).build();
         Client client = Client.create(configuration);

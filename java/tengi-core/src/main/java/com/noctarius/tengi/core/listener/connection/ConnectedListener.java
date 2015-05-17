@@ -14,24 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server;
+package com.noctarius.tengi.core.listener.connection;
 
-import com.noctarius.tengi.core.config.Configuration;
-import com.noctarius.tengi.core.listener.connection.ConnectedListener;
-import io.netty.channel.Channel;
+import com.noctarius.tengi.spi.connection.Connection;
 
-import java.util.concurrent.CompletableFuture;
+public interface ConnectedListener {
 
-public interface Server {
-
-    CompletableFuture<Channel> start(ConnectedListener connectedListener);
-
-    CompletableFuture<Channel> stop();
-
-    public static Server create(Configuration configuration)
-            throws Exception {
-
-        return new ServerImpl(configuration);
-    }
+    void onConnection(Connection connection);
 
 }

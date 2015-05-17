@@ -21,6 +21,7 @@ import com.noctarius.tengi.Message;
 import com.noctarius.tengi.Transport;
 import com.noctarius.tengi.core.serialization.Serializer;
 import com.noctarius.tengi.spi.connection.AbstractConnection;
+import com.noctarius.tengi.spi.connection.Connection;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
 
 public class ClientConnection
@@ -38,6 +39,11 @@ public class ClientConnection
 
     void publishMessage(Message message) {
         getMessageListeners().forEach((listener) -> listener.onMessage(this, message));
+    }
+
+    @Override
+    public void onExceptionally(Connection connection, Throwable throwable) {
+        disconnect();
     }
 
 }

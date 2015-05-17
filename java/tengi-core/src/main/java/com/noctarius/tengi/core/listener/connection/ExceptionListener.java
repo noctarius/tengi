@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.core.listener;
+package com.noctarius.tengi.core.listener.connection;
 
 import com.noctarius.tengi.spi.connection.Connection;
 
-public interface ConnectionConnectedListener {
+public interface ExceptionListener {
 
-    void onConnectionAccept(Connection connection);
+    void onExceptionally(Connection connection, Throwable throwable);
 
 }

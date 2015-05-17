@@ -20,7 +20,7 @@ import com.noctarius.tengi.Identifier;
 import com.noctarius.tengi.Message;
 import com.noctarius.tengi.SystemException;
 import com.noctarius.tengi.Transport;
-import com.noctarius.tengi.core.listener.ConnectionConnectedListener;
+import com.noctarius.tengi.core.listener.connection.ConnectedListener;
 import com.noctarius.tengi.core.serialization.Serializer;
 import com.noctarius.tengi.spi.connection.Connection;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ConnectionManager
         implements Service {
 
-    private final Set<ConnectionConnectedListener> connectedListeners = new ConcurrentSet<>();
+    private final Set<ConnectedListener> connectedListeners = new ConcurrentSet<>();
     private final Map<Identifier, ClientConnection> connections = new ConcurrentHashMap<>();
 
     private final SslContext sslContext;
@@ -59,7 +59,7 @@ public class ConnectionManager
         return sslContext;
     }
 
-    public void registerConnectedListener(ConnectionConnectedListener connectedListener) {
+    public void registerConnectedListener(ConnectedListener connectedListener) {
         connectedListeners.add(connectedListener);
     }
 
@@ -67,7 +67,7 @@ public class ConnectionManager
         Connection connection = connections.computeIfAbsent(connectionId,
                 (key) -> new ClientConnection(connectionContext, connectionId, transport, serializer));
 
-        connectedListeners.forEach((listener) -> listener.onConnectionAccept(connection));
+        connectedListeners.forEach((listener) -> listener.onConnection(connection));
         return connection;
     }
 
@@ -83,6 +83,13 @@ public class ConnectionManager
 
         } else {
             connection.publishMessage(message);
+        }
+    }
+
+    public void exceptionally(Identifier connectionId, Throwable throwable) {
+        ClientConnection connection = connections.get(connectionId);
+        if (connection != null) {
+            connection.exceptionally(throwable);
         }
     }
 

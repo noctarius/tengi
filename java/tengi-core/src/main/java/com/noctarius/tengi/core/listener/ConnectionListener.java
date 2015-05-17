@@ -16,5 +16,10 @@
  */
 package com.noctarius.tengi.core.listener;
 
-public interface ConnectionListener {
+import com.noctarius.tengi.core.listener.connection.ConnectedListener;
+import com.noctarius.tengi.core.listener.connection.DisconnectedListener;
+import com.noctarius.tengi.core.listener.connection.ExceptionListener;
+
+public interface ConnectionListener
+        extends ConnectedListener, DisconnectedListener, ExceptionListener {
 }

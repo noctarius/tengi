@@ -20,6 +20,7 @@ import com.noctarius.tengi.Identifier;
 import com.noctarius.tengi.Message;
 import com.noctarius.tengi.core.serialization.Serializer;
 import com.noctarius.tengi.spi.connection.AbstractConnection;
+import com.noctarius.tengi.spi.connection.Connection;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
 import com.noctarius.tengi.spi.connection.handshake.LongPollingResponse;
 import io.netty.channel.Channel;
@@ -31,6 +32,7 @@ public class ServerConnection
                                Connector connector, Serializer serializer) {
 
         super(connectionContext, connectionId, connector, serializer);
+        addConnectionListener(this);
     }
 
     public ConnectionContext getConnectionContext() {
@@ -47,6 +49,11 @@ public class ServerConnection
                 getMessageListeners().forEach((listener) -> listener.onMessage(this, m));
             }
         }
+    }
+
+    @Override
+    public void onExceptionally(Connection connection, Throwable throwable) {
+        disconnect();
     }
 
 }

@@ -21,13 +21,13 @@ import com.noctarius.tengi.Transport;
 import com.noctarius.tengi.client.Client;
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.config.ConfigurationBuilder;
-import com.noctarius.tengi.core.listener.ConnectionConnectedListener;
+import com.noctarius.tengi.core.listener.connection.ConnectedListener;
 import com.noctarius.tengi.server.Server;
 import com.noctarius.tengi.spi.connection.Connection;
 
 public abstract class AbstractClientTransportTestCase {
 
-    protected static <T> T practice(Client client, ConnectionConnectedListener listener, //
+    protected static <T> T practice(Client client, ConnectedListener listener, //
                                     Runner<T> runner, boolean ssl, Transport... serverTransports)
             throws Exception {
 

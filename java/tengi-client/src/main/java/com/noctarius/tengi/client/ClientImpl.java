@@ -21,7 +21,7 @@ import com.noctarius.tengi.Transport;
 import com.noctarius.tengi.client.impl.Connector;
 import com.noctarius.tengi.client.impl.ConnectorFactory;
 import com.noctarius.tengi.core.config.Configuration;
-import com.noctarius.tengi.core.listener.ConnectionConnectedListener;
+import com.noctarius.tengi.core.listener.connection.ConnectedListener;
 import com.noctarius.tengi.core.serialization.Serializer;
 import com.noctarius.tengi.spi.connection.Connection;
 import com.noctarius.tengi.spi.logging.Logger;
@@ -53,7 +53,7 @@ class ClientImpl
     }
 
     @Override
-    public CompletableFuture<Connection> connect(String host, ConnectionConnectedListener connectedListener)
+    public CompletableFuture<Connection> connect(String host, ConnectedListener connectedListener)
             throws UnknownHostException {
 
         InetAddress address = InetAddress.getByName(host);
@@ -61,7 +61,7 @@ class ClientImpl
     }
 
     @Override
-    public CompletableFuture<Connection> connect(InetAddress address, ConnectionConnectedListener connectedListener) {
+    public CompletableFuture<Connection> connect(InetAddress address, ConnectedListener connectedListener) {
         Connector[] connectors = createConnectors(address, configuration.getTransports());
         LOGGER.info("tengi client is connecting, transport priority: %s", configuration.getTransports());
         CompletableFuture<Connection> future = new CompletableFuture<>();
@@ -92,7 +92,7 @@ class ClientImpl
     }
 
     private void connect(InetAddress address, CompletableFuture<Connection> future, //
-                         ConnectionConnectedListener connectedListener, Connector[] connectors, int index) {
+                         ConnectedListener connectedListener, Connector[] connectors, int index) {
 
         if (index >= connectors.length) {
             future.completeExceptionally(new SystemException("No transport was able to connect"));
@@ -101,7 +101,7 @@ class ClientImpl
     }
 
     private void connectTransport(InetAddress address, CompletableFuture<Connection> future, //
-                                  ConnectionConnectedListener connectedListener, Connector[] connectors, int index) {
+                                  ConnectedListener connectedListener, Connector[] connectors, int index) {
 
         Connector connector = connectors[index];
         CompletableFuture<Connection> connectFuture = connector.connect();
@@ -109,14 +109,14 @@ class ClientImpl
     }
 
     private Consumer<? super Connection> transportHandler(InetAddress address, CompletableFuture<Connection> future, //
-                                                          ConnectionConnectedListener connectedListener, Connector[] connectors,
+                                                          ConnectedListener connectedListener, Connector[] connectors,
                                                           int index) {
 
         return (connection) -> {
             if (connection == null) {
                 connect(address, future, connectedListener, connectors, index + 1);
             } else {
-                connectedListener.onConnectionAccept(connection);
+                connectedListener.onConnection(connection);
                 future.complete(connection);
             }
         };

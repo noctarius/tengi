@@ -17,7 +17,7 @@
 package com.noctarius.tengi.client;
 
 import com.noctarius.tengi.core.config.Configuration;
-import com.noctarius.tengi.core.listener.ConnectionConnectedListener;
+import com.noctarius.tengi.core.listener.connection.ConnectedListener;
 import com.noctarius.tengi.spi.connection.Connection;
 
 import java.net.InetAddress;
@@ -26,10 +26,10 @@ import java.util.concurrent.CompletableFuture;
 
 public interface Client {
 
-    CompletableFuture<Connection> connect(String host, ConnectionConnectedListener connectedListener)
+    CompletableFuture<Connection> connect(String host, ConnectedListener connectedListener)
             throws UnknownHostException;
 
-    CompletableFuture<Connection> connect(InetAddress address, ConnectionConnectedListener connectedListener);
+    CompletableFuture<Connection> connect(InetAddress address, ConnectedListener connectedListener);
 
     public static Client create(Configuration configuration) {
         return new ClientImpl(configuration);

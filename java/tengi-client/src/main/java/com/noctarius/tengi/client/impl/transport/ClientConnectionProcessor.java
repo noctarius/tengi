@@ -50,6 +50,15 @@ public abstract class ClientConnectionProcessor<T, C, M>
     }
 
     @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
+            throws Exception {
+
+        ctx.channel().close();
+        ServerConnection connection = connectionAttribute(ctx, CONNECTION);
+        connection.exceptionally(cause);
+    }
+
+    @Override
     protected void channelRead0(ChannelHandlerContext ctx, T msg)
             throws Exception {
 

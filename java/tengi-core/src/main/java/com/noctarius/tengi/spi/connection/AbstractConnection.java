@@ -31,7 +31,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractConnection
-        implements Connection {
+        implements Connection, ConnectionListener {
 
     private final ConnectionContext connectionContext;
     private final Identifier connectionId;
@@ -121,6 +121,25 @@ public abstract class AbstractConnection
             throws Exception {
 
         disconnect().get();
+    }
+
+    @Override
+    public void exceptionally(Throwable throwable) {
+        for (ConnectionListener connectionListener : getConnectionListeners()) {
+            connectionListener.onExceptionally(this, throwable);
+        }
+    }
+
+    @Override
+    public void onConnection(Connection connection) {
+    }
+
+    @Override
+    public void onDisconnect(Connection connection) {
+    }
+
+    @Override
+    public void onExceptionally(Connection connection, Throwable throwable) {
     }
 
     protected Collection<MessageListener> getMessageListeners() {

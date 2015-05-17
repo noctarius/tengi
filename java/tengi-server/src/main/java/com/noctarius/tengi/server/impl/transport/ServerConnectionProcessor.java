@@ -33,6 +33,9 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
+import static com.noctarius.tengi.server.impl.ServerUtil.CONNECTION_ID;
+import static com.noctarius.tengi.server.impl.ServerUtil.connectionAttribute;
+
 public abstract class ServerConnectionProcessor<T>
         extends SimpleChannelInboundHandler<T> {
 
@@ -44,6 +47,15 @@ public abstract class ServerConnectionProcessor<T>
         this.connectionManager = connectionManager;
         this.serializer = serializer;
         this.transport = transport;
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
+            throws Exception {
+
+        ctx.channel().close();
+        Identifier connectionId = connectionAttribute(ctx, CONNECTION_ID);
+        getConnectionManager().exceptionally(connectionId, cause);
     }
 
     @Override
@@ -65,6 +77,7 @@ public abstract class ServerConnectionProcessor<T>
                     return;
                 }
                 Identifier connectionId = Identifier.randomIdentifier();
+                connectionAttribute(ctx, CONNECTION_ID, connectionId);
                 ConnectionContext connectionContext = createConnectionContext(ctx, connectionId);
                 Connection connection = connectionManager.assignConnection(connectionId, connectionContext, transport);
                 connectionContext.writeSocket(ctx.channel(), connection, createHandshakeResponse(ctx));
@@ -73,6 +86,7 @@ public abstract class ServerConnectionProcessor<T>
             }
 
             Identifier connectionId = decoder.readObject();
+            connectionAttribute(ctx, CONNECTION_ID, connectionId);
             Message message = decoder.readObject();
             connectionManager.publishMessage(ctx.channel(), connectionId, message);
         }

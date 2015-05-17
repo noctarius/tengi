@@ -23,8 +23,8 @@ import com.noctarius.tengi.client.ClientTransport;
 import com.noctarius.tengi.client.impl.transport.AbstractClientTransportTestCase;
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.config.ConfigurationBuilder;
-import com.noctarius.tengi.core.listener.ConnectionConnectedListener;
 import com.noctarius.tengi.core.listener.MessageListener;
+import com.noctarius.tengi.core.listener.connection.ConnectedListener;
 import com.noctarius.tengi.server.ServerTransport;
 import com.noctarius.tengi.spi.connection.Connection;
 import org.junit.Test;
@@ -73,7 +73,7 @@ public class HttpTransportTestCase
             messageFuture.complete(m);
         };
 
-        ConnectionConnectedListener listener = (c) -> {
+        ConnectedListener listener = (c) -> {
             try {
                 c.addMessageListener(messageListener);
                 c.writeObject(message);
@@ -118,7 +118,7 @@ public class HttpTransportTestCase
             }
         };
 
-        ConnectionConnectedListener listener = (c) -> {
+        ConnectedListener listener = (c) -> {
             try {
                 c.addMessageListener(messageListener);
                 c.writeObject(message);

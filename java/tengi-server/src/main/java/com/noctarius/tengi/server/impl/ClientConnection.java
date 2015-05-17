@@ -46,4 +46,9 @@ public class ClientConnection
         disconnect();
     }
 
+    @Override
+    public void exceptionally(Throwable throwable) {
+        super.exceptionally(throwable);
+    }
+
 }

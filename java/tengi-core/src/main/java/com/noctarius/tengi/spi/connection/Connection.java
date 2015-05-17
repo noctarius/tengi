@@ -114,6 +114,4 @@ public interface Connection
      */
     CompletableFuture<Connection> disconnect();
 
-    void exceptionally(Throwable throwable);
-
 }

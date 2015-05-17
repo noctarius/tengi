@@ -124,13 +124,6 @@ public abstract class AbstractConnection
     }
 
     @Override
-    public void exceptionally(Throwable throwable) {
-        for (ConnectionListener connectionListener : getConnectionListeners()) {
-            connectionListener.onExceptionally(this, throwable);
-        }
-    }
-
-    @Override
     public void onConnection(Connection connection) {
     }
 
@@ -148,6 +141,12 @@ public abstract class AbstractConnection
 
     protected Collection<ConnectionListener> getConnectionListeners() {
         return Collections.unmodifiableCollection(connectionListeners.values());
+    }
+
+    protected void exceptionally(Throwable throwable) {
+        for (ConnectionListener connectionListener : getConnectionListeners()) {
+            connectionListener.onExceptionally(this, throwable);
+        }
     }
 
     protected ConnectionContext getConnectionContext() {

@@ -3,6 +3,7 @@ com.noctarius.tengi.client
 com.noctarius.tengi.core.buffer
 com.noctarius.tengi.core.config
 com.noctarius.tengi.core.listener
+com.noctarius.tengi.core.listener.connection
 com.noctarius.tengi.core.pooling
 com.noctarius.tengi.core.serialization
 com.noctarius.tengi.core.serialization.codec

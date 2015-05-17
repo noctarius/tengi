@@ -16,9 +16,8 @@
  */
 package com.noctarius.tengi.client.impl.transport.http;
 
+import com.noctarius.tengi.Connection;
 import com.noctarius.tengi.Message;
-import com.noctarius.tengi.SystemException;
-import com.noctarius.tengi.TransportLayer;
 import com.noctarius.tengi.client.impl.ClientUtil;
 import com.noctarius.tengi.client.impl.ServerConnection;
 import com.noctarius.tengi.client.impl.transport.AbstractClientConnector;
@@ -27,8 +26,9 @@ import com.noctarius.tengi.core.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.core.serialization.Serializer;
 import com.noctarius.tengi.core.serialization.codec.AutoClosableEncoder;
 import com.noctarius.tengi.core.serialization.impl.DefaultProtocolConstants;
-import com.noctarius.tengi.spi.connection.Connection;
+import com.noctarius.tengi.exception.ConnectionDestroyedException;
 import com.noctarius.tengi.spi.connection.TransportConstants;
+import com.noctarius.tengi.spi.connection.TransportLayer;
 import com.noctarius.tengi.spi.connection.handshake.HandshakeRequest;
 import com.noctarius.tengi.spi.connection.handshake.LongPollingRequest;
 import io.netty.bootstrap.Bootstrap;
@@ -106,7 +106,7 @@ public class HttpConnector
             throws Exception {
 
         if (destroyed.get()) {
-            throw new SystemException("Connection already destroyed");
+            throw new ConnectionDestroyedException("Connection already destroyed");
         }
 
         ChannelFuture channelFuture = bootstrap.connect(address, port);

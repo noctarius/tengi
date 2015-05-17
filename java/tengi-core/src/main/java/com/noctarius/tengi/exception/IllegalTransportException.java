@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.core.listener.connection;
+package com.noctarius.tengi.exception;
 
-import com.noctarius.tengi.Connection;
+public class IllegalTransportException
+        extends SystemException {
 
-public interface ExceptionListener {
-
-    void onExceptionally(Connection connection, Throwable throwable);
+    public IllegalTransportException(String message) {
+        super(message);
+    }
 
 }

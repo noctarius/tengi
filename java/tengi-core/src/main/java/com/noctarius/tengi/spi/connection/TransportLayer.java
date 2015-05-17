@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.core.listener.connection;
+package com.noctarius.tengi.spi.connection;
 
-import com.noctarius.tengi.Connection;
+public enum TransportLayer {
 
-public interface ExceptionListener {
-
-    void onExceptionally(Connection connection, Throwable throwable);
+    TCP,
+    UDP,
+    SCTP
 
 }

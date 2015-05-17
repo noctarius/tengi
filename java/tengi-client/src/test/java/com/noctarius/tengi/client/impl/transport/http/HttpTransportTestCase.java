@@ -26,7 +26,7 @@ import com.noctarius.tengi.core.config.ConfigurationBuilder;
 import com.noctarius.tengi.core.listener.MessageListener;
 import com.noctarius.tengi.core.listener.connection.ConnectedListener;
 import com.noctarius.tengi.server.ServerTransport;
-import com.noctarius.tengi.spi.connection.Connection;
+import com.noctarius.tengi.Connection;
 import org.junit.Test;
 
 import java.util.concurrent.CompletableFuture;

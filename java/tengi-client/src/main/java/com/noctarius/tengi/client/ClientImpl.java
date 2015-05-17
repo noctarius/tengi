@@ -16,14 +16,15 @@
  */
 package com.noctarius.tengi.client;
 
-import com.noctarius.tengi.SystemException;
-import com.noctarius.tengi.Transport;
+import com.noctarius.tengi.Connection;
 import com.noctarius.tengi.client.impl.Connector;
 import com.noctarius.tengi.client.impl.ConnectorFactory;
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.listener.connection.ConnectedListener;
 import com.noctarius.tengi.core.serialization.Serializer;
-import com.noctarius.tengi.spi.connection.Connection;
+import com.noctarius.tengi.exception.ConnectionFailedException;
+import com.noctarius.tengi.exception.IllegalTransportException;
+import com.noctarius.tengi.spi.connection.Transport;
 import com.noctarius.tengi.spi.logging.Logger;
 import com.noctarius.tengi.spi.logging.LoggerManager;
 import io.netty.channel.EventLoopGroup;
@@ -76,7 +77,7 @@ class ClientImpl
     private void checkTransports(Set<Transport> transports) {
         for (Transport transport : transports) {
             if (!(transport instanceof ConnectorFactory)) {
-                throw new SystemException("Illegal Transport configured: " + transport);
+                throw new IllegalTransportException("Illegal Transport configured: " + transport);
             }
         }
     }
@@ -95,7 +96,7 @@ class ClientImpl
                          ConnectedListener connectedListener, Connector[] connectors, int index) {
 
         if (index >= connectors.length) {
-            future.completeExceptionally(new SystemException("No transport was able to connect"));
+            future.completeExceptionally(new ConnectionFailedException("No transport was able to connect"));
         }
         connectTransport(address, future, connectedListener, connectors, index);
     }

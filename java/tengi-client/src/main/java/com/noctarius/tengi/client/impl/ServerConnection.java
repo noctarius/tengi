@@ -20,7 +20,7 @@ import com.noctarius.tengi.Identifier;
 import com.noctarius.tengi.Message;
 import com.noctarius.tengi.core.serialization.Serializer;
 import com.noctarius.tengi.spi.connection.AbstractConnection;
-import com.noctarius.tengi.spi.connection.Connection;
+import com.noctarius.tengi.Connection;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
 import com.noctarius.tengi.spi.connection.handshake.LongPollingResponse;
 import io.netty.channel.Channel;

@@ -16,7 +16,6 @@
  */
 package com.noctarius.tengi.core.pooling.impl;
 
-import com.noctarius.tengi.SystemException;
 import com.noctarius.tengi.core.pooling.ObjectHandler;
 import com.noctarius.tengi.core.pooling.ObjectPool;
 import com.noctarius.tengi.core.pooling.PooledObject;
@@ -24,6 +23,7 @@ import org.junit.Test;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.IdentityHashMap;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -357,7 +357,7 @@ public class NonBlockingObjectPoolTestCase {
         assertNotSame(obj3, obj4);
     }
 
-    @Test(expected = SystemException.class)
+    @Test(expected = IllegalStateException.class)
     public void test_close()
             throws Exception {
 
@@ -387,7 +387,7 @@ public class NonBlockingObjectPoolTestCase {
         pool.release(new WrongPooledObject<>());
     }
 
-    @Test(expected = SystemException.class)
+    @Test(expected = ConcurrentModificationException.class)
     public void test_release_already_free_object()
             throws Exception {
 

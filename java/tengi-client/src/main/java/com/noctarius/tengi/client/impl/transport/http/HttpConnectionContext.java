@@ -23,7 +23,7 @@ import com.noctarius.tengi.core.buffer.MemoryBuffer;
 import com.noctarius.tengi.core.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.core.impl.CompletableFutureUtil;
 import com.noctarius.tengi.core.serialization.Serializer;
-import com.noctarius.tengi.spi.connection.Connection;
+import com.noctarius.tengi.Connection;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;

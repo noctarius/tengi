@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi.core.config;
 
-import com.noctarius.tengi.Transport;
+import com.noctarius.tengi.spi.connection.Transport;
 
 import java.util.Map;
 import java.util.Set;

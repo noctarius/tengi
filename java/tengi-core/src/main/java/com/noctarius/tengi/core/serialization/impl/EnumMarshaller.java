@@ -16,13 +16,13 @@
  */
 package com.noctarius.tengi.core.serialization.impl;
 
-import com.noctarius.tengi.SystemException;
 import com.noctarius.tengi.core.serialization.Protocol;
 import com.noctarius.tengi.core.serialization.TypeId;
 import com.noctarius.tengi.core.serialization.codec.Decoder;
 import com.noctarius.tengi.core.serialization.codec.Encoder;
 import com.noctarius.tengi.core.serialization.debugger.DebuggableMarshaller;
 import com.noctarius.tengi.core.serialization.marshaller.Marshaller;
+import com.noctarius.tengi.exception.UnknownTypeException;
 
 @TypeId(DefaultProtocolConstants.SERIALIZED_TYPE_ENUM)
 enum EnumMarshaller
@@ -44,7 +44,7 @@ enum EnumMarshaller
                 return constant;
             }
         }
-        throw new SystemException("Enum type not found");
+        throw new UnknownTypeException("Enum type not found");
     }
 
     @Override

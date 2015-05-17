@@ -14,13 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.spi.connection;
+package com.noctarius.tengi;
 
-import com.noctarius.tengi.Identifier;
-import com.noctarius.tengi.Message;
-import com.noctarius.tengi.Transport;
 import com.noctarius.tengi.core.listener.ConnectionListener;
 import com.noctarius.tengi.core.listener.MessageListener;
+import com.noctarius.tengi.spi.connection.Transport;
 
 import java.util.concurrent.CompletableFuture;
 

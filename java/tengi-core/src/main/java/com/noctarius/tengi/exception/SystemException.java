@@ -14,12 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.core.listener.connection;
+package com.noctarius.tengi.exception;
 
-import com.noctarius.tengi.Connection;
+public class SystemException
+        extends RuntimeException {
 
-public interface ExceptionListener {
+    public SystemException() {
+    }
 
-    void onExceptionally(Connection connection, Throwable throwable);
+    public SystemException(String message) {
+        super(message);
+    }
 
+    public SystemException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public SystemException(Throwable cause) {
+        super(cause);
+    }
+
+    public SystemException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 }

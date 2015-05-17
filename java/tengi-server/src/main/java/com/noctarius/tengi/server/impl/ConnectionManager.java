@@ -16,14 +16,14 @@
  */
 package com.noctarius.tengi.server.impl;
 
+import com.noctarius.tengi.Connection;
 import com.noctarius.tengi.Identifier;
 import com.noctarius.tengi.Message;
-import com.noctarius.tengi.SystemException;
-import com.noctarius.tengi.Transport;
 import com.noctarius.tengi.core.listener.connection.ConnectedListener;
 import com.noctarius.tengi.core.serialization.Serializer;
-import com.noctarius.tengi.spi.connection.Connection;
+import com.noctarius.tengi.exception.NoSuchConnectionException;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
+import com.noctarius.tengi.spi.connection.Transport;
 import com.noctarius.tengi.spi.connection.handshake.LongPollingRequest;
 import io.netty.channel.Channel;
 import io.netty.handler.ssl.SslContext;
@@ -74,7 +74,7 @@ public class ConnectionManager
     public void publishMessage(Channel channel, Identifier connectionId, Message message) {
         ClientConnection connection = connections.get(connectionId);
         if (connection == null) {
-            throw new SystemException("ConnectionId '" + connectionId.toString() + "' is not registered");
+            throw new NoSuchConnectionException("ConnectionId '" + connectionId.toString() + "' is not registered");
         }
 
         if (!connection.getTransport().isStreaming() && message.getBody() instanceof LongPollingRequest) {

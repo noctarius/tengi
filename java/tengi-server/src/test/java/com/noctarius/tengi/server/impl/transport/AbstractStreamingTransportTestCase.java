@@ -17,11 +17,11 @@
 package com.noctarius.tengi.server.impl.transport;
 
 import com.noctarius.tengi.Message;
-import com.noctarius.tengi.Transport;
+import com.noctarius.tengi.spi.connection.Transport;
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.config.ConfigurationBuilder;
 import com.noctarius.tengi.server.Server;
-import com.noctarius.tengi.spi.connection.Connection;
+import com.noctarius.tengi.Connection;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;

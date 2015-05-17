@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi.spi.logging;
 
-import com.noctarius.tengi.SystemException;
+import com.noctarius.tengi.exception.LoggerException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -77,14 +77,14 @@ public final class LoggerManager {
 
     public static Logger getLogger(Class<?> binding) {
         if (LOGGER_FACTORIES.size() > 1) {
-            throw new SystemException("Multiple Logger frameworks registered, please choose Logger type explicitly");
+            throw new LoggerException("Multiple Logger frameworks registered, please choose Logger type explicitly");
         }
         return getLogger(binding, SINGLE_AVAILABLE_FACTORY);
     }
 
     public static Logger getLogger(String binding) {
         if (LOGGER_FACTORIES.size() > 1) {
-            throw new SystemException("Multiple Logger frameworks registered, please choose Logger type explicitly");
+            throw new LoggerException("Multiple Logger frameworks registered, please choose Logger type explicitly");
         }
         return getLogger(binding, SINGLE_AVAILABLE_FACTORY);
     }
@@ -92,7 +92,7 @@ public final class LoggerManager {
     public static Logger getLogger(Class<?> binding, Class<?> loggerType) {
         LoggerFactory loggerFactory = LOGGER_FACTORIES.get(loggerType);
         if (loggerFactory == null) {
-            throw new SystemException("Requested Logger frameworks is not registered");
+            throw new LoggerException("Requested Logger frameworks is not registered");
         }
         return getLogger(binding, loggerFactory);
     }
@@ -100,7 +100,7 @@ public final class LoggerManager {
     public static Logger getLogger(String binding, Class<?> loggerType) {
         LoggerFactory loggerFactory = LOGGER_FACTORIES.get(loggerType);
         if (loggerFactory == null) {
-            throw new SystemException("Requested Logger frameworks is not registered");
+            throw new LoggerException("Requested Logger frameworks is not registered");
         }
         return getLogger(binding, loggerFactory);
     }

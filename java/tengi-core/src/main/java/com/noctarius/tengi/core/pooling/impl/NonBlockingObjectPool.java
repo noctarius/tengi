@@ -16,7 +16,6 @@
  */
 package com.noctarius.tengi.core.pooling.impl;
 
-import com.noctarius.tengi.SystemException;
 import com.noctarius.tengi.core.impl.MathUtil;
 import com.noctarius.tengi.core.impl.UnsafeUtil;
 import com.noctarius.tengi.core.pooling.ObjectHandler;
@@ -28,6 +27,7 @@ import com.noctarius.tengi.spi.logging.LoggerManager;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
+import java.util.ConcurrentModificationException;
 import java.util.function.Consumer;
 
 public class NonBlockingObjectPool<T>
@@ -51,7 +51,7 @@ public class NonBlockingObjectPool<T>
             field.setAccessible(true);
             OFFSET = UNSAFE.objectFieldOffset(field);
         } catch (Exception e) {
-            throw new SystemException(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -82,7 +82,7 @@ public class NonBlockingObjectPool<T>
 
         // ObjectPool closed?
         if (nextAcquireIndex == -1) {
-            throw new SystemException("ObjectPool already closed");
+            throw new IllegalStateException("ObjectPool already closed");
         }
 
         // Maybe thread recently released an entry
@@ -104,7 +104,7 @@ public class NonBlockingObjectPool<T>
             Entry<T> entry = (Entry<T>) entryPool[acquireIndex++];
             // ObjectPool closed?
             if (entry == null) {
-                throw new SystemException("ObjectPool already closed");
+                throw new IllegalStateException("ObjectPool already closed");
             }
 
             if (acquireIndex >= size) {
@@ -143,12 +143,12 @@ public class NonBlockingObjectPool<T>
             entry.passivate(handler, passivator);
             return;
         } else if (state == ENTRY_FREE) {
-            throw new SystemException("Illegal concurrent update on an object pool entry");
+            throw new ConcurrentModificationException("Illegal concurrent update on an object pool entry");
         }
 
         entry.passivate(handler, passivator);
         if (!entry.casState(state, ENTRY_FREE)) {
-            throw new SystemException("Illegal concurrent update on an object pool entry");
+            throw new ConcurrentModificationException("Illegal concurrent update on an object pool entry");
         }
 
         LOGGER.trace("Entry returned to the pool, setting as cached entry: %s", entry);
@@ -202,7 +202,7 @@ public class NonBlockingObjectPool<T>
         if (index != -1) {
             long indexOffset = offset(index);
             if (!UNSAFE.compareAndSwapObject(entryPool, indexOffset, entry, newEntry)) {
-                throw new SystemException("Illegal concurrent update on an invalid object pool entry");
+                throw new ConcurrentModificationException("Illegal concurrent update on an invalid object pool entry");
             }
         }
         return newEntry.activate(handler, activator);
@@ -223,7 +223,7 @@ public class NonBlockingObjectPool<T>
                 field.setAccessible(true);
                 OFFSET = UNSAFE.objectFieldOffset(field);
             } catch (Exception e) {
-                throw new SystemException(e);
+                throw new RuntimeException(e);
             }
         }
 

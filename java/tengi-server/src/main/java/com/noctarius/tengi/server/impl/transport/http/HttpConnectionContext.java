@@ -18,7 +18,7 @@ package com.noctarius.tengi.server.impl.transport.http;
 
 import com.noctarius.tengi.Identifier;
 import com.noctarius.tengi.Message;
-import com.noctarius.tengi.Transport;
+import com.noctarius.tengi.spi.connection.Transport;
 import com.noctarius.tengi.core.buffer.MemoryBuffer;
 import com.noctarius.tengi.core.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.core.impl.CompletableFutureUtil;
@@ -26,7 +26,7 @@ import com.noctarius.tengi.core.impl.ExceptionUtil;
 import com.noctarius.tengi.core.serialization.Serializer;
 import com.noctarius.tengi.core.serialization.codec.AutoClosableEncoder;
 import com.noctarius.tengi.core.serialization.impl.DefaultProtocolConstants;
-import com.noctarius.tengi.spi.connection.Connection;
+import com.noctarius.tengi.Connection;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
 import com.noctarius.tengi.spi.connection.handshake.LongPollingRequest;
 import com.noctarius.tengi.spi.connection.handshake.LongPollingResponse;

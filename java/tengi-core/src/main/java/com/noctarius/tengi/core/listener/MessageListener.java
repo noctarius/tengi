@@ -17,13 +17,13 @@
 package com.noctarius.tengi.core.listener;
 
 import com.noctarius.tengi.Message;
-import com.noctarius.tengi.spi.connection.Connection;
+import com.noctarius.tengi.Connection;
 
 /**
  * <p>The <tt>MessageListener</tt> interfaces describes a handler that is
  * able to capture arriving messages and handle them accordingly.
  * Together with the {@link com.noctarius.tengi.Message} it will retrieve
- * the {@link com.noctarius.tengi.spi.connection.Connection} the message is retrieved on.</p>
+ * the {@link com.noctarius.tengi.Connection} the message is retrieved on.</p>
  * <p>MessageListeners are executed inside a special thread-pool and expected
  * to not execute long running operations. If an operation needs to do heavy
  * calculation or waiting it should be offloaded to another thread-pool to

@@ -16,8 +16,8 @@
  */
 package com.noctarius.tengi.client;
 
-import com.noctarius.tengi.Transport;
-import com.noctarius.tengi.TransportLayer;
+import com.noctarius.tengi.spi.connection.Transport;
+import com.noctarius.tengi.spi.connection.TransportLayer;
 import com.noctarius.tengi.client.impl.Connector;
 import com.noctarius.tengi.client.impl.ConnectorFactory;
 import com.noctarius.tengi.client.impl.transport.http.HttpConnector;

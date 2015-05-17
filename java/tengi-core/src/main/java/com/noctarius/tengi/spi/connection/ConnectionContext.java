@@ -16,9 +16,9 @@
  */
 package com.noctarius.tengi.spi.connection;
 
+import com.noctarius.tengi.Connection;
 import com.noctarius.tengi.Identifier;
 import com.noctarius.tengi.Message;
-import com.noctarius.tengi.Transport;
 import com.noctarius.tengi.core.buffer.MemoryBuffer;
 import com.noctarius.tengi.core.serialization.Protocol;
 import com.noctarius.tengi.core.serialization.Serializer;

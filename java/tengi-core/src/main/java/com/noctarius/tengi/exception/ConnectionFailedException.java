@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi;
+package com.noctarius.tengi.exception;
 
-public enum TransportLayer {
+public class ConnectionFailedException
+        extends SystemException {
 
-    TCP,
-    UDP,
-    SCTP
+    public ConnectionFailedException(String message) {
+        super(message);
+    }
 
 }

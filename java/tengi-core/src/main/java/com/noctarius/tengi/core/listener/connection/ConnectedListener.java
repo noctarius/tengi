@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi.core.listener.connection;
 
-import com.noctarius.tengi.spi.connection.Connection;
+import com.noctarius.tengi.Connection;
 
 public interface ConnectedListener {
 

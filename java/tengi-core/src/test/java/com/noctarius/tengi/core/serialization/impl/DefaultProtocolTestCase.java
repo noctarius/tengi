@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi.core.serialization.impl;
 
-import com.noctarius.tengi.SystemException;
+import com.noctarius.tengi.exception.SystemException;
 import com.noctarius.tengi.core.buffer.MemoryBuffer;
 import com.noctarius.tengi.core.config.MarshallerConfiguration;
 import com.noctarius.tengi.core.serialization.Marshallable;

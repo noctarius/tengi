@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.core.listener.connection;
+package com.noctarius.tengi.exception;
 
-import com.noctarius.tengi.Connection;
+public class ConnectionDestroyedException
+        extends SystemException {
 
-public interface ExceptionListener {
-
-    void onExceptionally(Connection connection, Throwable throwable);
+    public ConnectionDestroyedException(String message) {
+        super(message);
+    }
 
 }

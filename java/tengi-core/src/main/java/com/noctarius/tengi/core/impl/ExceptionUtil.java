@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi.core.impl;
 
-import com.noctarius.tengi.SystemException;
+import com.noctarius.tengi.exception.SystemException;
 
 public final class ExceptionUtil {
 

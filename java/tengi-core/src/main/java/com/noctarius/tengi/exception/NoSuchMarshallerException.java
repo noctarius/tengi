@@ -14,27 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi;
+package com.noctarius.tengi.exception;
 
-public class SystemException
-        extends RuntimeException {
+public class NoSuchMarshallerException
+        extends SystemException {
 
-    public SystemException() {
-    }
-
-    public SystemException(String message) {
+    public NoSuchMarshallerException(String message) {
         super(message);
     }
 
-    public SystemException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public SystemException(Throwable cause) {
-        super(cause);
-    }
-
-    public SystemException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
 }

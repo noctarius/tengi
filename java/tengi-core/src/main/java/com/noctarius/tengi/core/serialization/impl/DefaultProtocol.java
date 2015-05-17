@@ -18,7 +18,6 @@ package com.noctarius.tengi.core.serialization.impl;
 
 import com.noctarius.tengi.Identifier;
 import com.noctarius.tengi.Message;
-import com.noctarius.tengi.SystemException;
 import com.noctarius.tengi.core.buffer.ReadableMemoryBuffer;
 import com.noctarius.tengi.core.config.MarshallerConfiguration;
 import com.noctarius.tengi.core.impl.ExceptionUtil;
@@ -31,6 +30,8 @@ import com.noctarius.tengi.core.serialization.debugger.DebuggableProtocol;
 import com.noctarius.tengi.core.serialization.marshaller.Identifiable;
 import com.noctarius.tengi.core.serialization.marshaller.Marshaller;
 import com.noctarius.tengi.core.serialization.marshaller.MarshallerFilter;
+import com.noctarius.tengi.exception.NoSuchMarshallerException;
+import com.noctarius.tengi.exception.UnknownTypeException;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -88,7 +89,7 @@ public class DefaultProtocol
         Short typeId = reverseTypeId.get(type);
 
         if (typeId == null) {
-            throw new SystemException("TypeId for type '" + type.getName() + "' not found. Not registered?");
+            throw new UnknownTypeException("TypeId for type '" + type.getName() + "' not found. Not registered?");
         }
         encoder.writeShort("typeId", typeId);
     }
@@ -234,7 +235,7 @@ public class DefaultProtocol
 
         TypeId annotation = clazz.getAnnotation(TypeId.class);
         if (annotation == null) {
-            throw new SystemException("Registered serialization type is not annotated with @TypeId");
+            throw new UnknownTypeException("Registered serialization type is not annotated with @TypeId");
         }
 
         short typeId = annotation.value();
@@ -255,7 +256,7 @@ public class DefaultProtocol
 
         TypeId annotation = marshaller.getClass().getAnnotation(TypeId.class);
         if (annotation == null) {
-            throw new SystemException("Registered marshaller type is not annotated with @TypeId");
+            throw new UnknownTypeException("Registered marshaller type is not annotated with @TypeId");
         }
 
         return annotation.value();
@@ -284,7 +285,7 @@ public class DefaultProtocol
                 return marshaller;
             }
         }
-        throw new SystemException("No suitable marshaller found for type '" + clazz.getName() + "'");
+        throw new NoSuchMarshallerException("No suitable marshaller found for type '" + clazz.getName() + "'");
     }
 
     private Marshaller testMarshaller(Object object, MarshallerFilter filter, Marshaller marshaller) {

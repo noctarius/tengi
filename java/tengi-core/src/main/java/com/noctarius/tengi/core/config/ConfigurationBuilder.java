@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi.core.config;
 
-import com.noctarius.tengi.Transport;
+import com.noctarius.tengi.spi.connection.Transport;
 import com.noctarius.tengi.core.serialization.marshaller.Marshaller;
 import com.noctarius.tengi.core.serialization.marshaller.MarshallerFilter;
 import com.noctarius.tengi.core.serialization.marshaller.MarshallerReader;

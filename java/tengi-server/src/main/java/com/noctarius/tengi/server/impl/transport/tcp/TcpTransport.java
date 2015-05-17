@@ -16,8 +16,8 @@
  */
 package com.noctarius.tengi.server.impl.transport.tcp;
 
-import com.noctarius.tengi.Transport;
-import com.noctarius.tengi.TransportLayer;
+import com.noctarius.tengi.spi.connection.Transport;
+import com.noctarius.tengi.spi.connection.TransportLayer;
 import com.noctarius.tengi.spi.connection.TransportConstants;
 
 public class TcpTransport

@@ -18,22 +18,19 @@ package com.noctarius.tengi.client.impl;
 
 import com.noctarius.tengi.Transport;
 import com.noctarius.tengi.spi.connection.Connection;
-import io.netty.channel.Channel;
+import io.netty.buffer.ByteBufAllocator;
 
-import java.net.InetAddress;
-import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
-public interface Connector
+public interface Connector<M>
         extends Transport {
 
-    CompletableFuture<Connection> connect(InetAddress address, int port);
+    CompletableFuture<Connection> connect();
 
-    Channel getUpstreamChannel();
+    ByteBufAllocator allocator();
 
-    Channel getDownstreamChannel();
-
-    Collection<Channel> getCommunicationChannels();
+    void write(M message)
+            throws Exception;
 
     void destroy()
             throws Exception;

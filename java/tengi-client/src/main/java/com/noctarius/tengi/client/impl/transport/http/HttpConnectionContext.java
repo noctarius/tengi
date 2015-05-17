@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.client.impl.transport.tcp;
+package com.noctarius.tengi.client.impl.transport.http;
 
 import com.noctarius.tengi.Identifier;
 import com.noctarius.tengi.Message;
@@ -27,15 +27,18 @@ import com.noctarius.tengi.spi.connection.Connection;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
+import io.netty.handler.codec.http.HttpRequest;
 
 import java.util.concurrent.CompletableFuture;
 
-class TcpConnectionContext
+import static com.noctarius.tengi.client.impl.transport.http.HttpConnector.buildHttpRequest;
+
+class HttpConnectionContext
         extends ConnectionContext<Channel> {
 
-    private final Connector<ByteBuf> connector;
+    private final Connector<HttpRequest> connector;
 
-    TcpConnectionContext(Identifier connectionId, Serializer serializer, Connector<ByteBuf> connector) {
+    HttpConnectionContext(Identifier connectionId, Serializer serializer, Connector<HttpRequest> connector) {
         super(connectionId, serializer, connector);
         this.connector = connector;
     }
@@ -49,7 +52,7 @@ class TcpConnectionContext
         buffer.writeBuffer(memoryBuffer);
 
         return CompletableFutureUtil.executeAsync(() -> {
-            connector.write(request);
+            connector.write(buildHttpRequest(request));
             return message;
         });
     }
@@ -62,7 +65,7 @@ class TcpConnectionContext
         MemoryBuffer buffer = preparePacket(MemoryBufferFactory.create(request));
         buffer.writeBuffer(memoryBuffer);
         return CompletableFutureUtil.executeAsync(() -> {
-            channel.writeAndFlush(request).sync();
+            channel.writeAndFlush(buildHttpRequest(request)).sync();
             return connection;
         });
     }

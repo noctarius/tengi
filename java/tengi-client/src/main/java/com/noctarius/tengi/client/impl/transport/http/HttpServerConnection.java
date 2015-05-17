@@ -14,14 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.client.impl;
+package com.noctarius.tengi.client.impl.transport.http;
 
 import com.noctarius.tengi.Identifier;
-import com.noctarius.tengi.Message;
+import com.noctarius.tengi.client.impl.Connector;
+import com.noctarius.tengi.client.impl.ServerConnection;
+import com.noctarius.tengi.core.serialization.Serializer;
+import com.noctarius.tengi.spi.connection.ConnectionContext;
 import io.netty.channel.Channel;
 
-public interface MessagePublisher {
+class HttpServerConnection
+        extends ServerConnection {
 
-    void publishMessage(Channel channel, Identifier connectionId, Message message);
+    HttpServerConnection(ConnectionContext<Channel> connectionContext, Identifier connectionId, //
+                         Connector connector, Serializer serializer) {
 
+        super(connectionContext, connectionId, connector, serializer);
+    }
 }

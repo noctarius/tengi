@@ -16,42 +16,123 @@
  */
 package com.noctarius.tengi.client.impl.transport.http;
 
+import com.noctarius.tengi.Message;
+import com.noctarius.tengi.Packet;
 import com.noctarius.tengi.client.Client;
-import com.noctarius.tengi.core.config.Configuration;
-import com.noctarius.tengi.core.config.ConfigurationBuilder;
-import com.noctarius.tengi.server.ServerTransport;
 import com.noctarius.tengi.client.ClientTransport;
 import com.noctarius.tengi.client.impl.transport.AbstractClientTransportTestCase;
-import org.junit.Ignore;
+import com.noctarius.tengi.core.config.Configuration;
+import com.noctarius.tengi.core.config.ConfigurationBuilder;
+import com.noctarius.tengi.core.listener.ConnectionConnectedListener;
+import com.noctarius.tengi.core.listener.MessageListener;
+import com.noctarius.tengi.server.ServerTransport;
+import com.noctarius.tengi.spi.connection.Connection;
 import org.junit.Test;
 
 import java.util.concurrent.CompletableFuture;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
 
 public class HttpTransportTestCase
         extends AbstractClientTransportTestCase {
 
     @Test
-    @Ignore
     public void test_simple_http_connection()
             throws Exception {
+
         Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransport.HTTP_TRANSPORT).build();
         Client client = Client.create(configuration);
 
+        Connection connection = null;
         try {
-            Client result = practice(() -> {
-                CompletableFuture<Client> future = client.connect("localhost", System.out::println);
-
-                return future.get();
-            }, false, ServerTransport.TCP_TRANSPORT);
-
-            assertNotNull(result);
-            assertSame(client, result);
+            CompletableFuture<Connection> f = new CompletableFuture<>();
+            connection = practice(client, f::complete, f::get, false, ServerTransport.HTTP_TRANSPORT);
+            assertNotNull(connection);
         } finally {
-            client.disconnect();
+            if (connection != null) {
+                connection.disconnect();
+            }
         }
+    }
+
+    @Test
+    public void test_simple_http_simple_round_trip()
+            throws Exception {
+
+        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransport.HTTP_TRANSPORT).build();
+        Client client = Client.create(configuration);
+
+        CompletableFuture<Message> messageFuture = new CompletableFuture<>();
+
+        Packet packet = new Packet("login");
+        packet.setValue("username", "Stan");
+        Message message = Message.create(packet);
+
+        MessageListener messageListener = (c, m) -> {
+            messageFuture.complete(m);
+        };
+
+        ConnectionConnectedListener listener = (c) -> {
+            try {
+                c.addMessageListener(messageListener);
+                c.writeObject(message);
+            } catch (Exception e) {
+                messageFuture.completeExceptionally(e);
+            }
+        };
+
+        Message result = practice(client, listener, messageFuture::get, false, ServerTransport.HTTP_TRANSPORT);
+        assertNotNull(result);
+
+        Packet p = result.getBody();
+        assertNotNull(p);
+        assertEquals(packet, p);
+    }
+
+    @Test
+    public void test_simple_http_multi_round_trip()
+            throws Exception {
+
+        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransport.HTTP_TRANSPORT).build();
+        Client client = Client.create(configuration);
+
+        CompletableFuture<Message> messageFuture = new CompletableFuture<>();
+
+        Packet packet = new Packet("counter");
+        packet.setValue("counter", 1);
+        Message message = Message.create(packet);
+
+        MessageListener messageListener = (c, m) -> {
+            Packet p = m.getBody();
+            int counter = p.getValue("counter");
+            if (counter == 4) {
+                messageFuture.complete(m);
+            } else {
+                p.setValue("counter", counter + 1);
+                try {
+                    c.writeObject(p);
+                } catch (Exception e) {
+                    messageFuture.completeExceptionally(e);
+                }
+            }
+        };
+
+        ConnectionConnectedListener listener = (c) -> {
+            try {
+                c.addMessageListener(messageListener);
+                c.writeObject(message);
+            } catch (Exception e) {
+                messageFuture.completeExceptionally(e);
+            }
+        };
+
+        Message result = practice(client, listener, messageFuture::get, false, ServerTransport.HTTP_TRANSPORT);
+        assertNotNull(result);
+
+        Packet p = result.getBody();
+        assertNotNull(p);
+        assertEquals(4, (int) p.getValue("counter"));
     }
 
 }

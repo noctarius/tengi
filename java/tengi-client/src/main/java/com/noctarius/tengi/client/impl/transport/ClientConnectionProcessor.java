@@ -19,35 +19,33 @@ package com.noctarius.tengi.client.impl.transport;
 import com.noctarius.tengi.Identifier;
 import com.noctarius.tengi.Message;
 import com.noctarius.tengi.client.impl.Connector;
-import com.noctarius.tengi.client.impl.MessagePublisher;
+import com.noctarius.tengi.client.impl.ServerConnection;
+import com.noctarius.tengi.core.serialization.Serializer;
+import com.noctarius.tengi.core.serialization.codec.AutoClosableDecoder;
 import com.noctarius.tengi.spi.connection.Connection;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
 import com.noctarius.tengi.spi.connection.handshake.HandshakeResponse;
 import com.noctarius.tengi.spi.logging.Logger;
 import com.noctarius.tengi.spi.logging.LoggerManager;
-import com.noctarius.tengi.core.serialization.Serializer;
-import com.noctarius.tengi.core.serialization.codec.AutoClosableDecoder;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 import java.util.concurrent.CompletableFuture;
 
-public abstract class ClientConnectionProcessor<T, C>
+import static com.noctarius.tengi.client.impl.ClientUtil.CONNECTION;
+import static com.noctarius.tengi.client.impl.ClientUtil.CONNECT_FUTURE;
+import static com.noctarius.tengi.client.impl.ClientUtil.connectionAttribute;
+
+public abstract class ClientConnectionProcessor<T, C, M>
         extends SimpleChannelInboundHandler<T> {
 
     private static final Logger LOGGER = LoggerManager.getLogger(ClientConnectionProcessor.class);
 
     private final Serializer serializer;
-    private final MessagePublisher messagePublisher;
-    private final CompletableFuture<Connection> connectorFuture;
-    private final Connector connector;
+    private final Connector<M> connector;
 
-    protected ClientConnectionProcessor(Serializer serializer, MessagePublisher messagePublisher,
-                                        CompletableFuture<Connection> connectorFuture, Connector connector) {
-
+    protected ClientConnectionProcessor(Serializer serializer, Connector<M> connector) {
         this.serializer = serializer;
-        this.messagePublisher = messagePublisher;
-        this.connectorFuture = connectorFuture;
         this.connector = connector;
     }
 
@@ -67,13 +65,18 @@ public abstract class ClientConnectionProcessor<T, C>
             Object object = decoder.readObject();
 
             if (object instanceof HandshakeResponse) {
-                ConnectionContext<C> connectionContext = createConnectionContext(ctx, connectionId, connector);
-                Connection connection = createConnection(connectionContext, connectionId, connector, serializer);
+                CompletableFuture<Connection> connectorFuture = connectionAttribute(ctx, CONNECT_FUTURE, true);
+                ConnectionContext<C> connectionContext = createConnectionContext(ctx, connectionId);
+                Connection connection = createConnection(ctx, connectionContext, connectionId);
                 connectorFuture.complete(connection);
 
             } else {
-                messagePublisher.publishMessage(ctx.channel(), connectionId, (Message) object);
+                ServerConnection connection = connectionAttribute(ctx, CONNECTION);
+                connection.publishMessage((Message) object);
             }
+
+            // Some transports might need to handle the request (like HTTP Long-Pollings)
+            handleMessage(ctx, msg, object);
         }
     }
 
@@ -81,13 +84,19 @@ public abstract class ClientConnectionProcessor<T, C>
         return serializer;
     }
 
+    protected Connector<M> getConnector() {
+        return connector;
+    }
+
+    protected void handleMessage(ChannelHandlerContext ctx, T object, Object message) {
+    }
+
     protected abstract AutoClosableDecoder decode(ChannelHandlerContext ctx, T msg)
             throws Exception;
 
-    protected abstract ConnectionContext<C> createConnectionContext(ChannelHandlerContext ctx, Identifier connectionId,
-                                                                    Connector connector);
+    protected abstract ConnectionContext<C> createConnectionContext(ChannelHandlerContext ctx, Identifier connectionId);
 
-    protected abstract Connection createConnection(ConnectionContext<C> connectionContext, Identifier connectionId,
-                                                   Connector connector, Serializer serializer);
+    protected abstract Connection createConnection(ChannelHandlerContext ctx, ConnectionContext<C> connectionContext,
+                                                   Identifier connectionId);
 
 }

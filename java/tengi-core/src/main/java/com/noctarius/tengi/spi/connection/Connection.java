@@ -32,7 +32,8 @@ import java.util.concurrent.CompletableFuture;
  * identify same clients over multiple socket connections or
  * reconnects (e.g. polling styled transports).</p>
  */
-public interface Connection {
+public interface Connection
+        extends AutoCloseable {
 
     /**
      * Returns the unique connection Id which can be used to
@@ -106,10 +107,11 @@ public interface Connection {
             throws Exception;
 
     /**
-     * Closes the connection and releases any internally acquired resources that are assigned
+     * Disconnects the connection and releases any internally acquired resources that are assigned
      * to this connection.
      *
      * @return a CompletionFuture to add additional behavior (like cleanup) after the connection is closed
      */
-    CompletableFuture<Connection> close();
+    CompletableFuture<Connection> disconnect();
+
 }

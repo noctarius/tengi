@@ -18,16 +18,17 @@ package com.noctarius.tengi.client.impl;
 
 import com.noctarius.tengi.Identifier;
 import com.noctarius.tengi.Message;
+import com.noctarius.tengi.core.serialization.Serializer;
 import com.noctarius.tengi.spi.connection.AbstractConnection;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
-import com.noctarius.tengi.core.serialization.Serializer;
+import com.noctarius.tengi.spi.connection.handshake.LongPollingResponse;
 import io.netty.channel.Channel;
 
 public class ServerConnection
         extends AbstractConnection {
 
     protected ServerConnection(ConnectionContext<Channel> connectionContext, Identifier connectionId, //
-                     Connector connector, Serializer serializer) {
+                               Connector connector, Serializer serializer) {
 
         super(connectionContext, connectionId, connector, serializer);
     }
@@ -36,8 +37,16 @@ public class ServerConnection
         return super.getConnectionContext();
     }
 
-    void publishMessage(Message message) {
-        getMessageListeners().forEach((listener) -> listener.onMessage(this, message));
+    public void publishMessage(Message message) {
+        if (getTransport().isStreaming() || !(message.getBody() instanceof LongPollingResponse)) {
+            getMessageListeners().forEach((listener) -> listener.onMessage(this, message));
+
+        } else {
+            LongPollingResponse longPollingResponse = message.getBody();
+            for (Message m : longPollingResponse.getMessages()) {
+                getMessageListeners().forEach((listener) -> listener.onMessage(this, m));
+            }
+        }
     }
 
 }

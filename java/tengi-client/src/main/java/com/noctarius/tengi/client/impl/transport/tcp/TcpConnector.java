@@ -17,22 +17,22 @@
 package com.noctarius.tengi.client.impl.transport.tcp;
 
 import com.noctarius.tengi.TransportLayer;
+import com.noctarius.tengi.client.impl.ClientUtil;
+import com.noctarius.tengi.client.impl.transport.AbstractClientConnector;
 import com.noctarius.tengi.core.buffer.MemoryBuffer;
 import com.noctarius.tengi.core.buffer.impl.MemoryBufferFactory;
-import com.noctarius.tengi.client.impl.Connector;
-import com.noctarius.tengi.client.impl.MessagePublisher;
-import com.noctarius.tengi.spi.connection.Connection;
-import com.noctarius.tengi.spi.connection.TransportConstants;
-import com.noctarius.tengi.spi.connection.handshake.HandshakeRequest;
 import com.noctarius.tengi.core.serialization.Serializer;
 import com.noctarius.tengi.core.serialization.codec.AutoClosableEncoder;
 import com.noctarius.tengi.core.serialization.impl.DefaultProtocolConstants;
+import com.noctarius.tengi.spi.connection.Connection;
+import com.noctarius.tengi.spi.connection.TransportConstants;
+import com.noctarius.tengi.spi.connection.handshake.HandshakeRequest;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
@@ -41,63 +41,51 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.net.InetAddress;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TcpConnector
-        implements Connector {
+        extends AbstractClientConnector<ByteBuf> {
 
     private final AtomicBoolean destroyed = new AtomicBoolean(false);
 
+    private final InetAddress address;
+    private final int port;
     private final Serializer serializer;
-    private final MessagePublisher messagePublisher;
     private final EventLoopGroup clientGroup;
 
     private volatile Channel channel;
 
-    public TcpConnector(Serializer serializer, MessagePublisher messagePublisher, EventLoopGroup clientGroup) {
+    public TcpConnector(InetAddress address, int port, Serializer serializer, EventLoopGroup clientGroup) {
+        this.address = address;
+        this.port = port;
         this.serializer = serializer;
-        this.messagePublisher = messagePublisher;
         this.clientGroup = clientGroup;
     }
 
     @Override
-    public CompletableFuture<Connection> connect(InetAddress address, int port) {
+    public CompletableFuture<Connection> connect() {
         CompletableFuture<Connection> connectorFuture = new CompletableFuture<>();
 
-        Bootstrap bootstrap = new Bootstrap();
-        bootstrap.channel(NioSocketChannel.class).group(clientGroup).option(ChannelOption.TCP_NODELAY, true) //
-                .handler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    protected void initChannel(SocketChannel channel)
-                            throws Exception {
-
-                        ChannelPipeline pipeline = channel.pipeline();
-                        pipeline.addLast(buildProcessor(serializer, messagePublisher, connectorFuture));
-                    }
-                });
+        Bootstrap bootstrap = createBootstrap();
+        bootstrap.attr(ClientUtil.CONNECT_FUTURE, connectorFuture);
 
         ChannelFuture channelFuture = bootstrap.connect(address, port);
-        channelFuture.addListener(connectionListener(connectorFuture, serializer));
+        channelFuture.addListener(connectionListener(connectorFuture, this::handshakeRequest));
 
         return connectorFuture;
     }
 
     @Override
-    public Channel getUpstreamChannel() {
-        return channel;
+    public ByteBufAllocator allocator() {
+        return channel.alloc();
     }
 
     @Override
-    public Channel getDownstreamChannel() {
-        return channel;
-    }
+    public void write(ByteBuf message)
+            throws Exception {
 
-    @Override
-    public Collection<Channel> getCommunicationChannels() {
-        return Collections.singleton(channel);
+        channel.writeAndFlush(message).sync();
     }
 
     @Override
@@ -132,36 +120,39 @@ public class TcpConnector
         return TransportLayer.TCP;
     }
 
-    private TcpConnectionProcessor buildProcessor(Serializer serializer, MessagePublisher messagePublisher,
-                                                  CompletableFuture<Connection> connectorFuture) {
-
-        return new TcpConnectionProcessor(serializer, messagePublisher, connectorFuture, TcpConnector.this);
+    private TcpConnectionProcessor buildProcessor(Serializer serializer) {
+        return new TcpConnectionProcessor(serializer, TcpConnector.this);
     }
 
-    private ChannelFutureListener connectionListener(CompletableFuture<Connection> future, Serializer serializer) {
-        return (channelFuture) -> {
-            if (!channelFuture.isSuccess()) {
-                future.complete(null);
+    private void handshakeRequest(Channel channel)
+            throws Exception {
 
-            } else {
-                // Send Handshake
-                Channel channel = (this.channel = channelFuture.channel());
+        // Send Handshake
+        this.channel = channel;
 
-                ByteBuf buffer = Unpooled.buffer();
-                MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
-                try (AutoClosableEncoder encoder = serializer.retrieveEncoder(memoryBuffer)) {
-                    encoder.writeBytes("magic", DefaultProtocolConstants.PROTOCOL_MAGIC_HEADER);
-                    encoder.writeBoolean("loggedIn", false);
-                    encoder.writeObject("handshake", new HandshakeRequest());
-                }
+        ByteBuf buffer = Unpooled.buffer();
+        MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
+        try (AutoClosableEncoder encoder = serializer.retrieveEncoder(memoryBuffer)) {
+            encoder.writeBytes("magic", DefaultProtocolConstants.PROTOCOL_MAGIC_HEADER);
+            encoder.writeBoolean("loggedIn", false);
+            encoder.writeObject("handshake", new HandshakeRequest());
+        }
 
-                channel.writeAndFlush(buffer);
-            }
-        };
+        channel.writeAndFlush(buffer);
     }
 
     private Bootstrap createBootstrap() {
-        return null;
+        return new Bootstrap().channel(NioSocketChannel.class) //
+                .group(clientGroup).option(ChannelOption.TCP_NODELAY, true) //
+                .handler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    protected void initChannel(SocketChannel channel)
+                            throws Exception {
+
+                        ChannelPipeline pipeline = channel.pipeline();
+                        pipeline.addLast(buildProcessor(serializer));
+                    }
+                });
     }
 
 }

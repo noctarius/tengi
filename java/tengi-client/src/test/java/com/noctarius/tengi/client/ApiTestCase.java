@@ -22,6 +22,7 @@ import com.noctarius.tengi.core.serialization.Protocol;
 import com.noctarius.tengi.core.serialization.codec.Decoder;
 import com.noctarius.tengi.core.serialization.codec.Encoder;
 import com.noctarius.tengi.core.serialization.marshaller.MarshallerFilter;
+import com.noctarius.tengi.spi.connection.Connection;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -36,17 +37,17 @@ public class ApiTestCase {
                 // Configure custom Marshaller
                 .addMarshaller(ApiTestCase::isMarshallable, (short) 100, ApiTestCase::read, ApiTestCase::write)
 
-                // Configure available transports
+                        // Configure available transports
                 .addTransport(ClientTransport.TCP_TRANSPORT)
 
-                // Build final configuration
+                        // Build final configuration
                 .build();
 
         // Create client instance using configuration
         Client client = Client.create(configuration);
 
         // Connect to remote server
-        CompletableFuture<Client> future = client.connect("127.0.0.1", System.out::println);
+        CompletableFuture<Connection> future = client.connect("127.0.0.1", System.out::println);
         future.get();
     }
 

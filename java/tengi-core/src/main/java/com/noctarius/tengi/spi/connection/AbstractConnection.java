@@ -112,8 +112,15 @@ public abstract class AbstractConnection
     }
 
     @Override
-    public CompletableFuture<Connection> close() {
+    public CompletableFuture<Connection> disconnect() {
         return connectionContext.close(this);
+    }
+
+    @Override
+    public void close()
+            throws Exception {
+
+        disconnect().get();
     }
 
     protected Collection<MessageListener> getMessageListeners() {

@@ -14,25 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.client;
+package com.noctarius.tengi.client.impl.transport;
 
-import com.noctarius.tengi.core.config.Configuration;
-import com.noctarius.tengi.core.listener.ConnectionConnectedListener;
+import com.noctarius.tengi.client.impl.Connector;
 import com.noctarius.tengi.spi.connection.Connection;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.concurrent.CompletableFuture;
 
-public interface Client {
+public abstract class AbstractClientConnector<M>
+        implements Connector<M> {
 
-    CompletableFuture<Connection> connect(String host, ConnectionConnectedListener connectedListener)
-            throws UnknownHostException;
+    protected ChannelFutureListener connectionListener(CompletableFuture<Connection> future, CatchingConsumer success) {
+        return (channelFuture) -> {
+            if (channelFuture.isSuccess()) {
+                success.consume(channelFuture.channel());
+            } else {
+                future.complete(null);
+            }
+        };
+    }
 
-    CompletableFuture<Connection> connect(InetAddress address, ConnectionConnectedListener connectedListener);
-
-    public static Client create(Configuration configuration) {
-        return new ClientImpl(configuration);
+    protected static interface CatchingConsumer {
+        void consume(Channel channel)
+                throws Exception;
     }
 
 }

@@ -20,11 +20,12 @@ import com.noctarius.tengi.Transport;
 import com.noctarius.tengi.TransportLayer;
 import com.noctarius.tengi.client.impl.Connector;
 import com.noctarius.tengi.client.impl.ConnectorFactory;
-import com.noctarius.tengi.client.impl.MessagePublisher;
-import com.noctarius.tengi.core.serialization.Serializer;
 import com.noctarius.tengi.client.impl.transport.http.HttpConnector;
 import com.noctarius.tengi.client.impl.transport.tcp.TcpConnector;
+import com.noctarius.tengi.core.serialization.Serializer;
 import io.netty.channel.EventLoopGroup;
+
+import java.net.InetAddress;
 
 import static com.noctarius.tengi.spi.connection.TransportConstants.DEFAULT_PORT_TCP;
 import static com.noctarius.tengi.spi.connection.TransportConstants.DEFAULT_PORT_UDP;
@@ -82,8 +83,8 @@ public enum ClientTransport
     }
 
     @Override
-    public Connector create(Serializer serializer, MessagePublisher messagePublisher, EventLoopGroup clientGroup) {
-        return connectorFactory.create(serializer, messagePublisher, clientGroup);
+    public Connector create(InetAddress address, int port, Serializer serializer, EventLoopGroup clientGroup) {
+        return connectorFactory.create(address, port, serializer, clientGroup);
     }
 
 }

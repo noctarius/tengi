@@ -16,63 +16,103 @@
  */
 package com.noctarius.tengi.client.impl.transport.http;
 
+import com.noctarius.tengi.Message;
+import com.noctarius.tengi.SystemException;
 import com.noctarius.tengi.TransportLayer;
-import com.noctarius.tengi.client.impl.Connector;
-import com.noctarius.tengi.client.impl.MessagePublisher;
+import com.noctarius.tengi.client.impl.ClientUtil;
+import com.noctarius.tengi.client.impl.ServerConnection;
+import com.noctarius.tengi.client.impl.transport.AbstractClientConnector;
+import com.noctarius.tengi.core.buffer.MemoryBuffer;
+import com.noctarius.tengi.core.buffer.impl.MemoryBufferFactory;
+import com.noctarius.tengi.core.serialization.Serializer;
+import com.noctarius.tengi.core.serialization.codec.AutoClosableEncoder;
+import com.noctarius.tengi.core.serialization.impl.DefaultProtocolConstants;
 import com.noctarius.tengi.spi.connection.Connection;
 import com.noctarius.tengi.spi.connection.TransportConstants;
-import com.noctarius.tengi.core.serialization.Serializer;
+import com.noctarius.tengi.spi.connection.handshake.HandshakeRequest;
+import com.noctarius.tengi.spi.connection.handshake.LongPollingRequest;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.HttpClientCodec;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpVersion;
 
 import java.net.InetAddress;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class HttpConnector
-        implements Connector {
+        extends AbstractClientConnector<HttpRequest> {
 
     private final AtomicBoolean destroyed = new AtomicBoolean(false);
 
-    private final AtomicReference<Channel> upstream = new AtomicReference<>(null);
     private final AtomicReference<Channel> downstream = new AtomicReference<>(null);
 
     private final Bootstrap bootstrap;
 
+    private final InetAddress address;
+    private final int port;
     private final Serializer serializer;
-    private final MessagePublisher messagePublisher;
     private final EventLoopGroup clientGroup;
 
-    public HttpConnector(Serializer serializer, MessagePublisher messagePublisher, EventLoopGroup clientGroup) {
+    private volatile ByteBufAllocator allocator;
+
+    public HttpConnector(InetAddress address, int port, Serializer serializer, EventLoopGroup clientGroup) {
+        this.address = address;
+        this.port = port;
         this.serializer = serializer;
-        this.messagePublisher = messagePublisher;
         this.clientGroup = clientGroup;
         this.bootstrap = createBootstrap();
     }
 
     @Override
-    public CompletableFuture<Connection> connect(InetAddress address, int port) {
-        return null;
+    public CompletableFuture<Connection> connect() {
+        CompletableFuture<Connection> connectorFuture = new CompletableFuture<>();
+
+        Bootstrap bootstrap = createBootstrap();
+        bootstrap.attr(ClientUtil.CONNECT_FUTURE, connectorFuture);
+
+        ChannelFuture channelFuture = bootstrap.connect(address, port);
+        channelFuture.addListener(connectionListener(connectorFuture, this::handshakeRequest));
+
+        return connectorFuture.thenApply(this::activateLongPolling);
     }
 
     @Override
-    public Channel getUpstreamChannel() {
-        return upstream.get();
+    public ByteBufAllocator allocator() {
+        return allocator;
     }
 
     @Override
-    public Channel getDownstreamChannel() {
-        return downstream.get();
-    }
+    public void write(HttpRequest message)
+            throws Exception {
 
-    @Override
-    public Collection<Channel> getCommunicationChannels() {
-        return Collections.unmodifiableCollection(Arrays.asList(getUpstreamChannel(), getDownstreamChannel()));
+        if (destroyed.get()) {
+            throw new SystemException("Connection already destroyed");
+        }
+
+        ChannelFuture channelFuture = bootstrap.connect(address, port);
+        Channel channel = channelFuture.sync().channel();
+        channel.writeAndFlush(message).sync();
+        channel.close().sync();
     }
 
     @Override
@@ -80,11 +120,7 @@ public class HttpConnector
             throws Exception {
 
         if (destroyed.compareAndSet(false, true)) {
-            Channel channel = getUpstreamChannel();
-            if (channel != null) {
-                channel.close().sync();
-            }
-            channel = getDownstreamChannel();
+            Channel channel = downstream.get();
             if (channel != null) {
                 channel.close().sync();
             }
@@ -111,8 +147,89 @@ public class HttpConnector
         return TransportLayer.TCP;
     }
 
+    private HttpConnectionProcessor buildProcessor(Serializer serializer) {
+        return new HttpConnectionProcessor(serializer, HttpConnector.this);
+    }
+
+    private Connection activateLongPolling(Connection connection) {
+        if (connection != null) {
+            ServerConnection serverConnection = (ServerConnection) connection;
+            Bootstrap bootstrap = this.bootstrap.attr(ClientUtil.CONNECTION, serverConnection);
+            ChannelFuture channelFuture = bootstrap.connect(address, port);
+            channelFuture.addListener(fireLongPollingRequest(serverConnection));
+        }
+        return connection;
+    }
+
+    private ChannelFutureListener fireLongPollingRequest(ServerConnection connection) {
+        return (channelFuture) -> {
+            Channel channel = channelFuture.channel();
+            downstream.set(channel);
+
+            channel.closeFuture().addListener(reconnectLongPolling(connection));
+
+            LongPollingRequest longPollingRequest = new LongPollingRequest();
+            ByteBuf buffer = channel.alloc().directBuffer();
+            MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
+            try (AutoClosableEncoder encoder = serializer.retrieveEncoder(memoryBuffer)) {
+                encoder.writeBoolean("loggedIn", true);
+                encoder.writeObject("connectionId", connection.getConnectionId());
+                encoder.writeObject("longPollingRequest", Message.create(longPollingRequest));
+            }
+            channel.writeAndFlush(buildHttpRequest(buffer));
+        };
+    }
+
+    private ChannelFutureListener reconnectLongPolling(ServerConnection connection) {
+        return (cf) -> {
+            if (destroyed.get()) {
+                return;
+            }
+
+            ChannelFuture channelFuture = bootstrap.connect(address, port);
+            channelFuture.addListener(fireLongPollingRequest(connection));
+        };
+    }
+
+    private void handshakeRequest(Channel channel)
+            throws Exception {
+
+        this.allocator = channel.alloc();
+
+        // Send Handshake
+        ByteBuf buffer = Unpooled.buffer();
+        MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
+        try (AutoClosableEncoder encoder = serializer.retrieveEncoder(memoryBuffer)) {
+            encoder.writeBoolean("loggedIn", false);
+            encoder.writeObject("handshake", new HandshakeRequest());
+        }
+        channel.writeAndFlush(buildHttpRequest(buffer));
+    }
+
     private Bootstrap createBootstrap() {
-        return null;
+        return new Bootstrap().channel(NioSocketChannel.class) //
+                .group(clientGroup).option(ChannelOption.TCP_NODELAY, true) //
+                .handler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    protected void initChannel(SocketChannel channel)
+                            throws Exception {
+
+                        ChannelPipeline pipeline = channel.pipeline();
+                        pipeline.addLast("codec", new HttpClientCodec());
+                        pipeline.addLast(new HttpObjectAggregator(1048576));
+                        pipeline.addLast(buildProcessor(serializer));
+                    }
+                });
+    }
+
+    static HttpRequest buildHttpRequest(ByteBuf buffer) {
+        HttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/channel", buffer);
+        HttpHeaders headers = request.headers();
+        headers.set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
+        headers.set(HttpHeaderNames.CONTENT_TYPE, DefaultProtocolConstants.PROTOCOL_MIME_TYPE);
+        headers.set(HttpHeaderNames.CONTENT_LENGTH, buffer.writerIndex());
+        headers.set(HttpHeaderNames.USER_AGENT, TransportConstants.TRANSPORT_NAME_HTTP);
+        return request;
     }
 
 }

@@ -19,8 +19,10 @@ package com.noctarius.tengi.client.impl;
 import com.noctarius.tengi.core.serialization.Serializer;
 import io.netty.channel.EventLoopGroup;
 
+import java.net.InetAddress;
+
 public interface ConnectorFactory {
 
-    Connector create(Serializer serializer, MessagePublisher messagePublisher, EventLoopGroup clientGroup);
+    Connector create(InetAddress address, int port, Serializer serializer, EventLoopGroup clientGroup);
 
 }

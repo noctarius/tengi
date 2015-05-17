@@ -16,21 +16,16 @@
  */
 package com.noctarius.tengi.client;
 
-import com.noctarius.tengi.Identifier;
-import com.noctarius.tengi.Message;
 import com.noctarius.tengi.SystemException;
 import com.noctarius.tengi.Transport;
 import com.noctarius.tengi.client.impl.Connector;
 import com.noctarius.tengi.client.impl.ConnectorFactory;
-import com.noctarius.tengi.client.impl.MessagePublisher;
 import com.noctarius.tengi.core.config.Configuration;
-import com.noctarius.tengi.spi.connection.Connection;
 import com.noctarius.tengi.core.listener.ConnectionConnectedListener;
+import com.noctarius.tengi.core.serialization.Serializer;
+import com.noctarius.tengi.spi.connection.Connection;
 import com.noctarius.tengi.spi.logging.Logger;
 import com.noctarius.tengi.spi.logging.LoggerManager;
-import com.noctarius.tengi.core.serialization.Serializer;
-import com.noctarius.tengi.core.impl.CompletableFutureUtil;
-import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.DefaultThreadFactory;
@@ -39,32 +34,26 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 class ClientImpl
-        implements Client, MessagePublisher {
+        implements Client {
 
     private static final Logger LOGGER = LoggerManager.getLogger(ClientImpl.class);
 
-    private final AtomicBoolean disconnected = new AtomicBoolean(false);
-
     private final EventLoopGroup clientGroup;
     private final Configuration configuration;
-    private final Connector[] connectors;
     private final Serializer serializer;
-
-    private volatile Connector connector;
 
     ClientImpl(Configuration configuration) {
         this.clientGroup = new NioEventLoopGroup(5, new DefaultThreadFactory("channel-client-"));
         this.serializer = createSerializer(configuration);
-        this.connectors = checkTransports(configuration.getTransports());
         this.configuration = configuration;
+        checkTransports(configuration.getTransports());
     }
 
     @Override
-    public CompletableFuture<Client> connect(String host, ConnectionConnectedListener connectedListener)
+    public CompletableFuture<Connection> connect(String host, ConnectionConnectedListener connectedListener)
             throws UnknownHostException {
 
         InetAddress address = InetAddress.getByName(host);
@@ -72,81 +61,63 @@ class ClientImpl
     }
 
     @Override
-    public CompletableFuture<Client> connect(InetAddress address, ConnectionConnectedListener connectedListener) {
-        if (!disconnected.get()) {
-            LOGGER.info("tengi client is connecting, transport priority: %s", configuration.getTransports());
-            CompletableFuture<Client> future = new CompletableFuture<>();
-            connect(address, future, connectedListener, 0);
-            return future;
-        }
-
-        throw new SystemException("Client is already destroyed");
-    }
-
-    @Override
-    public CompletableFuture<Client> disconnect() {
-        return CompletableFutureUtil.executeAsync(() -> {
-            if (disconnected.compareAndSet(false, true)) {
-                Connector connector = this.connector;
-                if (connector != null) {
-                    connector.destroy();
-                }
-                clientGroup.shutdownGracefully();
-            }
-            return ClientImpl.this;
-        });
-    }
-
-    @Override
-    public void publishMessage(Channel channel, Identifier connectionId, Message message) {
-
+    public CompletableFuture<Connection> connect(InetAddress address, ConnectionConnectedListener connectedListener) {
+        Connector[] connectors = createConnectors(address, configuration.getTransports());
+        LOGGER.info("tengi client is connecting, transport priority: %s", configuration.getTransports());
+        CompletableFuture<Connection> future = new CompletableFuture<>();
+        connect(address, future, connectedListener, connectors, 0);
+        return future;
     }
 
     private Serializer createSerializer(Configuration configuration) {
         return Serializer.create(configuration.getMarshallers());
     }
 
-    private Connector[] checkTransports(Set<Transport> transports) {
+    private void checkTransports(Set<Transport> transports) {
+        for (Transport transport : transports) {
+            if (!(transport instanceof ConnectorFactory)) {
+                throw new SystemException("Illegal Transport configured: " + transport);
+            }
+        }
+    }
+
+    private Connector[] createConnectors(InetAddress address, Set<Transport> transports) {
         Connector[] connectors = new Connector[transports.size()];
         int pos = 0;
         for (Transport transport : transports) {
-            if (transport instanceof ConnectorFactory) {
-                connectors[pos++] = ((ConnectorFactory) transport).create(serializer, this, clientGroup);
-            } else {
-                throw new SystemException("Illegal Transport configured: " + transport);
-            }
+            int port = configuration.getTransportPort(transport);
+            connectors[pos++] = ((ConnectorFactory) transport).create(address, port, serializer, clientGroup);
         }
         return connectors;
     }
 
-    private void connect(InetAddress address, CompletableFuture<Client> future, //
-                         ConnectionConnectedListener connectedListener, int index) {
+    private void connect(InetAddress address, CompletableFuture<Connection> future, //
+                         ConnectionConnectedListener connectedListener, Connector[] connectors, int index) {
 
         if (index >= connectors.length) {
             future.completeExceptionally(new SystemException("No transport was able to connect"));
         }
-        connectTransport(address, future, connectedListener, index);
+        connectTransport(address, future, connectedListener, connectors, index);
     }
 
-    private void connectTransport(InetAddress address, CompletableFuture<Client> future, //
-                                  ConnectionConnectedListener connectedListener, int index) {
+    private void connectTransport(InetAddress address, CompletableFuture<Connection> future, //
+                                  ConnectionConnectedListener connectedListener, Connector[] connectors, int index) {
 
         Connector connector = connectors[index];
-        int port = configuration.getTransportPort(connector);
-        CompletableFuture<Connection> connectFuture = connector.connect(address, port);
-        connectFuture.thenAccept(transportHandler(address, future, connectedListener, index));
+        CompletableFuture<Connection> connectFuture = connector.connect();
+        connectFuture.thenAccept(transportHandler(address, future, connectedListener, connectors, index));
     }
 
-    private Consumer<? super Connection> transportHandler(InetAddress address, CompletableFuture<Client> future, //
-                                                          ConnectionConnectedListener connectedListener, int index) {
+    private Consumer<? super Connection> transportHandler(InetAddress address, CompletableFuture<Connection> future, //
+                                                          ConnectionConnectedListener connectedListener, Connector[] connectors,
+                                                          int index) {
 
         return (connection) -> {
             if (connection == null) {
-                connect(address, future, connectedListener, index + 1);
+                connect(address, future, connectedListener, connectors, index + 1);
             } else {
-                this.connector = connectors[index];
                 connectedListener.onConnectionAccept(connection);
-                future.complete(ClientImpl.this);
+                future.complete(connection);
             }
         };
     }

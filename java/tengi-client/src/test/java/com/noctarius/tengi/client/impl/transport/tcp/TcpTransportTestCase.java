@@ -82,7 +82,7 @@ public class TcpTransportTestCase
             }
         };
 
-        Message result = practice(client, listener, messageFuture::get, false, ServerTransport.HTTP_TRANSPORT);
+        Message result = practice(client, listener, messageFuture::get, false, ServerTransport.TCP_TRANSPORT);
         assertNotNull(result);
 
         Packet p = result.getBody();

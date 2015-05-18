@@ -18,6 +18,7 @@ package com.noctarius.tengi.core.serialization;
 
 import com.noctarius.tengi.core.serialization.codec.Decoder;
 import com.noctarius.tengi.core.serialization.codec.Encoder;
+import com.noctarius.tengi.spi.serialization.Protocol;
 
 /**
  * <p>The <tt>Marshallable</tt> interface defines a common type
@@ -35,7 +36,7 @@ public interface Marshallable {
     /**
      * This method implements logic to marshall (serialize) this object
      * into a stream of bytes using the given {@link com.noctarius.tengi.core.serialization.codec.Encoder}.
-     * The given {@link Protocol} instance
+     * The given {@link com.noctarius.tengi.spi.serialization.Protocol} instance
      * might be used to build complex stream graphs.
      *
      * @param encoder  Encoder to write to

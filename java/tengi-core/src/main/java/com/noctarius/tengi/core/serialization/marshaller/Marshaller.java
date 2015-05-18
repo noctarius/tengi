@@ -16,9 +16,10 @@
  */
 package com.noctarius.tengi.core.serialization.marshaller;
 
-import com.noctarius.tengi.core.serialization.Protocol;
+import com.noctarius.tengi.core.serialization.Identifiable;
 import com.noctarius.tengi.core.serialization.codec.Decoder;
 import com.noctarius.tengi.core.serialization.codec.Encoder;
+import com.noctarius.tengi.spi.serialization.Protocol;
 
 /**
  * The <tt>Marshaller</tt> interface defines a type to be used

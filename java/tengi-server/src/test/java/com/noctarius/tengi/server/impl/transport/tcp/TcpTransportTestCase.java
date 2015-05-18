@@ -16,20 +16,20 @@
  */
 package com.noctarius.tengi.server.impl.transport.tcp;
 
-import com.noctarius.tengi.core.Identifier;
-import com.noctarius.tengi.core.Message;
-import com.noctarius.tengi.core.Packet;
-import com.noctarius.tengi.spi.buffer.MemoryBuffer;
-import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
-import com.noctarius.tengi.core.serialization.Serializer;
-import com.noctarius.tengi.core.serialization.codec.AutoClosableEncoder;
-import com.noctarius.tengi.core.serialization.codec.impl.DefaultCodec;
-import com.noctarius.tengi.core.serialization.impl.DefaultProtocol;
-import com.noctarius.tengi.core.serialization.impl.DefaultProtocolConstants;
+import com.noctarius.tengi.core.model.Identifier;
+import com.noctarius.tengi.core.model.Message;
+import com.noctarius.tengi.core.model.Packet;
 import com.noctarius.tengi.server.ServerTransport;
 import com.noctarius.tengi.server.impl.transport.AbstractStreamingTransportTestCase;
-import com.noctarius.tengi.spi.connection.handshake.HandshakeRequest;
-import com.noctarius.tengi.spi.connection.handshake.HandshakeResponse;
+import com.noctarius.tengi.spi.buffer.MemoryBuffer;
+import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
+import com.noctarius.tengi.spi.connection.packets.HandshakeRequest;
+import com.noctarius.tengi.spi.connection.packets.HandshakeResponse;
+import com.noctarius.tengi.spi.serialization.Serializer;
+import com.noctarius.tengi.spi.serialization.codec.AutoClosableEncoder;
+import com.noctarius.tengi.spi.serialization.codec.impl.DefaultCodec;
+import com.noctarius.tengi.spi.serialization.impl.DefaultProtocol;
+import com.noctarius.tengi.spi.serialization.impl.DefaultProtocolConstants;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;

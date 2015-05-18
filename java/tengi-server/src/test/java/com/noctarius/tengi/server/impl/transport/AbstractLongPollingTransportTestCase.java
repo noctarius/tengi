@@ -16,12 +16,12 @@
  */
 package com.noctarius.tengi.server.impl.transport;
 
-import com.noctarius.tengi.core.Message;
-import com.noctarius.tengi.spi.connection.Transport;
+import com.noctarius.tengi.core.connection.Connection;
+import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.config.ConfigurationBuilder;
 import com.noctarius.tengi.server.Server;
-import com.noctarius.tengi.core.Connection;
+import com.noctarius.tengi.core.connection.Transport;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 

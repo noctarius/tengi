@@ -17,7 +17,7 @@
 package com.noctarius.tengi.server;
 
 import com.noctarius.tengi.core.config.Configuration;
-import com.noctarius.tengi.core.listener.connection.ConnectedListener;
+import com.noctarius.tengi.core.listener.ConnectedListener;
 import io.netty.channel.Channel;
 
 import java.util.concurrent.CompletableFuture;

@@ -15,4 +15,4 @@
 # limitations under the License.
 ###########################################################################
 
-com.noctarius.tengi.logging.impl.JULLoggerFactory
+com.noctarius.tengi.spi.logging.impl.JULLoggerFactory

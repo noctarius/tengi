@@ -18,12 +18,12 @@ package com.noctarius.tengi.spi.pooling.impl;
 
 import com.noctarius.tengi.core.impl.MathUtil;
 import com.noctarius.tengi.core.impl.UnsafeUtil;
+import com.noctarius.tengi.spi.logging.Logger;
+import com.noctarius.tengi.spi.logging.LoggerManager;
 import com.noctarius.tengi.spi.pooling.ObjectHandler;
 import com.noctarius.tengi.spi.pooling.ObjectPool;
 import com.noctarius.tengi.spi.pooling.PoolValidator;
 import com.noctarius.tengi.spi.pooling.PooledObject;
-import com.noctarius.tengi.spi.logging.Logger;
-import com.noctarius.tengi.spi.logging.LoggerManager;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;

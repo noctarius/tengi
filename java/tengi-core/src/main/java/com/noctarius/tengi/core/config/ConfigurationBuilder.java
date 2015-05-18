@@ -16,11 +16,11 @@
  */
 package com.noctarius.tengi.core.config;
 
-import com.noctarius.tengi.spi.connection.Transport;
 import com.noctarius.tengi.core.serialization.marshaller.Marshaller;
 import com.noctarius.tengi.core.serialization.marshaller.MarshallerFilter;
 import com.noctarius.tengi.core.serialization.marshaller.MarshallerReader;
 import com.noctarius.tengi.core.serialization.marshaller.MarshallerWriter;
+import com.noctarius.tengi.core.connection.Transport;
 
 import java.util.Arrays;
 import java.util.Collections;

@@ -16,12 +16,12 @@
  */
 package com.noctarius.tengi.core.serialization.debugger;
 
-import com.noctarius.tengi.core.serialization.Protocol;
-import com.noctarius.tengi.core.serialization.codec.Codec;
 import com.noctarius.tengi.core.serialization.codec.Decoder;
 import com.noctarius.tengi.core.serialization.codec.Encoder;
 import com.noctarius.tengi.core.serialization.debugger.impl.DefaultSerializationDebugger;
 import com.noctarius.tengi.core.serialization.debugger.impl.NoopSerializationDebugger;
+import com.noctarius.tengi.spi.serialization.Protocol;
+import com.noctarius.tengi.spi.serialization.codec.Codec;
 
 public interface SerializationDebugger {
 

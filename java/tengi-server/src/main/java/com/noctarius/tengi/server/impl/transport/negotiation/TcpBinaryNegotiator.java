@@ -16,10 +16,10 @@
  */
 package com.noctarius.tengi.server.impl.transport.negotiation;
 
-import com.noctarius.tengi.core.serialization.Serializer;
-import com.noctarius.tengi.core.serialization.impl.DefaultProtocolConstants;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.transport.tcp.TcpConnectionProcessor;
+import com.noctarius.tengi.spi.serialization.Serializer;
+import com.noctarius.tengi.spi.serialization.impl.DefaultProtocolConstants;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;

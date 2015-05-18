@@ -16,10 +16,10 @@
  */
 package com.noctarius.tengi.server;
 
-import com.noctarius.tengi.spi.connection.Transport;
-import com.noctarius.tengi.spi.connection.TransportLayer;
 import com.noctarius.tengi.server.impl.transport.http.HttpTransport;
 import com.noctarius.tengi.server.impl.transport.tcp.TcpTransport;
+import com.noctarius.tengi.core.connection.Transport;
+import com.noctarius.tengi.core.connection.TransportLayer;
 
 public enum ServerTransport
         implements Transport {

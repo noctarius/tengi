@@ -16,13 +16,14 @@
  */
 package com.noctarius.tengi.spi.connection;
 
-import com.noctarius.tengi.core.Connection;
-import com.noctarius.tengi.core.Identifier;
-import com.noctarius.tengi.core.Message;
-import com.noctarius.tengi.spi.buffer.MemoryBuffer;
+import com.noctarius.tengi.core.connection.Connection;
+import com.noctarius.tengi.core.connection.Transport;
+import com.noctarius.tengi.core.model.Identifier;
+import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.core.listener.ConnectionListener;
 import com.noctarius.tengi.core.listener.MessageListener;
-import com.noctarius.tengi.core.serialization.Serializer;
+import com.noctarius.tengi.spi.buffer.MemoryBuffer;
+import com.noctarius.tengi.spi.serialization.Serializer;
 
 import java.util.Collection;
 import java.util.Collections;

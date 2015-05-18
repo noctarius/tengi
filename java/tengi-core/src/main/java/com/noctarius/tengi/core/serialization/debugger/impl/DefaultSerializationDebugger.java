@@ -16,11 +16,11 @@
  */
 package com.noctarius.tengi.core.serialization.debugger.impl;
 
-import com.noctarius.tengi.spi.buffer.ReadableMemoryBuffer;
-import com.noctarius.tengi.core.serialization.Protocol;
-import com.noctarius.tengi.core.serialization.codec.Codec;
 import com.noctarius.tengi.core.serialization.debugger.DebuggableProtocol;
 import com.noctarius.tengi.core.serialization.debugger.SerializationDebugger;
+import com.noctarius.tengi.spi.buffer.ReadableMemoryBuffer;
+import com.noctarius.tengi.spi.serialization.Protocol;
+import com.noctarius.tengi.spi.serialization.codec.Codec;
 
 import java.util.ArrayList;
 import java.util.List;

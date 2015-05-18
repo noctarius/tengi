@@ -16,9 +16,9 @@
  */
 package com.noctarius.tengi.server.impl.transport.negotiation;
 
-import com.noctarius.tengi.core.serialization.Serializer;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.transport.http2.Http2ConnectionProcessor;
+import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;

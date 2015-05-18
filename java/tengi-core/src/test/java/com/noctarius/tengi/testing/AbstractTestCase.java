@@ -16,17 +16,17 @@
  */
 package com.noctarius.tengi.testing;
 
-import com.noctarius.tengi.spi.buffer.MemoryBuffer;
-import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.core.config.MarshallerConfiguration;
-import com.noctarius.tengi.core.serialization.Protocol;
-import com.noctarius.tengi.core.serialization.Serializer;
-import com.noctarius.tengi.core.serialization.codec.AutoClosableDecoder;
-import com.noctarius.tengi.core.serialization.codec.AutoClosableEncoder;
 import com.noctarius.tengi.core.serialization.codec.Decoder;
 import com.noctarius.tengi.core.serialization.codec.Encoder;
-import com.noctarius.tengi.core.serialization.impl.DefaultProtocol;
-import com.noctarius.tengi.core.serialization.impl.DefaultSerializer;
+import com.noctarius.tengi.spi.buffer.MemoryBuffer;
+import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
+import com.noctarius.tengi.spi.serialization.Protocol;
+import com.noctarius.tengi.spi.serialization.Serializer;
+import com.noctarius.tengi.spi.serialization.codec.AutoClosableDecoder;
+import com.noctarius.tengi.spi.serialization.codec.AutoClosableEncoder;
+import com.noctarius.tengi.spi.serialization.impl.DefaultProtocol;
+import com.noctarius.tengi.spi.serialization.impl.DefaultSerializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 

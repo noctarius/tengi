@@ -16,9 +16,9 @@
  */
 package com.noctarius.tengi.core.serialization.debugger.impl;
 
-import com.noctarius.tengi.core.serialization.Protocol;
-import com.noctarius.tengi.core.serialization.codec.Codec;
 import com.noctarius.tengi.core.serialization.debugger.SerializationDebugger;
+import com.noctarius.tengi.spi.serialization.Protocol;
+import com.noctarius.tengi.spi.serialization.codec.Codec;
 
 public enum NoopSerializationDebugger
         implements SerializationDebugger {

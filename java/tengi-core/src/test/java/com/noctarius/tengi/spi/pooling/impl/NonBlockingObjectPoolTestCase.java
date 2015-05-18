@@ -19,7 +19,6 @@ package com.noctarius.tengi.spi.pooling.impl;
 import com.noctarius.tengi.spi.pooling.ObjectHandler;
 import com.noctarius.tengi.spi.pooling.ObjectPool;
 import com.noctarius.tengi.spi.pooling.PooledObject;
-import com.noctarius.tengi.spi.pooling.impl.NonBlockingObjectPool;
 import org.junit.Test;
 
 import java.lang.reflect.Field;

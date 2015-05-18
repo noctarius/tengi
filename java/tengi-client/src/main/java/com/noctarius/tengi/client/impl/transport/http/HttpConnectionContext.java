@@ -16,15 +16,15 @@
  */
 package com.noctarius.tengi.client.impl.transport.http;
 
-import com.noctarius.tengi.core.Identifier;
-import com.noctarius.tengi.core.Message;
 import com.noctarius.tengi.client.impl.Connector;
+import com.noctarius.tengi.core.connection.Connection;
+import com.noctarius.tengi.core.model.Identifier;
+import com.noctarius.tengi.core.model.Message;
+import com.noctarius.tengi.core.impl.CompletableFutureUtil;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
-import com.noctarius.tengi.core.impl.CompletableFutureUtil;
-import com.noctarius.tengi.core.serialization.Serializer;
-import com.noctarius.tengi.core.Connection;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
+import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpRequest;

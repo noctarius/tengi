@@ -16,17 +16,17 @@
  */
 package com.noctarius.tengi.client;
 
-import com.noctarius.tengi.core.Connection;
 import com.noctarius.tengi.client.impl.Connector;
 import com.noctarius.tengi.client.impl.ConnectorFactory;
+import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.config.Configuration;
-import com.noctarius.tengi.core.listener.connection.ConnectedListener;
-import com.noctarius.tengi.core.serialization.Serializer;
 import com.noctarius.tengi.core.exception.ConnectionFailedException;
 import com.noctarius.tengi.core.exception.IllegalTransportException;
-import com.noctarius.tengi.spi.connection.Transport;
+import com.noctarius.tengi.core.listener.ConnectedListener;
+import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.spi.logging.Logger;
 import com.noctarius.tengi.spi.logging.LoggerManager;
+import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.DefaultThreadFactory;

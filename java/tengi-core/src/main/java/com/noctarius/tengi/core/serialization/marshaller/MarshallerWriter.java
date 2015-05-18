@@ -16,8 +16,8 @@
  */
 package com.noctarius.tengi.core.serialization.marshaller;
 
-import com.noctarius.tengi.core.serialization.Protocol;
 import com.noctarius.tengi.core.serialization.codec.Encoder;
+import com.noctarius.tengi.spi.serialization.Protocol;
 
 public interface MarshallerWriter<O> {
 

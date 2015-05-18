@@ -16,14 +16,16 @@
  */
 package com.noctarius.tengi.core.serialization.impl;
 
-import com.noctarius.tengi.core.Packet;
+import com.noctarius.tengi.core.model.Packet;
+import com.noctarius.tengi.core.serialization.debugger.SerializationDebugger;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
-import com.noctarius.tengi.core.serialization.Protocol;
-import com.noctarius.tengi.core.serialization.Serializer;
-import com.noctarius.tengi.core.serialization.codec.Codec;
-import com.noctarius.tengi.core.serialization.codec.impl.DefaultCodec;
-import com.noctarius.tengi.core.serialization.debugger.SerializationDebugger;
+import com.noctarius.tengi.spi.serialization.Protocol;
+import com.noctarius.tengi.spi.serialization.Serializer;
+import com.noctarius.tengi.spi.serialization.codec.Codec;
+import com.noctarius.tengi.spi.serialization.codec.impl.DefaultCodec;
+import com.noctarius.tengi.spi.serialization.impl.DefaultProtocol;
+import com.noctarius.tengi.spi.serialization.impl.SerializationClasses;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.junit.Test;

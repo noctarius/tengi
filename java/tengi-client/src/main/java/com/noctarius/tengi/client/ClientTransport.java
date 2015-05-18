@@ -16,25 +16,25 @@
  */
 package com.noctarius.tengi.client;
 
-import com.noctarius.tengi.spi.connection.Transport;
-import com.noctarius.tengi.spi.connection.TransportLayer;
 import com.noctarius.tengi.client.impl.Connector;
 import com.noctarius.tengi.client.impl.ConnectorFactory;
 import com.noctarius.tengi.client.impl.transport.http.HttpConnector;
 import com.noctarius.tengi.client.impl.transport.tcp.TcpConnector;
-import com.noctarius.tengi.core.serialization.Serializer;
+import com.noctarius.tengi.core.connection.Transport;
+import com.noctarius.tengi.core.connection.TransportLayer;
+import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.channel.EventLoopGroup;
 
 import java.net.InetAddress;
 
-import static com.noctarius.tengi.spi.connection.TransportConstants.DEFAULT_PORT_TCP;
-import static com.noctarius.tengi.spi.connection.TransportConstants.DEFAULT_PORT_UDP;
-import static com.noctarius.tengi.spi.connection.TransportConstants.TRANSPORT_NAME_HTTP;
-import static com.noctarius.tengi.spi.connection.TransportConstants.TRANSPORT_NAME_HTTP2;
-import static com.noctarius.tengi.spi.connection.TransportConstants.TRANSPORT_NAME_RDP;
-import static com.noctarius.tengi.spi.connection.TransportConstants.TRANSPORT_NAME_TCP;
-import static com.noctarius.tengi.spi.connection.TransportConstants.TRANSPORT_NAME_UDP;
-import static com.noctarius.tengi.spi.connection.TransportConstants.TRANSPORT_NAME_WEBSOCKET;
+import static com.noctarius.tengi.spi.connection.impl.TransportConstants.DEFAULT_PORT_TCP;
+import static com.noctarius.tengi.spi.connection.impl.TransportConstants.DEFAULT_PORT_UDP;
+import static com.noctarius.tengi.spi.connection.impl.TransportConstants.TRANSPORT_NAME_HTTP;
+import static com.noctarius.tengi.spi.connection.impl.TransportConstants.TRANSPORT_NAME_HTTP2;
+import static com.noctarius.tengi.spi.connection.impl.TransportConstants.TRANSPORT_NAME_RDP;
+import static com.noctarius.tengi.spi.connection.impl.TransportConstants.TRANSPORT_NAME_TCP;
+import static com.noctarius.tengi.spi.connection.impl.TransportConstants.TRANSPORT_NAME_UDP;
+import static com.noctarius.tengi.spi.connection.impl.TransportConstants.TRANSPORT_NAME_WEBSOCKET;
 
 public enum ClientTransport
         implements Transport, ConnectorFactory {

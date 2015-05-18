@@ -16,10 +16,10 @@
  */
 package com.noctarius.tengi.server.impl.transport.negotiation;
 
-import com.noctarius.tengi.core.serialization.Serializer;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.transport.http.HttpConnectionProcessor;
 import com.noctarius.tengi.server.impl.transport.websocket.WebsocketConnectionProcessor;
+import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;

@@ -16,15 +16,15 @@
  */
 package com.noctarius.tengi.server.impl;
 
-import com.noctarius.tengi.core.Connection;
-import com.noctarius.tengi.core.Identifier;
-import com.noctarius.tengi.core.Message;
-import com.noctarius.tengi.core.listener.connection.ConnectedListener;
-import com.noctarius.tengi.core.serialization.Serializer;
+import com.noctarius.tengi.core.connection.Connection;
+import com.noctarius.tengi.core.model.Identifier;
+import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.core.exception.NoSuchConnectionException;
+import com.noctarius.tengi.core.listener.ConnectedListener;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
-import com.noctarius.tengi.spi.connection.Transport;
-import com.noctarius.tengi.spi.connection.handshake.LongPollingRequest;
+import com.noctarius.tengi.core.connection.Transport;
+import com.noctarius.tengi.spi.connection.packets.LongPollingRequest;
+import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.channel.Channel;
 import io.netty.handler.ssl.SslContext;
 import io.netty.util.internal.ConcurrentSet;

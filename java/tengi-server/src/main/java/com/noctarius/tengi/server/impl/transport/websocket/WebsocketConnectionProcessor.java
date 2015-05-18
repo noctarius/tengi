@@ -16,13 +16,13 @@
  */
 package com.noctarius.tengi.server.impl.transport.websocket;
 
-import com.noctarius.tengi.core.Identifier;
-import com.noctarius.tengi.core.serialization.Serializer;
-import com.noctarius.tengi.core.serialization.codec.AutoClosableDecoder;
+import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.server.ServerTransport;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.transport.ServerConnectionProcessor;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
+import com.noctarius.tengi.spi.serialization.Serializer;
+import com.noctarius.tengi.spi.serialization.codec.AutoClosableDecoder;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;

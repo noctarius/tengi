@@ -16,8 +16,8 @@
  */
 package com.noctarius.tengi.core.serialization.debugger;
 
-import com.noctarius.tengi.core.serialization.Protocol;
 import com.noctarius.tengi.core.serialization.codec.Decoder;
+import com.noctarius.tengi.spi.serialization.Protocol;
 
 public interface DebuggableProtocol
         extends Protocol {

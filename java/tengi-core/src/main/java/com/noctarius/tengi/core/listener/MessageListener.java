@@ -21,7 +21,7 @@ import com.noctarius.tengi.core.model.Message;
 
 /**
  * <p>The <tt>MessageListener</tt> interfaces describes a handler that is
- * able to capture arriving messages and handle them accordingly.
+ * able to handle arriving messages and handle them accordingly.
  * Together with the {@link com.noctarius.tengi.core.model.Message} it will retrieve
  * the {@link com.noctarius.tengi.core.connection.Connection} the message is retrieved on.</p>
  * <p>MessageListeners are executed inside a special thread-pool and expected
@@ -34,7 +34,8 @@ public interface MessageListener {
     /**
      * This method is called whenever a new message arrives on one of the transports.
      * The method is not meant to execute long running operations but may offload those
-     * to another thread-pool to free the listener thread-pool as quickly as possible.
+     * operations to another thread-pool to free the listener thread-pool as quickly as
+     * possible.
      *
      * @param connection the connection that retrieved the message
      * @param message    the message instance that was retrieved

@@ -16,9 +16,19 @@
  */
 package com.noctarius.tengi.core.exception;
 
+/**
+ * This exception class is thrown whenever a value is tried to be de-serialized
+ * but no {@link com.noctarius.tengi.core.serialization.marshaller.Marshaller} is
+ * found for the typeId read from the byte-stream.
+ */
 public class NoSuchMarshallerException
         extends SystemException {
 
+    /**
+     * Constructs a new instance with a given message.
+     *
+     * @param message the message of the exception
+     */
     public NoSuchMarshallerException(String message) {
         super(message);
     }

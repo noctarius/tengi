@@ -16,9 +16,19 @@
  */
 package com.noctarius.tengi.core.exception;
 
+/**
+ * This exception class is thrown whenever a type or
+ * {@link com.noctarius.tengi.core.serialization.marshaller.Marshaller} is being
+ * registered but has no typeId assigned.
+ */
 public class UnknownTypeException
         extends SystemException {
 
+    /**
+     * Constructs a new instance with a given message.
+     *
+     * @param message the message of the exception
+     */
     public UnknownTypeException(String message) {
         super(message);
     }

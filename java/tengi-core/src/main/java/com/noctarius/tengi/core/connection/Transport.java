@@ -38,14 +38,25 @@ public interface Transport {
     /**
      * Returns <tt>true</tt> if this Transport implementation is
      * a streaming (full-duplex) based approach or <tt>false</tt>
-     * if based or either long-polling or polling.
+     * if based on either long-polling or polling.
      *
      * @return true if Transport is streaming, otherwise false
      */
     boolean isStreaming();
 
+    /**
+     * Returns the internal default port for this very transport.
+     *
+     * @return the default port of this transport
+     */
     int getDefaultPort();
 
+    /**
+     * Returns the underlying {@link com.noctarius.tengi.core.connection.TransportLayer}
+     * which defines the internally used socket type.
+     *
+     * @return the <tt>TransportLayer</tt> used by this transport
+     */
     TransportLayer getTransportLayer();
 
 }

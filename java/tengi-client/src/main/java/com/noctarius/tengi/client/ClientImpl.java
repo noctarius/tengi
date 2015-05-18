@@ -18,12 +18,12 @@ package com.noctarius.tengi.client;
 
 import com.noctarius.tengi.client.impl.Connector;
 import com.noctarius.tengi.client.impl.ConnectorFactory;
-import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.config.Configuration;
+import com.noctarius.tengi.core.connection.Connection;
+import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.exception.ConnectionFailedException;
 import com.noctarius.tengi.core.exception.IllegalTransportException;
 import com.noctarius.tengi.core.listener.ConnectedListener;
-import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.spi.logging.Logger;
 import com.noctarius.tengi.spi.logging.LoggerManager;
 import com.noctarius.tengi.spi.serialization.Serializer;
@@ -33,7 +33,7 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Set;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -74,7 +74,7 @@ class ClientImpl
         return Serializer.create(configuration.getMarshallers());
     }
 
-    private void checkTransports(Set<Transport> transports) {
+    private void checkTransports(List<Transport> transports) {
         for (Transport transport : transports) {
             if (!(transport instanceof ConnectorFactory)) {
                 throw new IllegalTransportException("Illegal Transport configured: " + transport);
@@ -82,7 +82,7 @@ class ClientImpl
         }
     }
 
-    private Connector[] createConnectors(InetAddress address, Set<Transport> transports) {
+    private Connector[] createConnectors(InetAddress address, List<Transport> transports) {
         Connector[] connectors = new Connector[transports.size()];
         int pos = 0;
         for (Transport transport : transports) {

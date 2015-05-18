@@ -53,7 +53,8 @@ public interface Connection
 
     /**
      * Adds a {@link com.noctarius.tengi.core.listener.MessageListener}
-     * to this connection.
+     * to this connection and returns an {@link com.noctarius.tengi.core.model.Identifier}
+     * to uniquely identify this registration.
      *
      * @param messageListener MessageListener instance to add
      * @return a unique identifier for this registration
@@ -62,9 +63,8 @@ public interface Connection
 
     /**
      * <p>Removes a previously registered {@link com.noctarius.tengi.core.listener.MessageListener}
-     * based on the {@link Identifier} returned
-     * from registration.</p>
-     * <p>Using this method anonymous listener implementations or Java 8
+     * based on the {@link Identifier} returned from the registration.</p>
+     * <p>Using this method, an anonymous listener implementations or Java 8
      * lambdas can be registered and removed.</p>
      *
      * @param registrationIdentifier the Identifier generated while registration
@@ -73,7 +73,8 @@ public interface Connection
 
     /**
      * Adds a {@link com.noctarius.tengi.core.listener.ConnectionListener}
-     * to this connection.
+     * to this connection and returns an {@link com.noctarius.tengi.core.model.Identifier}
+     * to uniquely identify this registration.
      *
      * @param connectionListener ConnectionListener instance to add
      * @return a unique identifier for this registration
@@ -82,9 +83,8 @@ public interface Connection
 
     /**
      * <p>Removes a previously registered {@link com.noctarius.tengi.core.listener.ConnectionListener}
-     * based on the {@link Identifier} returned
-     * from registration.</p>
-     * <p>Using this method anonymous listener implementations or Java 8
+     * based on the {@link Identifier} returned from registration.</p>
+     * <p>Using this method, an anonymous listener implementations or Java 8
      * lambdas can be registered and removed.</p>
      *
      * @param registrationIdentifier the Identifier generated while registration

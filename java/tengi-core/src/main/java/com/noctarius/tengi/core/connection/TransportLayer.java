@@ -16,10 +16,30 @@
  */
 package com.noctarius.tengi.core.connection;
 
+/**
+ * A <tt>TransportLayer defines the underlying socket type of a
+ * {@link com.noctarius.tengi.core.connection.Transport}</tt> implementation.
+ * Currently supported socket types are <tt>TCP</tt>, <tt>UDP</tt> or
+ * <tt>SCTP</tt>.
+ */
 public enum TransportLayer {
 
+    /**
+     * This value defines, that the {@link com.noctarius.tengi.core.connection.Transport}
+     * uses an internal <tt>TCP</tt> socket to make or accept connections.
+     */
     TCP,
+
+    /**
+     * This value defines, that the {@link com.noctarius.tengi.core.connection.Transport}
+     * uses an internal <tt>UDP</tt> socket to make or accept connections.
+     */
     UDP,
+
+    /**
+     * This value defines, that the {@link com.noctarius.tengi.core.connection.Transport}
+     * uses an internal <tt>SCTP</tt> socket to make or accept connections.
+     */
     SCTP
 
 }

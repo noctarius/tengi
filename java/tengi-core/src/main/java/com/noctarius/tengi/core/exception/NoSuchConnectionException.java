@@ -16,9 +16,18 @@
  */
 package com.noctarius.tengi.core.exception;
 
+/**
+ * This exception class is thrown whenever a {@link com.noctarius.tengi.core.model.Message}
+ * is tried to be delivered to a non registered connectionId.
+ */
 public class NoSuchConnectionException
         extends SystemException {
 
+    /**
+     * Constructs a new instance with a given message.
+     *
+     * @param message the message of the exception
+     */
     public NoSuchConnectionException(String message) {
         super(message);
     }

@@ -16,9 +16,19 @@
  */
 package com.noctarius.tengi.core.exception;
 
+/**
+ * This exception class is thrown whenever all configured
+ * {@link com.noctarius.tengi.core.connection.Transport}s are tried to make
+ * a connection but non of those were able to connect.
+ */
 public class ConnectionFailedException
         extends SystemException {
 
+    /**
+     * Constructs a new instance with a given message.
+     *
+     * @param message the message of the exception
+     */
     public ConnectionFailedException(String message) {
         super(message);
     }

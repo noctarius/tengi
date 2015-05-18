@@ -16,9 +16,19 @@
  */
 package com.noctarius.tengi.core.exception;
 
+/**
+ * This exception class is thrown whenever a configured
+ * {@link com.noctarius.tengi.core.connection.Transport} is not available to be
+ * used on either client or serve side.
+ */
 public class IllegalTransportException
         extends SystemException {
 
+    /**
+     * Constructs a new instance with a given message.
+     *
+     * @param message the message of the exception
+     */
     public IllegalTransportException(String message) {
         super(message);
     }

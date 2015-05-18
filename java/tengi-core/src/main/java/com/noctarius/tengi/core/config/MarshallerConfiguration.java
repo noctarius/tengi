@@ -16,23 +16,51 @@
  */
 package com.noctarius.tengi.core.config;
 
+import com.noctarius.tengi.core.impl.Validate;
 import com.noctarius.tengi.core.serialization.marshaller.Marshaller;
 import com.noctarius.tengi.core.serialization.marshaller.MarshallerFilter;
 
+/**
+ * <p>This final class represents a configured {@link com.noctarius.tengi.core.serialization.marshaller.Marshaller}
+ * bound to its according {@link com.noctarius.tengi.core.serialization.marshaller.MarshallerFilter}.</p>
+ * <p>This class is immutable to conform to the configuration contract of unmodifiable configurations.</p>
+ */
 public final class MarshallerConfiguration {
     private final MarshallerFilter marshallerFilter;
     private final Marshaller marshaller;
 
+    /**
+     * Constructs a new immutable instance of this <tt>MarshallerConfiguration</tt> class and stores
+     * a {@link com.noctarius.tengi.core.serialization.marshaller.MarshallerFilter} that selects elements
+     * to be serialized with the bound {@link com.noctarius.tengi.core.serialization.marshaller.Marshaller}.
+     *
+     * @param marshallerFilter the <tt>MarshallerFilter</tt> to select marshallable elements
+     * @param marshaller       the <tt>Marshaller</tt> to marshall the selected elements
+     * @throws java.lang.NullPointerException when the given <tt>MarshallerFilter</tt> or <tt>Marshaller</tt> is null
+     */
     public MarshallerConfiguration(MarshallerFilter marshallerFilter, Marshaller marshaller) {
+        Validate.notNull("marshallerFilter", marshallerFilter);
+        Validate.notNull("marshaller", marshaller);
         this.marshallerFilter = marshallerFilter;
         this.marshaller = marshaller;
     }
 
+    /**
+     * Returns the bound {@link com.noctarius.tengi.core.serialization.marshaller.MarshallerFilter}.
+     *
+     * @return the bound <tt>MarshallerFilter</tt>
+     */
     public MarshallerFilter getMarshallerFilter() {
         return marshallerFilter;
     }
 
+    /**
+     * Returns the bound {@link com.noctarius.tengi.core.serialization.marshaller.Marshaller}.
+     *
+     * @return the bound <tt>Marshaller</tt>
+     */
     public Marshaller getMarshaller() {
         return marshaller;
     }
+
 }

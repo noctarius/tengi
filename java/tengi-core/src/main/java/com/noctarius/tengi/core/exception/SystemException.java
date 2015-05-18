@@ -16,25 +16,30 @@
  */
 package com.noctarius.tengi.core.exception;
 
+/**
+ * This exception class is the root exception of all specific tengi
+ * exception classes and also acts as a generic base exception in case
+ * of any kind of exception needs to be wrapped.
+ */
 public class SystemException
         extends RuntimeException {
 
-    public SystemException() {
-    }
-
+    /**
+     * Constructs a new instance with a given message.
+     *
+     * @param message the message of the exception
+     */
     public SystemException(String message) {
         super(message);
     }
 
-    public SystemException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
+    /**
+     * Constructs a new instance with a given root cause.
+     *
+     * @param cause the root cause of the exception
+     */
     public SystemException(Throwable cause) {
         super(cause);
     }
 
-    public SystemException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
 }

@@ -16,9 +16,20 @@
  */
 package com.noctarius.tengi.core.exception;
 
+/**
+ * This exception class is thrown whenever a network-operation is being executed
+ * but the {@link com.noctarius.tengi.core.connection.Connection} is already
+ * destroyed, therefore this exception identifies an illegal internal state of
+ * the connection.
+ */
 public class ConnectionDestroyedException
         extends SystemException {
 
+    /**
+     * Constructs a new instance with a given message.
+     *
+     * @param message the message of the exception
+     */
     public ConnectionDestroyedException(String message) {
         super(message);
     }

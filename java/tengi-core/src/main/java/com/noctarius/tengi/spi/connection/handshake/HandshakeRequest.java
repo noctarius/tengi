@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi.spi.connection.handshake;
 
-import com.noctarius.tengi.Packet;
+import com.noctarius.tengi.core.Packet;
 import com.noctarius.tengi.core.serialization.TypeId;
 import com.noctarius.tengi.core.serialization.impl.DefaultProtocolConstants;
 

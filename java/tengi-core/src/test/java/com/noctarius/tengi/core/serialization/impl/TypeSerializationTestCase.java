@@ -16,9 +16,9 @@
  */
 package com.noctarius.tengi.core.serialization.impl;
 
-import com.noctarius.tengi.Identifier;
-import com.noctarius.tengi.Message;
-import com.noctarius.tengi.core.buffer.MemoryBuffer;
+import com.noctarius.tengi.core.Identifier;
+import com.noctarius.tengi.core.Message;
+import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.testing.AbstractTestCase;
 import org.junit.Test;
 

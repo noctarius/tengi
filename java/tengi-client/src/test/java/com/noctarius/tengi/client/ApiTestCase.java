@@ -22,7 +22,7 @@ import com.noctarius.tengi.core.serialization.Protocol;
 import com.noctarius.tengi.core.serialization.codec.Decoder;
 import com.noctarius.tengi.core.serialization.codec.Encoder;
 import com.noctarius.tengi.core.serialization.marshaller.MarshallerFilter;
-import com.noctarius.tengi.Connection;
+import com.noctarius.tengi.core.Connection;
 
 import java.util.concurrent.CompletableFuture;
 

@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi.client.impl.transport.tcp;
 
-import com.noctarius.tengi.Identifier;
+import com.noctarius.tengi.core.Identifier;
 import com.noctarius.tengi.client.impl.Connector;
 import com.noctarius.tengi.client.impl.ServerConnection;
 import com.noctarius.tengi.spi.connection.ConnectionContext;

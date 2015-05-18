@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi.spi.logging;
 
-import com.noctarius.tengi.exception.LoggerException;
+import com.noctarius.tengi.core.exception.LoggerException;
 
 import java.util.HashMap;
 import java.util.Map;

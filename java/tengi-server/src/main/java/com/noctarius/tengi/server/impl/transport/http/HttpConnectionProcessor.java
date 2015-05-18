@@ -16,9 +16,9 @@
  */
 package com.noctarius.tengi.server.impl.transport.http;
 
-import com.noctarius.tengi.Identifier;
-import com.noctarius.tengi.core.buffer.MemoryBuffer;
-import com.noctarius.tengi.core.buffer.impl.MemoryBufferFactory;
+import com.noctarius.tengi.core.Identifier;
+import com.noctarius.tengi.spi.buffer.MemoryBuffer;
+import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.core.serialization.Serializer;
 import com.noctarius.tengi.core.serialization.codec.AutoClosableDecoder;
 import com.noctarius.tengi.server.ServerTransport;

@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi.core.impl;
 
-import com.noctarius.tengi.Identifier;
+import com.noctarius.tengi.core.Identifier;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;

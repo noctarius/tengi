@@ -16,9 +16,9 @@
  */
 package com.noctarius.tengi.core.serialization.impl;
 
-import com.noctarius.tengi.Identifier;
-import com.noctarius.tengi.Message;
-import com.noctarius.tengi.core.buffer.ReadableMemoryBuffer;
+import com.noctarius.tengi.core.Identifier;
+import com.noctarius.tengi.core.Message;
+import com.noctarius.tengi.spi.buffer.ReadableMemoryBuffer;
 import com.noctarius.tengi.core.config.MarshallerConfiguration;
 import com.noctarius.tengi.core.impl.ExceptionUtil;
 import com.noctarius.tengi.core.serialization.Protocol;
@@ -30,8 +30,8 @@ import com.noctarius.tengi.core.serialization.debugger.DebuggableProtocol;
 import com.noctarius.tengi.core.serialization.marshaller.Identifiable;
 import com.noctarius.tengi.core.serialization.marshaller.Marshaller;
 import com.noctarius.tengi.core.serialization.marshaller.MarshallerFilter;
-import com.noctarius.tengi.exception.NoSuchMarshallerException;
-import com.noctarius.tengi.exception.UnknownTypeException;
+import com.noctarius.tengi.core.exception.NoSuchMarshallerException;
+import com.noctarius.tengi.core.exception.UnknownTypeException;
 
 import java.io.BufferedReader;
 import java.io.InputStream;

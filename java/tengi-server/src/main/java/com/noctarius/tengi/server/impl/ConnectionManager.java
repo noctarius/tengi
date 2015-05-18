@@ -16,12 +16,12 @@
  */
 package com.noctarius.tengi.server.impl;
 
-import com.noctarius.tengi.Connection;
-import com.noctarius.tengi.Identifier;
-import com.noctarius.tengi.Message;
+import com.noctarius.tengi.core.Connection;
+import com.noctarius.tengi.core.Identifier;
+import com.noctarius.tengi.core.Message;
 import com.noctarius.tengi.core.listener.connection.ConnectedListener;
 import com.noctarius.tengi.core.serialization.Serializer;
-import com.noctarius.tengi.exception.NoSuchConnectionException;
+import com.noctarius.tengi.core.exception.NoSuchConnectionException;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
 import com.noctarius.tengi.spi.connection.Transport;
 import com.noctarius.tengi.spi.connection.handshake.LongPollingRequest;

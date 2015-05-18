@@ -16,8 +16,8 @@
  */
 package com.noctarius.tengi.client.impl.transport.tcp;
 
-import com.noctarius.tengi.Message;
-import com.noctarius.tengi.Packet;
+import com.noctarius.tengi.core.Message;
+import com.noctarius.tengi.core.Packet;
 import com.noctarius.tengi.client.Client;
 import com.noctarius.tengi.client.ClientTransport;
 import com.noctarius.tengi.client.impl.transport.AbstractClientTransportTestCase;
@@ -26,7 +26,7 @@ import com.noctarius.tengi.core.config.ConfigurationBuilder;
 import com.noctarius.tengi.core.listener.MessageListener;
 import com.noctarius.tengi.core.listener.connection.ConnectedListener;
 import com.noctarius.tengi.server.ServerTransport;
-import com.noctarius.tengi.Connection;
+import com.noctarius.tengi.core.Connection;
 import org.junit.Test;
 
 import java.util.concurrent.CompletableFuture;

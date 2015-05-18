@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi.spi.connection.handshake;
 
-import com.noctarius.tengi.Message;
+import com.noctarius.tengi.core.Message;
 import com.noctarius.tengi.core.serialization.Marshallable;
 import com.noctarius.tengi.core.serialization.Protocol;
 import com.noctarius.tengi.core.serialization.TypeId;

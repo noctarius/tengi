@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi.server.impl.transport.websocket;
 
-import com.noctarius.tengi.Identifier;
+import com.noctarius.tengi.core.Identifier;
 import com.noctarius.tengi.core.serialization.Serializer;
 import com.noctarius.tengi.core.serialization.codec.AutoClosableDecoder;
 import com.noctarius.tengi.server.ServerTransport;

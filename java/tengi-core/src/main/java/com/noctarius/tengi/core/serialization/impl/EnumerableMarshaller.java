@@ -23,7 +23,7 @@ import com.noctarius.tengi.core.serialization.codec.Encoder;
 import com.noctarius.tengi.core.serialization.debugger.DebuggableMarshaller;
 import com.noctarius.tengi.core.serialization.marshaller.Enumerable;
 import com.noctarius.tengi.core.serialization.marshaller.Marshaller;
-import com.noctarius.tengi.exception.UnknownTypeException;
+import com.noctarius.tengi.core.exception.UnknownTypeException;
 
 @TypeId(DefaultProtocolConstants.SERIALIZED_TYPE_ENUMERABLE)
 enum EnumerableMarshaller

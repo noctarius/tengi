@@ -16,13 +16,13 @@
  */
 package com.noctarius.tengi.client.impl.transport;
 
-import com.noctarius.tengi.Identifier;
-import com.noctarius.tengi.Message;
+import com.noctarius.tengi.core.Identifier;
+import com.noctarius.tengi.core.Message;
 import com.noctarius.tengi.client.impl.Connector;
 import com.noctarius.tengi.client.impl.ServerConnection;
 import com.noctarius.tengi.core.serialization.Serializer;
 import com.noctarius.tengi.core.serialization.codec.AutoClosableDecoder;
-import com.noctarius.tengi.Connection;
+import com.noctarius.tengi.core.Connection;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
 import com.noctarius.tengi.spi.connection.handshake.HandshakeResponse;
 import com.noctarius.tengi.spi.logging.Logger;

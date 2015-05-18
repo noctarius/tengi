@@ -16,8 +16,8 @@
  */
 package com.noctarius.tengi.testing;
 
-import com.noctarius.tengi.core.buffer.MemoryBuffer;
-import com.noctarius.tengi.core.buffer.impl.MemoryBufferFactory;
+import com.noctarius.tengi.spi.buffer.MemoryBuffer;
+import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.core.config.MarshallerConfiguration;
 import com.noctarius.tengi.core.serialization.Protocol;
 import com.noctarius.tengi.core.serialization.Serializer;

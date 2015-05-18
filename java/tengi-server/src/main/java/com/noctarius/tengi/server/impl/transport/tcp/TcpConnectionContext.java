@@ -16,14 +16,14 @@
  */
 package com.noctarius.tengi.server.impl.transport.tcp;
 
-import com.noctarius.tengi.Identifier;
-import com.noctarius.tengi.Message;
+import com.noctarius.tengi.core.Identifier;
+import com.noctarius.tengi.core.Message;
 import com.noctarius.tengi.spi.connection.Transport;
-import com.noctarius.tengi.core.buffer.MemoryBuffer;
-import com.noctarius.tengi.core.buffer.impl.MemoryBufferFactory;
+import com.noctarius.tengi.spi.buffer.MemoryBuffer;
+import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.core.impl.CompletableFutureUtil;
 import com.noctarius.tengi.core.serialization.Serializer;
-import com.noctarius.tengi.Connection;
+import com.noctarius.tengi.core.Connection;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;

@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi.core.listener.connection;
 
-import com.noctarius.tengi.Connection;
+import com.noctarius.tengi.core.Connection;
 
 public interface DisconnectedListener {
 

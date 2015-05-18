@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi.core.serialization.codec;
 
-import com.noctarius.tengi.core.buffer.WritableMemoryBuffer;
+import com.noctarius.tengi.spi.buffer.WritableMemoryBuffer;
 
 public interface Encoder {
 

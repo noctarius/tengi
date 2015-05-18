@@ -16,9 +16,9 @@
  */
 package com.noctarius.tengi.core.serialization.codec.impl;
 
-import com.noctarius.tengi.core.buffer.MemoryBuffer;
-import com.noctarius.tengi.core.buffer.ReadableMemoryBuffer;
-import com.noctarius.tengi.core.buffer.WritableMemoryBuffer;
+import com.noctarius.tengi.spi.buffer.MemoryBuffer;
+import com.noctarius.tengi.spi.buffer.ReadableMemoryBuffer;
+import com.noctarius.tengi.spi.buffer.WritableMemoryBuffer;
 import com.noctarius.tengi.core.serialization.Protocol;
 import com.noctarius.tengi.core.serialization.codec.Codec;
 import com.noctarius.tengi.core.serialization.codec.impl.utf8.UTF8Codec;

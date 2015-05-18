@@ -16,14 +16,14 @@
  */
 package com.noctarius.tengi.client;
 
-import com.noctarius.tengi.Connection;
+import com.noctarius.tengi.core.Connection;
 import com.noctarius.tengi.client.impl.Connector;
 import com.noctarius.tengi.client.impl.ConnectorFactory;
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.listener.connection.ConnectedListener;
 import com.noctarius.tengi.core.serialization.Serializer;
-import com.noctarius.tengi.exception.ConnectionFailedException;
-import com.noctarius.tengi.exception.IllegalTransportException;
+import com.noctarius.tengi.core.exception.ConnectionFailedException;
+import com.noctarius.tengi.core.exception.IllegalTransportException;
 import com.noctarius.tengi.spi.connection.Transport;
 import com.noctarius.tengi.spi.logging.Logger;
 import com.noctarius.tengi.spi.logging.LoggerManager;

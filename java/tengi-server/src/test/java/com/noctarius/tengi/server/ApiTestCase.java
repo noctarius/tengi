@@ -16,14 +16,14 @@
  */
 package com.noctarius.tengi.server;
 
-import com.noctarius.tengi.Message;
+import com.noctarius.tengi.core.Message;
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.config.ConfigurationBuilder;
 import com.noctarius.tengi.core.serialization.Protocol;
 import com.noctarius.tengi.core.serialization.codec.Decoder;
 import com.noctarius.tengi.core.serialization.codec.Encoder;
 import com.noctarius.tengi.core.serialization.marshaller.MarshallerFilter;
-import com.noctarius.tengi.Connection;
+import com.noctarius.tengi.core.Connection;
 import io.netty.channel.Channel;
 
 import java.util.concurrent.CompletableFuture;

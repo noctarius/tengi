@@ -30,6 +30,8 @@
     <java.compiler.source>1.8</java.compiler.source>
     <java.compiler.target>1.8</java.compiler.target>
     <java.compiler.encoding>UTF-8</java.compiler.encoding>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <timestamp>${maven.build.timestamp}</timestamp>
     <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
 
@@ -275,7 +277,28 @@
         <version>2.10.1</version>
         <configuration>
           <show>public</show>
+          <doctitle>tengi: Near-Realtime Communication Foundation</doctitle>
           <excludePackageNames>*.impl</excludePackageNames>
+          <detectJavaApiLink>true</detectJavaApiLink>
+          <windowtitle>tengi: Version ${project.version} API</windowtitle>
+          <groups>
+            <group>
+              <title>Core Packages</title>
+              <packages>com.noctarius.tengi.core*</packages>
+            </group>
+            <group>
+              <title>Server Packages</title>
+              <packages>com.noctarius.tengi.server</packages>
+            </group>
+            <group>
+              <title>Client Packages</title>
+              <packages>com.noctarius.tengi.client</packages>
+            </group>
+            <group>
+              <title>SPI Packages</title>
+              <packages>com.noctarius.tengi.spi.*</packages>
+            </group>
+          </groups>
         </configuration>
       </plugin>
 
@@ -329,7 +352,28 @@
         <version>2.10.1</version>
         <configuration>
           <show>public</show>
+          <doctitle>tengi: Near-Realtime Communication Foundation</doctitle>
           <excludePackageNames>*.impl</excludePackageNames>
+          <detectJavaApiLink>true</detectJavaApiLink>
+          <windowtitle>tengi: Version ${project.version} API</windowtitle>
+          <groups>
+            <group>
+              <title>Core Packages</title>
+              <packages>com.noctarius.tengi.core*</packages>
+            </group>
+            <group>
+              <title>Server Packages</title>
+              <packages>com.noctarius.tengi.server</packages>
+            </group>
+            <group>
+              <title>Client Packages</title>
+              <packages>com.noctarius.tengi.client</packages>
+            </group>
+            <group>
+              <title>SPI Packages</title>
+              <packages>com.noctarius.tengi.spi.*</packages>
+            </group>
+          </groups>
         </configuration>
       </plugin>
     </plugins>

@@ -16,8 +16,8 @@
  */
 package com.noctarius.tengi.core.serialization.impl;
 
-import com.noctarius.tengi.Identifier;
-import com.noctarius.tengi.Message;
+import com.noctarius.tengi.core.Identifier;
+import com.noctarius.tengi.core.Message;
 import com.noctarius.tengi.core.impl.UnsafeUtil;
 import com.noctarius.tengi.core.serialization.Protocol;
 import com.noctarius.tengi.core.serialization.TypeId;

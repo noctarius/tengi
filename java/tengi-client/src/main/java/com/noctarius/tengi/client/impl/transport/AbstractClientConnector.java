@@ -17,7 +17,7 @@
 package com.noctarius.tengi.client.impl.transport;
 
 import com.noctarius.tengi.client.impl.Connector;
-import com.noctarius.tengi.Connection;
+import com.noctarius.tengi.core.Connection;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 

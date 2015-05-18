@@ -15,7 +15,7 @@
 # limitations under the License.
 ###########################################################################
 
-com.noctarius.tengi.Packet
+com.noctarius.tengi.core.Packet
 com.noctarius.tengi.spi.connection.handshake.HandshakeRequest
 com.noctarius.tengi.spi.connection.handshake.HandshakeResponse
 com.noctarius.tengi.spi.connection.handshake.LongPollingRequest

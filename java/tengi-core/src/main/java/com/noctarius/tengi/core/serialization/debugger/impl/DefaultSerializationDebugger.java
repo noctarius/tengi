@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi.core.serialization.debugger.impl;
 
-import com.noctarius.tengi.core.buffer.ReadableMemoryBuffer;
+import com.noctarius.tengi.spi.buffer.ReadableMemoryBuffer;
 import com.noctarius.tengi.core.serialization.Protocol;
 import com.noctarius.tengi.core.serialization.codec.Codec;
 import com.noctarius.tengi.core.serialization.debugger.DebuggableProtocol;

@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi.spi.logging.impl;
 
-import com.noctarius.tengi.exception.SystemException;
+import com.noctarius.tengi.core.exception.SystemException;
 import com.noctarius.tengi.testing.FilteringClassLoader;
 import org.junit.Test;
 

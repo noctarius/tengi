@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi.client.impl;
 
-import com.noctarius.tengi.Connection;
+import com.noctarius.tengi.core.Connection;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;

@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi.client.impl.transport.http;
 
-import com.noctarius.tengi.Identifier;
+import com.noctarius.tengi.core.Identifier;
 import com.noctarius.tengi.client.impl.Connector;
 import com.noctarius.tengi.client.impl.ServerConnection;
 import com.noctarius.tengi.core.serialization.Serializer;

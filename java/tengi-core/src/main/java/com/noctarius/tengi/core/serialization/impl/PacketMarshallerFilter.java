@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi.core.serialization.impl;
 
-import com.noctarius.tengi.Packet;
+import com.noctarius.tengi.core.Packet;
 import com.noctarius.tengi.core.serialization.marshaller.MarshallerFilter;
 
 enum PacketMarshallerFilter

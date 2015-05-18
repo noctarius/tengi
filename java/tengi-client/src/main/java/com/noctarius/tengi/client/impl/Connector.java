@@ -17,7 +17,7 @@
 package com.noctarius.tengi.client.impl;
 
 import com.noctarius.tengi.spi.connection.Transport;
-import com.noctarius.tengi.Connection;
+import com.noctarius.tengi.core.Connection;
 import io.netty.buffer.ByteBufAllocator;
 
 import java.util.concurrent.CompletableFuture;

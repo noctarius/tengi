@@ -16,7 +16,7 @@
  */
 package com.noctarius.tengi.core.serialization.impl;
 
-import com.noctarius.tengi.core.pooling.ObjectHandler;
+import com.noctarius.tengi.spi.pooling.ObjectHandler;
 import com.noctarius.tengi.core.serialization.Protocol;
 import com.noctarius.tengi.core.serialization.codec.impl.DefaultCodec;
 

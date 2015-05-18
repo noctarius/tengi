@@ -16,17 +16,17 @@
  */
 package com.noctarius.tengi.client.impl.transport.http;
 
-import com.noctarius.tengi.Connection;
-import com.noctarius.tengi.Message;
+import com.noctarius.tengi.core.Connection;
+import com.noctarius.tengi.core.Message;
 import com.noctarius.tengi.client.impl.ClientUtil;
 import com.noctarius.tengi.client.impl.ServerConnection;
 import com.noctarius.tengi.client.impl.transport.AbstractClientConnector;
-import com.noctarius.tengi.core.buffer.MemoryBuffer;
-import com.noctarius.tengi.core.buffer.impl.MemoryBufferFactory;
+import com.noctarius.tengi.spi.buffer.MemoryBuffer;
+import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.core.serialization.Serializer;
 import com.noctarius.tengi.core.serialization.codec.AutoClosableEncoder;
 import com.noctarius.tengi.core.serialization.impl.DefaultProtocolConstants;
-import com.noctarius.tengi.exception.ConnectionDestroyedException;
+import com.noctarius.tengi.core.exception.ConnectionDestroyedException;
 import com.noctarius.tengi.spi.connection.TransportConstants;
 import com.noctarius.tengi.spi.connection.TransportLayer;
 import com.noctarius.tengi.spi.connection.handshake.HandshakeRequest;

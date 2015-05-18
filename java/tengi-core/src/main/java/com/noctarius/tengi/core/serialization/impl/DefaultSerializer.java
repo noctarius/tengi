@@ -16,13 +16,13 @@
  */
 package com.noctarius.tengi.core.serialization.impl;
 
-import com.noctarius.tengi.core.buffer.MemoryBuffer;
-import com.noctarius.tengi.core.buffer.ReadableMemoryBuffer;
-import com.noctarius.tengi.core.buffer.WritableMemoryBuffer;
-import com.noctarius.tengi.core.buffer.impl.MemoryBufferFactory;
-import com.noctarius.tengi.core.pooling.ObjectPool;
-import com.noctarius.tengi.core.pooling.PooledObject;
-import com.noctarius.tengi.core.pooling.impl.NonBlockingObjectPool;
+import com.noctarius.tengi.spi.buffer.MemoryBuffer;
+import com.noctarius.tengi.spi.buffer.ReadableMemoryBuffer;
+import com.noctarius.tengi.spi.buffer.WritableMemoryBuffer;
+import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
+import com.noctarius.tengi.spi.pooling.ObjectPool;
+import com.noctarius.tengi.spi.pooling.PooledObject;
+import com.noctarius.tengi.spi.pooling.impl.NonBlockingObjectPool;
 import com.noctarius.tengi.core.serialization.Protocol;
 import com.noctarius.tengi.core.serialization.Serializer;
 import com.noctarius.tengi.core.serialization.codec.AutoClosableDecoder;

@@ -16,8 +16,8 @@
  */
 package com.noctarius.tengi.core.serialization.codec.impl;
 
-import com.noctarius.tengi.core.buffer.ReadableMemoryBuffer;
-import com.noctarius.tengi.core.buffer.WritableMemoryBuffer;
+import com.noctarius.tengi.spi.buffer.ReadableMemoryBuffer;
+import com.noctarius.tengi.spi.buffer.WritableMemoryBuffer;
 
 final class ByteOrderUtils {
 

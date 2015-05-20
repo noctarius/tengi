@@ -34,7 +34,6 @@ import com.noctarius.tengi.spi.serialization.Protocol;
 public interface MarshallerWriter<O> {
 
     /**
-     * /**
      * <p>This method implements the marshalling algorithm to write the given value's
      * internal state to the provided {@link com.noctarius.tengi.core.serialization.codec.Encoder}
      * instance. Additional protocol complexity such as required type information or child objects
@@ -51,7 +50,6 @@ public interface MarshallerWriter<O> {
             throws Exception;
 
     /**
-     * /**
      * <p>This method implements the marshalling algorithm to write the given value's
      * internal state to the provided {@link com.noctarius.tengi.core.serialization.codec.Encoder}
      * instance. Additional protocol complexity such as required type information or child objects

@@ -50,6 +50,23 @@ public interface MarshallerWriter<O> {
     void marshall(O object, Encoder encoder, Protocol protocol)
             throws Exception;
 
+    /**
+     * /**
+     * <p>This method implements the marshalling algorithm to write the given value's
+     * internal state to the provided {@link com.noctarius.tengi.core.serialization.codec.Encoder}
+     * instance. Additional protocol complexity such as required type information or child objects
+     * can be written with the given <tt>Protocol</tt> instance.</p>
+     * <p>Implementations of this method must be fully thread-safe and stateless for multi-threaded
+     * usage pattern.</p>
+     * <p>This method supports field name information for the serialization debugger, whenever the
+     * debugger is enabled. This field name is not written to the byte-stream.</p>
+     *
+     * @param fieldName the field name for debugging purpose
+     * @param object    the value to be marshalled
+     * @param encoder   the <tt>Encoder</tt> to write to
+     * @param protocol  the <tt>Protocol</tt> instance for additional protocol complexity
+     * @throws Exception whenever any kind of unexpected situation happened while marshalling
+     */
     default void marshall(String fieldName, O object, Encoder encoder, Protocol protocol)
             throws Exception {
 

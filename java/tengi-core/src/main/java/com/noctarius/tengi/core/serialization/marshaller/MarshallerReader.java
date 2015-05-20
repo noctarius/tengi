@@ -49,6 +49,22 @@ public interface MarshallerReader<O> {
     O unmarshall(Decoder decoder, Protocol protocol)
             throws Exception;
 
+    /**
+     * <p>This method implements the un-marshalling algorithm to read a previously marshalled
+     * internal state from the given {@link com.noctarius.tengi.core.serialization.codec.Decoder}
+     * instance. Additional protocol complexity such as required type information or child objects
+     * can be retrieved from the given <tt>Protocol</tt> instance.</p>
+     * <p>Implementations of this method must be fully thread-safe and stateless for multi-threaded
+     * usage pattern.</p>
+     * <p>This method supports field name information for the serialization debugger, whenever the
+     * debugger is enabled.</p>
+     *
+     * @param fieldName the field name for debugging purpose
+     * @param decoder   the <tt>Decoder</tt> to read from
+     * @param protocol  the <tt>Protocol</tt> instance for additional protocol complexity
+     * @return the un-marshalled value or null
+     * @throws Exception whenever any kind of unexpected situation happened while un-marshalling
+     */
     default O unmarshall(String fieldName, Decoder decoder, Protocol protocol)
             throws Exception {
 

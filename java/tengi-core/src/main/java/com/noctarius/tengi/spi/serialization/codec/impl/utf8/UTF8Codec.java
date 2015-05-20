@@ -244,7 +244,7 @@ public class UTF8Codec {
                 return new FastStringCreator(constructor);
             }
         } catch (Throwable t) {
-            LOGGER.trace(t, "No fast string creator seems to available, falling back to reflection");
+            LOGGER.trace("No fast string creator seems to available, falling back to reflection");
         }
         return null;
     }
@@ -255,7 +255,7 @@ public class UTF8Codec {
             clazz.getDeclaredConstructor(int.class, int.class, char[].class);
             return true;
         } catch (Throwable t) {
-            LOGGER.trace(t, "Old String constructor doesn't seem available");
+            LOGGER.trace("Old String constructor doesn't seem available");
         }
         return false;
     }

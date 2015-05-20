@@ -165,77 +165,77 @@ public class DefaultCodec
     }
 
     @Override
-    public void writeBytes(String fieldName, byte[] bytes) {
+    public void writeBytes(byte[] bytes) {
         memoryBuffer.writeBytes(bytes);
     }
 
     @Override
-    public void writeBytes(String fieldName, byte[] bytes, int offset, int length) {
+    public void writeBytes(byte[] bytes, int offset, int length) {
         memoryBuffer.writeBytes(bytes, offset, length);
     }
 
     @Override
-    public void writeBoolean(String fieldName, boolean value) {
+    public void writeBoolean(boolean value) {
         memoryBuffer.writeBoolean(value);
     }
 
     @Override
-    public void writeBitSet(String fieldName, boolean[] values) {
+    public void writeBitSet(boolean[] values) {
         BitSetCompressor.writeBitSet(values, memoryBuffer);
     }
 
     @Override
-    public void writeByte(String fieldName, int value) {
+    public void writeByte(int value) {
         memoryBuffer.writeByte(value);
     }
 
     @Override
-    public void writeUnsignedByte(String fieldName, short value) {
+    public void writeUnsignedByte(short value) {
         memoryBuffer.writeUnsignedByte(value);
     }
 
     @Override
-    public void writeShort(String fieldName, short value) {
+    public void writeShort(short value) {
         ByteOrderUtils.putShort(value, memoryBuffer);
     }
 
     @Override
-    public void writeChar(String fieldName, char value) {
-        writeShort(fieldName, (short) value);
+    public void writeChar(char value) {
+        writeShort((short) value);
     }
 
     @Override
-    public void writeInt32(String fieldName, int value) {
+    public void writeInt32(int value) {
         ByteOrderUtils.putInt(value, memoryBuffer);
     }
 
     @Override
-    public void writeCompressedInt32(String fieldName, int value) {
+    public void writeCompressedInt32(int value) {
         Int32Compressor.writeInt32(value, memoryBuffer);
     }
 
     @Override
-    public void writeInt64(String fieldName, long value) {
+    public void writeInt64(long value) {
         ByteOrderUtils.putLong(value, memoryBuffer);
     }
 
     @Override
-    public void writeCompressedInt64(String fieldName, long value) {
+    public void writeCompressedInt64(long value) {
         Int64Compressor.writeInt64(value, memoryBuffer);
     }
 
     @Override
-    public void writeFloat(String fieldName, float value) {
-        writeInt32(fieldName, Float.floatToIntBits(value));
+    public void writeFloat(float value) {
+        writeInt32(Float.floatToIntBits(value));
     }
 
     @Override
-    public void writeDouble(String fieldName, double value) {
-        writeInt64(fieldName, Double.doubleToLongBits(value));
+    public void writeDouble(double value) {
+        writeInt64(Double.doubleToLongBits(value));
     }
 
     @Override
-    public void writeString(String fieldName, String value) {
+    public void writeString(String value) {
         try {
             // TODO Pool buffers
             UTF8Codec.writeUTF(this, value, new byte[1024]);
@@ -247,27 +247,27 @@ public class DefaultCodec
     }
 
     @Override
-    public void writeObject(String fieldName, Object object)
+    public void writeObject(Object object)
             throws Exception {
 
         if (SerializationDebugger.Debugger.ENABLED) {
             debugger.push(protocol, this, object);
         }
-        protocol.writeObject(fieldName, object, this);
+        protocol.writeObject("object", object, this);
         if (SerializationDebugger.Debugger.ENABLED) {
             debugger.pop();
         }
     }
 
     @Override
-    public void writeNullableObject(String fieldName, Object object)
+    public void writeNullableObject(Object object)
             throws Exception {
 
-        protocol.writeNullable(fieldName, object, this, (n, o, e, p) -> {
+        protocol.writeNullable(object, this, (o, e, p) -> {
             if (SerializationDebugger.Debugger.ENABLED) {
                 debugger.push(protocol, this, object);
             }
-            writeObject(fieldName, object);
+            writeObject("object", object);
             if (SerializationDebugger.Debugger.ENABLED) {
                 debugger.pop();
             }

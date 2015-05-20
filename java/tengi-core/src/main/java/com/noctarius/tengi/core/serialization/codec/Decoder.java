@@ -56,6 +56,95 @@ public interface Decoder {
     <O> O readNullableObject()
             throws Exception;
 
+    default int readBytes(String fieldName, byte[] bytes) {
+        // TODO store field name information
+        return readBytes(bytes);
+    }
+
+    default int readBytes(String fieldName, byte[] bytes, int offset, int length) {
+        // TODO store field name information
+        return readBytes(bytes, offset, length);
+    }
+
+    default boolean readBoolean(String fieldName) {
+        // TODO store field name information
+        return readBoolean();
+    }
+
+    default boolean[] readBitSet(String fieldName) {
+        // TODO store field name information
+        return readBitSet();
+    }
+
+    default byte readByte(String fieldName) {
+        // TODO store field name information
+        return readByte();
+    }
+
+    default short readUnsignedByte(String fieldName) {
+        // TODO store field name information
+        return readUnsignedByte();
+    }
+
+    default short readShort(String fieldName) {
+        // TODO store field name information
+        return readShort();
+    }
+
+    default char readChar(String fieldName) {
+        // TODO store field name information
+        return readChar();
+    }
+
+    default int readInt32(String fieldName) {
+        // TODO store field name information
+        return readInt32();
+    }
+
+    default int readCompressedInt32(String fieldName) {
+        // TODO store field name information
+        return readCompressedInt32();
+    }
+
+    default long readInt64(String fieldName) {
+        // TODO store field name information
+        return readInt64();
+    }
+
+    default long readCompressedInt64(String fieldName) {
+        // TODO store field name information
+        return readCompressedInt64();
+    }
+
+    default float readFloat(String fieldName) {
+        // TODO store field name information
+        return readFloat();
+    }
+
+    default double readDouble(String fieldName) {
+        // TODO store field name information
+        return readDouble();
+    }
+
+    default String readString(String fieldName) {
+        // TODO store field name information
+        return readString();
+    }
+
+    default <O> O readObject(String fieldName)
+            throws Exception {
+
+        // TODO store field name information
+        return readObject();
+    }
+
+    default <O> O readNullableObject(String fieldName)
+            throws Exception {
+
+        // TODO store field name information
+        return readNullableObject();
+    }
+
     ReadableMemoryBuffer getReadableMemoryBuffer();
 
 }

@@ -16,8 +16,8 @@
  */
 package com.noctarius.tengi.spi.serialization.impl;
 
-import com.noctarius.tengi.core.model.Packet;
 import com.noctarius.tengi.core.impl.ExceptionUtil;
+import com.noctarius.tengi.core.model.Packet;
 import com.noctarius.tengi.core.serialization.TypeId;
 import com.noctarius.tengi.core.serialization.codec.Decoder;
 import com.noctarius.tengi.core.serialization.codec.Encoder;
@@ -51,7 +51,7 @@ enum PacketMarshaller
     }
 
     @Override
-    public void marshall(String fieldName, Packet packet, Encoder encoder, Protocol protocol)
+    public void marshall(Packet packet, Encoder encoder, Protocol protocol)
             throws Exception {
 
         String packageName = packet.getPacketName();

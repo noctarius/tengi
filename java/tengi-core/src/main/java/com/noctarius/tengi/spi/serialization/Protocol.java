@@ -37,6 +37,26 @@ public interface Protocol {
     <O> void writeObject(String fieldName, O object, Encoder encoder)
             throws Exception;
 
+    default <O> void writeNullable(O object, Encoder encoder, MarshallerWriter<O> writer)
+            throws Exception {
+
+        if (object == null) {
+            encoder.writeByte(0);
+            return;
+        }
+        encoder.writeByte(1);
+        writer.marshall(object, encoder, this);
+    }
+
+    default <O> O readNullable(Decoder decoder, MarshallerReader<O> reader)
+            throws Exception {
+
+        if (decoder.readByte() == 1) {
+            return reader.unmarshall(decoder, this);
+        }
+        return null;
+    }
+
     default <O> void writeNullable(String fieldName, O object, Encoder encoder, MarshallerWriter<O> writer)
             throws Exception {
 
@@ -48,11 +68,11 @@ public interface Protocol {
         writer.marshall(fieldName, object, encoder, this);
     }
 
-    default <O> O readNullable(Decoder decoder, MarshallerReader<O> reader)
+    default <O> O readNullable(String fieldName, Decoder decoder, MarshallerReader<O> reader)
             throws Exception {
 
-        if (decoder.readByte() == 1) {
-            return reader.unmarshall(decoder, this);
+        if (decoder.readByte("nullable") == 1) {
+            return reader.unmarshall(fieldName, decoder, this);
         }
         return null;
     }

@@ -22,9 +22,11 @@ import com.noctarius.tengi.core.serialization.codec.Encoder;
 import com.noctarius.tengi.spi.serialization.Protocol;
 
 /**
- * The <tt>Marshaller</tt> interface defines a type to be used
+ * <p>The <tt>Marshaller</tt> interface defines a type to be used
  * to create external serialization mechanisms based on an
- * acceptance criteria (e.g. a special super-type or an annotation).
+ * acceptance criteria (e.g. a special super-type or an annotation).</p>
+ * <p>All <tt>Marshaller</tt> implementations must be thread-safe and
+ * stateless to support multi-threaded access patterns.</p>
  */
 public interface Marshaller<O>
         extends MarshallerReader<O>, MarshallerWriter<O> {
@@ -58,10 +60,10 @@ public interface Marshaller<O>
             }
 
             @Override
-            public void marshall(String fieldName, O object, Encoder encoder, Protocol protocol)
+            public void marshall(O object, Encoder encoder, Protocol protocol)
                     throws Exception {
 
-                writer.marshall(fieldName, object, encoder, protocol);
+                writer.marshall(object, encoder, protocol);
             }
         }
         return new JitMarshaller();

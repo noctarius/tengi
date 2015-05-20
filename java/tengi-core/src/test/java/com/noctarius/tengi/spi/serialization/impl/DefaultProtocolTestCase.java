@@ -278,7 +278,7 @@ public class DefaultProtocolTestCase
         }
 
         @Override
-        public void marshall(String fieldName, TestClass3 object, Encoder encoder, Protocol protocol)
+        public void marshall(TestClass3 object, Encoder encoder, Protocol protocol)
                 throws Exception {
 
         }
@@ -294,7 +294,7 @@ public class DefaultProtocolTestCase
         }
 
         @Override
-        public void marshall(String fieldName, TestClass3 object, Encoder encoder, Protocol protocol)
+        public void marshall(TestClass3 object, Encoder encoder, Protocol protocol)
                 throws Exception {
 
         }

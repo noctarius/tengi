@@ -20,41 +20,130 @@ import com.noctarius.tengi.spi.buffer.WritableMemoryBuffer;
 
 public interface Encoder {
 
-    void writeBytes(String fieldName, byte[] bytes);
+    void writeBytes(byte[] bytes);
 
-    void writeBytes(String fieldName, byte[] bytes, int offset, int length);
+    void writeBytes(byte[] bytes, int offset, int length);
 
-    void writeBoolean(String fieldName, boolean value);
+    void writeBoolean(boolean value);
 
-    void writeBitSet(String fieldName, boolean[] values);
+    void writeBitSet(boolean[] values);
 
-    void writeByte(String fieldName, int value);
+    void writeByte(int value);
 
-    void writeUnsignedByte(String fieldName, short value);
+    void writeUnsignedByte(short value);
 
-    void writeShort(String fieldName, short value);
+    void writeShort(short value);
 
-    void writeChar(String fieldName, char value);
+    void writeChar(char value);
 
-    void writeInt32(String fieldName, int value);
+    void writeInt32(int value);
 
-    void writeCompressedInt32(String fieldName, int value);
+    void writeCompressedInt32(int value);
 
-    void writeInt64(String fieldName, long value);
+    void writeInt64(long value);
 
-    void writeCompressedInt64(String fieldName, long value);
+    void writeCompressedInt64(long value);
 
-    void writeFloat(String fieldName, float value);
+    void writeFloat(float value);
 
-    void writeDouble(String fieldName, double value);
+    void writeDouble(double value);
 
-    void writeString(String fieldName, String value);
+    void writeString(String value);
 
-    void writeObject(String fieldName, Object object)
+    void writeObject(Object object)
             throws Exception;
 
-    void writeNullableObject(String fieldName, Object object)
+    void writeNullableObject(Object object)
             throws Exception;
+
+    default void writeBytes(String fieldName, byte[] bytes) {
+        // TODO store field name information
+        writeBytes(bytes);
+    }
+
+    default void writeBytes(String fieldName, byte[] bytes, int offset, int length) {
+        // TODO store field name information
+        writeBytes(bytes, offset, length);
+    }
+
+    default void writeBoolean(String fieldName, boolean value) {
+        // TODO store field name information
+        writeBoolean(value);
+    }
+
+    default void writeBitSet(String fieldName, boolean[] values) {
+        // TODO store field name information
+        writeBitSet(values);
+    }
+
+    default void writeByte(String fieldName, int value) {
+        // TODO store field name information
+        writeByte(value);
+    }
+
+    default void writeUnsignedByte(String fieldName, short value) {
+        // TODO store field name information
+        writeUnsignedByte(value);
+    }
+
+    default void writeShort(String fieldName, short value) {
+        // TODO store field name information
+        writeShort(value);
+    }
+
+    default void writeChar(String fieldName, char value) {
+        // TODO store field name information
+        writeChar(value);
+    }
+
+    default void writeInt32(String fieldName, int value) {
+        // TODO store field name information
+        writeInt32(value);
+    }
+
+    default void writeCompressedInt32(String fieldName, int value) {
+        // TODO store field name information
+        writeCompressedInt32(value);
+    }
+
+    default void writeInt64(String fieldName, long value) {
+        // TODO store field name information
+        writeInt64(value);
+    }
+
+    default void writeCompressedInt64(String fieldName, long value) {
+        // TODO store field name information
+        writeCompressedInt64(value);
+    }
+
+    default void writeFloat(String fieldName, float value) {
+        // TODO store field name information
+        writeFloat(value);
+    }
+
+    default void writeDouble(String fieldName, double value) {
+        // TODO store field name information
+        writeDouble(value);
+    }
+
+    default void writeString(String fieldName, String value) {
+        // TODO store field name information
+        writeString(value);
+    }
+
+    default void writeObject(String fieldName, Object object)
+            throws Exception {
+
+        // TODO store field name information
+        writeObject(object);
+    }
+
+    default void writeNullableObject(String fieldName, Object object)
+            throws Exception {
+
+        // TODO store field name information
+        writeNullableObject(object);
+    }
 
     WritableMemoryBuffer getWritableMemoryBuffer();
 

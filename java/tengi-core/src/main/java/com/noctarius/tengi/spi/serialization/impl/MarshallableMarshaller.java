@@ -49,7 +49,7 @@ enum MarshallableMarshaller
     }
 
     @Override
-    public void marshall(String fieldName, Marshallable marshallable, Encoder encoder, Protocol protocol)
+    public void marshall(Marshallable marshallable, Encoder encoder, Protocol protocol)
             throws Exception {
 
         protocol.writeTypeId(marshallable, encoder);

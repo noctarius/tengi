@@ -39,8 +39,8 @@ public interface Marshallable {
      * The given {@link com.noctarius.tengi.spi.serialization.Protocol} instance
      * might be used to build complex stream graphs.
      *
-     * @param encoder  Encoder to write to
-     * @param protocol Protocol instance for additional protocol complexity
+     * @param encoder  the <tt>Encoder</tt> to write to
+     * @param protocol the <tt>Protocol</tt> instance for additional protocol complexity
      */
     void marshall(Encoder encoder, Protocol protocol)
             throws Exception;
@@ -51,8 +51,8 @@ public interface Marshallable {
      * The given {@link Protocol} instance
      * might be used to handle complex stream graphs.
      *
-     * @param decoder  Decoder to read from
-     * @param protocol Protocol instance for additional protocol complexity
+     * @param decoder  the <tt>Decoder</tt> to read from
+     * @param protocol the <tt>Protocol</tt> instance for additional protocol complexity
      */
     void unmarshall(Decoder decoder, Protocol protocol)
             throws Exception;

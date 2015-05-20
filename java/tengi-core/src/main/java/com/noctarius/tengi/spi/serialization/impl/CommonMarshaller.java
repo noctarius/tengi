@@ -16,9 +16,9 @@
  */
 package com.noctarius.tengi.spi.serialization.impl;
 
+import com.noctarius.tengi.core.impl.UnsafeUtil;
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
-import com.noctarius.tengi.core.impl.UnsafeUtil;
 import com.noctarius.tengi.core.serialization.TypeId;
 import com.noctarius.tengi.core.serialization.codec.Decoder;
 import com.noctarius.tengi.core.serialization.codec.Encoder;
@@ -49,7 +49,7 @@ final class CommonMarshaller {
         }
 
         @Override
-        public void marshall(String fieldName, Byte value, Encoder encoder, Protocol protocol)
+        public void marshall(Byte value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
             encoder.writeByte("value", value);
@@ -81,7 +81,7 @@ final class CommonMarshaller {
         }
 
         @Override
-        public void marshall(String fieldName, Short value, Encoder encoder, Protocol protocol)
+        public void marshall(Short value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
             encoder.writeShort("value", value);
@@ -112,7 +112,7 @@ final class CommonMarshaller {
         }
 
         @Override
-        public void marshall(String fieldName, Character value, Encoder encoder, Protocol protocol)
+        public void marshall(Character value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
             encoder.writeChar("value", value);
@@ -143,7 +143,7 @@ final class CommonMarshaller {
         }
 
         @Override
-        public void marshall(String fieldName, Integer value, Encoder encoder, Protocol protocol)
+        public void marshall(Integer value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
             encoder.writeInt32("value", value);
@@ -174,7 +174,7 @@ final class CommonMarshaller {
         }
 
         @Override
-        public void marshall(String fieldName, Long value, Encoder encoder, Protocol protocol)
+        public void marshall(Long value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
             encoder.writeInt64("value", value);
@@ -205,7 +205,7 @@ final class CommonMarshaller {
         }
 
         @Override
-        public void marshall(String fieldName, Float value, Encoder encoder, Protocol protocol)
+        public void marshall(Float value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
             encoder.writeFloat("value", value);
@@ -236,7 +236,7 @@ final class CommonMarshaller {
         }
 
         @Override
-        public void marshall(String fieldName, Double value, Encoder encoder, Protocol protocol)
+        public void marshall(Double value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
             encoder.writeDouble("value", value);
@@ -267,7 +267,7 @@ final class CommonMarshaller {
         }
 
         @Override
-        public void marshall(String fieldName, String value, Encoder encoder, Protocol protocol)
+        public void marshall(String value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
             encoder.writeString("utf8", value);
@@ -301,7 +301,7 @@ final class CommonMarshaller {
         }
 
         @Override
-        public void marshall(String fieldName, byte[] value, Encoder encoder, Protocol protocol)
+        public void marshall(byte[] value, Encoder encoder, Protocol protocol)
                 throws Exception {
 
             encoder.writeInt32("length", value.length);
@@ -336,7 +336,7 @@ final class CommonMarshaller {
         }
 
         @Override
-        public void marshall(String fieldName, Message message, Encoder encoder, Protocol protocol)
+        public void marshall(Message message, Encoder encoder, Protocol protocol)
                 throws Exception {
 
             Identifier messageId = message.getMessageId();
@@ -373,7 +373,7 @@ final class CommonMarshaller {
         }
 
         @Override
-        public void marshall(String fieldName, Identifier identifier, Encoder encoder, Protocol protocol)
+        public void marshall(Identifier identifier, Encoder encoder, Protocol protocol)
                 throws Exception {
 
             byte[] data = (byte[]) UNSAFE.getObject(identifier, IDENTIFIER_DATA_OFFSET);

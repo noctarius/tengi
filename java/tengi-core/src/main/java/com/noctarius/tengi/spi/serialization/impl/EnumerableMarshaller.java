@@ -46,7 +46,7 @@ enum EnumerableMarshaller
     }
 
     @Override
-    public void marshall(String fieldName, Enumerable constant, Encoder encoder, Protocol protocol)
+    public void marshall(Enumerable constant, Encoder encoder, Protocol protocol)
             throws Exception {
 
         protocol.writeTypeId(constant, encoder);

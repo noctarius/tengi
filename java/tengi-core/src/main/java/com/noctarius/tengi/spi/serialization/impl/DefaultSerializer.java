@@ -238,92 +238,92 @@ public class DefaultSerializer
         }
 
         @Override
-        public void writeBytes(String fieldName, byte[] bytes) {
-            defaultCodec.writeBytes(fieldName, bytes);
+        public void writeBytes(byte[] bytes) {
+            defaultCodec.writeBytes(bytes);
         }
 
         @Override
-        public void writeBytes(String fieldName, byte[] bytes, int offset, int length) {
-            defaultCodec.writeBytes(fieldName, bytes, offset, length);
+        public void writeBytes(byte[] bytes, int offset, int length) {
+            defaultCodec.writeBytes(bytes, offset, length);
         }
 
         @Override
-        public void writeBoolean(String fieldName, boolean value) {
-            defaultCodec.writeBoolean(fieldName, value);
+        public void writeBoolean(boolean value) {
+            defaultCodec.writeBoolean(value);
         }
 
         @Override
-        public void writeBitSet(String fieldName, boolean[] values) {
-            defaultCodec.writeBitSet(fieldName, values);
+        public void writeBitSet(boolean[] values) {
+            defaultCodec.writeBitSet(values);
         }
 
         @Override
-        public void writeByte(String fieldName, int value) {
-            defaultCodec.writeByte(fieldName, value);
+        public void writeByte(int value) {
+            defaultCodec.writeByte(value);
         }
 
         @Override
-        public void writeUnsignedByte(String fieldName, short value) {
-            defaultCodec.writeUnsignedByte(fieldName, value);
+        public void writeUnsignedByte(short value) {
+            defaultCodec.writeUnsignedByte(value);
         }
 
         @Override
-        public void writeShort(String fieldName, short value) {
-            defaultCodec.writeShort(fieldName, value);
+        public void writeShort(short value) {
+            defaultCodec.writeShort(value);
         }
 
         @Override
-        public void writeChar(String fieldName, char value) {
-            defaultCodec.writeChar(fieldName, value);
+        public void writeChar(char value) {
+            defaultCodec.writeChar(value);
         }
 
         @Override
-        public void writeInt32(String fieldName, int value) {
-            defaultCodec.writeInt32(fieldName, value);
+        public void writeInt32(int value) {
+            defaultCodec.writeInt32(value);
         }
 
         @Override
-        public void writeCompressedInt32(String fieldName, int value) {
-            defaultCodec.writeCompressedInt32(fieldName, value);
+        public void writeCompressedInt32(int value) {
+            defaultCodec.writeCompressedInt32(value);
         }
 
         @Override
-        public void writeInt64(String fieldName, long value) {
-            defaultCodec.writeInt64(fieldName, value);
+        public void writeInt64(long value) {
+            defaultCodec.writeInt64(value);
         }
 
         @Override
-        public void writeCompressedInt64(String fieldName, long value) {
-            defaultCodec.writeCompressedInt64(fieldName, value);
+        public void writeCompressedInt64(long value) {
+            defaultCodec.writeCompressedInt64(value);
         }
 
         @Override
-        public void writeFloat(String fieldName, float value) {
-            defaultCodec.writeFloat(fieldName, value);
+        public void writeFloat(float value) {
+            defaultCodec.writeFloat(value);
         }
 
         @Override
-        public void writeDouble(String fieldName, double value) {
-            defaultCodec.writeDouble(fieldName, value);
+        public void writeDouble(double value) {
+            defaultCodec.writeDouble(value);
         }
 
         @Override
-        public void writeString(String fieldName, String value) {
-            defaultCodec.writeString(fieldName, value);
+        public void writeString(String value) {
+            defaultCodec.writeString(value);
         }
 
         @Override
-        public void writeObject(String fieldName, Object object)
+        public void writeObject(Object object)
                 throws Exception {
 
-            defaultCodec.writeObject(fieldName, object);
+            defaultCodec.writeObject(object);
         }
 
         @Override
-        public void writeNullableObject(String fieldName, Object object)
+        public void writeNullableObject(Object object)
                 throws Exception {
 
-            defaultCodec.writeNullableObject(fieldName, object);
+            defaultCodec.writeNullableObject(object);
         }
 
         @Override

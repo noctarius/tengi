@@ -16,10 +16,10 @@
  */
 package com.noctarius.tengi.server;
 
-import com.noctarius.tengi.core.connection.Connection;
-import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.config.ConfigurationBuilder;
+import com.noctarius.tengi.core.connection.Connection;
+import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.core.serialization.codec.Decoder;
 import com.noctarius.tengi.core.serialization.codec.Encoder;
 import com.noctarius.tengi.core.serialization.marshaller.MarshallerFilter;
@@ -66,11 +66,11 @@ public class ApiTestCase {
         System.out.println(message);
     }
 
-    private static void write(String fieldName, Object object, Encoder encoder, Protocol protocol)
+    private static void write(Object object, Encoder encoder, Protocol protocol)
             throws Exception {
 
         encoder.writeByte("length", 10);
-        protocol.writeNullable("value", object, encoder, (n, o, e, p) -> {
+        protocol.writeNullable("value", object, encoder, (o, e, p) -> {
             ((MyWritable) object).write(encoder);
         });
     }

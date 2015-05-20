@@ -92,7 +92,10 @@ class ServerImpl
     @Override
     public CompletableFuture<Channel> stop() {
         return CompletableFutureUtil.executeAsync(() -> {
-            serverChannel.close().sync();
+            if (serverChannel != null) {
+                serverChannel.close().sync();
+            }
+
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
 

@@ -44,7 +44,7 @@ public abstract class AbstractStreamingTransportTestCase {
 
         Configuration configuration = new ConfigurationBuilder().addTransport(serverTransports).ssl(ssl).build();
         Server server = Server.create(configuration);
-        server.start(AbstractStreamingTransportTestCase::onConnection);
+        server.start(AbstractStreamingTransportTestCase::onConnection).get();
 
         EventLoopGroup group = new NioEventLoopGroup();
 

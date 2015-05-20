@@ -33,7 +33,7 @@ public abstract class AbstractClientTransportTestCase {
 
         Configuration configuration = new ConfigurationBuilder().addTransport(serverTransports).ssl(ssl).build();
         Server server = Server.create(configuration);
-        server.start(AbstractClientTransportTestCase::onConnection);
+        server.start(AbstractClientTransportTestCase::onConnection).get();
 
         try {
             Connection connection = client.connect("localhost", listener).get();

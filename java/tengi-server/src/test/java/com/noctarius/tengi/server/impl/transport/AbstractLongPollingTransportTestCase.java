@@ -32,7 +32,7 @@ public abstract class AbstractLongPollingTransportTestCase {
 
         Configuration configuration = new ConfigurationBuilder().addTransport(serverTransports).ssl(ssl).build();
         Server server = Server.create(configuration);
-        server.start(AbstractLongPollingTransportTestCase::onConnection);
+        server.start(AbstractLongPollingTransportTestCase::onConnection).get();
 
         EventLoopGroup group = new NioEventLoopGroup();
 

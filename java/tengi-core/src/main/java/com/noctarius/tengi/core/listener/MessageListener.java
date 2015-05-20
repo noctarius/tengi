@@ -37,8 +37,8 @@ public interface MessageListener {
      * operations to another thread-pool to free the listener thread-pool as quickly as
      * possible.
      *
-     * @param connection the connection that retrieved the message
-     * @param message    the message instance that was retrieved
+     * @param connection the <tt>Connection</tt> that retrieved the message
+     * @param message    the <tt>Message</tt> instance that was retrieved
      */
     void onMessage(Connection connection, Message message);
 

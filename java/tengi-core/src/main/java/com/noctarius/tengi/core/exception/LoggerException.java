@@ -16,9 +16,18 @@
  */
 package com.noctarius.tengi.core.exception;
 
+/**
+ * This exception class is thrown whenever a misconfiguration happened
+ * while setting up the logger framework or retrieving a logger.
+ */
 public class LoggerException
         extends SystemException {
 
+    /**
+     * Constructs a new instance with a given message.
+     *
+     * @param message the message of the exception
+     */
     public LoggerException(String message) {
         super(message);
     }

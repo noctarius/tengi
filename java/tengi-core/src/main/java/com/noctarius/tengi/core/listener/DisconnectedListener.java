@@ -18,8 +18,24 @@ package com.noctarius.tengi.core.listener;
 
 import com.noctarius.tengi.core.connection.Connection;
 
+/**
+ * The <tt>DisconnectedListener</tt> defines handles that are able to
+ * handle disconnect events of connections to clean up application state,
+ * free resources or similar actions.
+ */
 public interface DisconnectedListener {
 
+    /**
+     * <p>This method is called whenever a connection was disconnected to
+     * clean up application state, free internal resources or similar
+     * actions.</p>
+     * <p>Event handlers are called in an internal event thread-pool which
+     * is not meant to handle long running operations. If long operations
+     * need to be executed, offloading to another thread-pool is strongly
+     * recommended.</p>
+     *
+     * @param connection the disconnected <tt>Connection</tt>
+     */
     void onDisconnect(Connection connection);
 
 }

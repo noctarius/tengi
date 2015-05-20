@@ -53,6 +53,9 @@ public final class Identifier {
         this.data = data;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -61,6 +64,9 @@ public final class Identifier {
         return result;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -79,6 +85,9 @@ public final class Identifier {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         char[] chars = new char[36];
@@ -104,6 +113,17 @@ public final class Identifier {
         return new Identifier(randomBytes());
     }
 
+    /**
+     * <p>Creates an Identifier instance using the given byte-array. The array must consist of
+     * exactly 16 bytes building the 128 bit UUID content.</p>
+     * <p>For speed reasons the byte-array is not copied, therefore the byte-array must not be
+     * changed after passing it into the method, otherwise it will break the immutability contract
+     * of the Identifier. This method is meant to be used for deserialization of an Identifier in
+     * custom protocols.</p>
+     *
+     * @param data 16 bytes UUID content
+     * @return an Identifier instance based on the given byte-array
+     */
     public static Identifier fromBytes(byte[] data) {
         Validate.notNull("data", data);
         Validate.equals("data.length", 16, data.length);

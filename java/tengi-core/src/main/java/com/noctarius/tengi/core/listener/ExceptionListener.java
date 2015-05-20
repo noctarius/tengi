@@ -18,8 +18,24 @@ package com.noctarius.tengi.core.listener;
 
 import com.noctarius.tengi.core.connection.Connection;
 
+/**
+ * The <tt>ExceptionListener</tt> defines handles that are able to
+ * handle exceptions thrown from any operation based on a known
+ * connection.
+ */
 public interface ExceptionListener {
 
+    /**
+     * <p>This method is called whenever an operations, that is assigned to
+     * known connection, has thrown an exception.</p>
+     * <p>Event handlers are called in an internal event thread-pool which
+     * is not meant to handle long running operations. If long operations
+     * need to be executed, offloading to another thread-pool is strongly
+     * recommended.</p>
+     *
+     * @param connection the connected <tt>Connection</tt>
+     * @param throwable  the thrown <tt>Throwable</tt>
+     */
     void onExceptionally(Connection connection, Throwable throwable);
 
 }

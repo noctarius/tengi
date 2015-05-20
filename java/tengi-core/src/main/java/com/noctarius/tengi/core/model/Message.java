@@ -58,11 +58,6 @@ public final class Message {
         return (O) body;
     }
 
-    public static Message create(Object body) {
-        Identifier messageId = Identifier.randomIdentifier();
-        return new Message(messageId, body);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -96,6 +91,25 @@ public final class Message {
         return "Message{" + "messageId=" + messageId + ", body=" + body + '}';
     }
 
+    /**
+     * Creates a new <tt>Message</tt> instance with the given body content and an randomly
+     * generated message id.
+     *
+     * @param body the message body content
+     * @return a <tt>Message</tt> instance with random message id and the given body content
+     */
+    public static Message create(Object body) {
+        Identifier messageId = Identifier.randomIdentifier();
+        return new Message(messageId, body);
+    }
+
+    /**
+     * Creates a new <tt>Message</tt> instance with the given body content and messageId.
+     *
+     * @param messageId the unique messageId to identify the message
+     * @param body the message body content
+     * @return a <tt>Message</tt> instances with given message id and body content
+     */
     public static Message create(Identifier messageId, Object body) {
         return new Message(messageId, body);
     }

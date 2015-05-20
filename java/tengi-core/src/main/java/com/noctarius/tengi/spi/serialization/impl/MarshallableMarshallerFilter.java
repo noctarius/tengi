@@ -16,8 +16,8 @@
  */
 package com.noctarius.tengi.spi.serialization.impl;
 
-import com.noctarius.tengi.core.serialization.Cacheable;
 import com.noctarius.tengi.core.serialization.Marshallable;
+import com.noctarius.tengi.core.serialization.NonCacheable;
 import com.noctarius.tengi.core.serialization.marshaller.MarshallerFilter;
 
 enum MarshallableMarshallerFilter
@@ -30,6 +30,6 @@ enum MarshallableMarshallerFilter
         if (!(object instanceof Marshallable)) {
             return Result.Next;
         }
-        return object.getClass().isAnnotationPresent(Cacheable.class) ? Result.AcceptedAndCache : Result.Accepted;
+        return object.getClass().isAnnotationPresent(NonCacheable.class) ? Result.Accepted : Result.AcceptedAndCache;
     }
 }

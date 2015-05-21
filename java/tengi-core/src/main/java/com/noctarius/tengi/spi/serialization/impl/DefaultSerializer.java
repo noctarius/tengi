@@ -144,13 +144,13 @@ public class DefaultSerializer
         }
 
         @Override
-        public int readBytes(byte[] bytes) {
-            return defaultCodec.readBytes(bytes);
+        public void readBytes(byte[] bytes) {
+            defaultCodec.readBytes(bytes);
         }
 
         @Override
-        public int readBytes(byte[] bytes, int offset, int length) {
-            return defaultCodec.readBytes(bytes, offset, length);
+        public void readBytes(byte[] bytes, int offset, int length) {
+            defaultCodec.readBytes(bytes, offset, length);
         }
 
         @Override

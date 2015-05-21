@@ -48,13 +48,13 @@ public class DefaultCodec
     }
 
     @Override
-    public int readBytes(byte[] bytes) {
-        return memoryBuffer.readBytes(bytes);
+    public void readBytes(byte[] bytes) {
+        memoryBuffer.readBytes(bytes);
     }
 
     @Override
-    public int readBytes(byte[] bytes, int offset, int length) {
-        return memoryBuffer.readBytes(bytes, offset, length);
+    public void readBytes(byte[] bytes, int offset, int length) {
+        memoryBuffer.readBytes(bytes, offset, length);
     }
 
     @Override

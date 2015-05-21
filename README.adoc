@@ -85,7 +85,7 @@ private void onConnect(Connection connection) {
 
 private void onMessage(Connection connection, Message message) {
   Packet packet = message.getBody();
-  String helloWorld = packet.getValue("response");
+  String helloWorld = packet.getValue("value");
   System.out.println(helloWorld);
 }
 ----
@@ -118,7 +118,7 @@ private void onMessage(Connection connection, Message message) {
   Packet packet = message.getBody();
   String name = packet.getValue("name");
   Packet response = new Packet("response");
-  response.setValue("Hello World " + name);
+  response.setValue("value", "Hello World " + name);
   connection.writeObject(response);
 }
 ----

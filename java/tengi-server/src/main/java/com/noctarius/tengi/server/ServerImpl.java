@@ -62,6 +62,8 @@ class ServerImpl
     ServerImpl(Configuration configuration)
             throws Exception {
 
+        Validate.notNull("configuration", configuration);
+
         LOGGER.info("tengi Server [version: %s, build-date: %s] is starting", //
                 VersionUtil.VERSION, VersionUtil.BUILD_DATE);
 

@@ -23,6 +23,7 @@ import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.exception.ConnectionFailedException;
 import com.noctarius.tengi.core.exception.IllegalTransportException;
+import com.noctarius.tengi.core.impl.Validate;
 import com.noctarius.tengi.core.listener.ConnectedListener;
 import com.noctarius.tengi.spi.logging.Logger;
 import com.noctarius.tengi.spi.logging.LoggerManager;
@@ -47,6 +48,7 @@ class ClientImpl
     private final Serializer serializer;
 
     ClientImpl(Configuration configuration) {
+        Validate.notNull("configuration", configuration);
         this.clientGroup = new NioEventLoopGroup(5, new DefaultThreadFactory("channel-client-"));
         this.serializer = createSerializer(configuration);
         this.configuration = configuration;

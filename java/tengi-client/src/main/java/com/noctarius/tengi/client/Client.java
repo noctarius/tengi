@@ -119,6 +119,7 @@ public interface Client {
      *
      * @param configuration the configuration to setup the client
      * @return the created client instance bound to the given configuration
+     * @throws java.lang.NullPointerException when <tt>configuration</tt> is null
      */
     public static Client create(Configuration configuration) {
         return new ClientImpl(configuration);

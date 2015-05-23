@@ -30,7 +30,6 @@ final class Int64Compressor {
     private static final int MASK_INVERTED = 0x40;
 
     static void writeInt64(long value, WritableMemoryBuffer memoryBuffer) {
-
         boolean signed = ((value >>> 63) & 0x1) == 1;
         boolean inverted = storeInverted(value);
 

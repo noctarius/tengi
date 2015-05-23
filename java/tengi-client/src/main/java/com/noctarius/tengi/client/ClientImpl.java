@@ -117,7 +117,9 @@ class ClientImpl
             if (connection == null) {
                 connect(address, future, connectedListener, connectors, index + 1);
             } else {
-                connectedListener.onConnection(connection);
+                if (connectedListener != null) {
+                    connectedListener.onConnection(connection);
+                }
                 future.complete(connection);
             }
         };

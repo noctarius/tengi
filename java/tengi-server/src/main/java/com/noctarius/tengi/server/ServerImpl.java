@@ -18,6 +18,7 @@ package com.noctarius.tengi.server;
 
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.impl.CompletableFutureUtil;
+import com.noctarius.tengi.core.impl.Validate;
 import com.noctarius.tengi.core.impl.VersionUtil;
 import com.noctarius.tengi.core.listener.ConnectedListener;
 import com.noctarius.tengi.server.impl.ConnectionManager;
@@ -73,6 +74,7 @@ class ServerImpl
 
     @Override
     public CompletableFuture<Channel> start(ConnectedListener connectedListener) {
+        Validate.notNull("connectedListener", connectedListener);
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.option(ChannelOption.SO_BACKLOG, 1024).group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
                  .childHandler(new ProtocolNegotiator(connectionManager, serializer));

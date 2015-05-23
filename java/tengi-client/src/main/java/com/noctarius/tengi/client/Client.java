@@ -49,7 +49,7 @@ public interface Client {
      * as the given {@link com.noctarius.tengi.core.listener.ConnectedListener}.</p>
      *
      * @param host the host address to connect to
-     * @return the future for registering additional listeners or just to wait for completion
+     * @return a <tt>CompletableFuture</tt> representing the pending connection process
      * @throws UnknownHostException whenever the host address is not resolvable
      */
     default CompletableFuture<Connection> connect(String host)
@@ -71,7 +71,7 @@ public interface Client {
      *
      * @param host              the host address to connect to
      * @param connectedListener the callback to call when a transport was able to connect
-     * @return the future for registering additional listeners or just to wait for completion
+     * @return a <tt>CompletableFuture</tt> representing the pending connection process
      * @throws UnknownHostException whenever the host address is not resolvable
      */
     CompletableFuture<Connection> connect(String host, ConnectedListener connectedListener)
@@ -90,7 +90,7 @@ public interface Client {
      * as the given {@link com.noctarius.tengi.core.listener.ConnectedListener}.</p>
      *
      * @param address the host address to connect to
-     * @return the future for registering additional listeners or just to wait for completion
+     * @return a <tt>CompletableFuture</tt> representing the pending connection process
      */
     default CompletableFuture<Connection> connect(InetAddress address) {
         return connect(address, null);
@@ -109,7 +109,7 @@ public interface Client {
      *
      * @param address           the host address to connect to
      * @param connectedListener the callback to call when a transport was able to connect
-     * @return the future for registering additional listeners or just to wait for completion
+     * @return a <tt>CompletableFuture</tt> representing the pending connection process
      */
     CompletableFuture<Connection> connect(InetAddress address, ConnectedListener connectedListener);
 

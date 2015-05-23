@@ -101,7 +101,7 @@ public interface Connection
      *
      * @param object object to write
      * @param <O>    the type of the object to write
-     * @return a CompletionFuture to add additional behavior after the object is written
+     * @return a <tt>CompletionFuture</tt> representing the running serialization and sending process
      * @throws java.lang.Exception whenever an unexpected situation occurs while writing or sending the object
      */
     <O> CompletableFuture<Message> writeObject(O object)
@@ -111,7 +111,7 @@ public interface Connection
      * Disconnects the connection and releases any internally acquired resources that are assigned
      * to this connection.
      *
-     * @return a CompletionFuture to add additional behavior (like cleanup) after the connection is closed
+     * @return a <tt>CompletionFuture</tt> representing the pending disconnection process
      */
     CompletableFuture<Connection> disconnect();
 

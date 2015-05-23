@@ -46,7 +46,9 @@ public interface Decoder {
      * <p>If the underlying buffer is to small to read all of the content, an
      * {@link java.lang.IndexOutOfBoundsException} is thrown.</p>
      *
-     * @param bytes the byte-array to transfer the content to
+     * @param bytes  the byte-array to transfer the content to
+     * @param offset the offset to begin to write to
+     * @param length the number of bytes to write
      * @throws java.lang.IndexOutOfBoundsException whenever the buffer is too small to read all elements
      */
     void readBytes(byte[] bytes, int offset, int length);
@@ -203,6 +205,7 @@ public interface Decoder {
      * <p>If the underlying buffer is to small to read all of the content, an
      * {@link java.lang.IndexOutOfBoundsException} is thrown.</p>
      *
+     * @param <O> the type of the object to write
      * @return the a non-null object value read from the buffer
      * @throws java.lang.IndexOutOfBoundsException whenever the buffer is too small to read all elements
      * @throws java.lang.Exception                 whenever any other unexpected situation occurs
@@ -220,6 +223,7 @@ public interface Decoder {
      * <p>If the underlying buffer is to small to read all of the content, an
      * {@link java.lang.IndexOutOfBoundsException} is thrown.</p>
      *
+     * @param <O> the type of the object to read
      * @return the an object value read from the buffer or null
      * @throws java.lang.IndexOutOfBoundsException whenever the buffer is too small to read all elements
      * @throws java.lang.Exception                 whenever any other unexpected situation occurs
@@ -256,6 +260,8 @@ public interface Decoder {
      * decided to write the value to the stream but this is not required.</p>
      *
      * @param bytes     the byte-array to transfer the content to
+     * @param offset    the offset to begin to write to
+     * @param length    the number of bytes to write
      * @param fieldName the name of the field to be read, strictly for debugging purpose only
      * @throws java.lang.IndexOutOfBoundsException whenever the buffer is too small to read all elements
      */
@@ -510,6 +516,7 @@ public interface Decoder {
      * of the {@link com.noctarius.tengi.core.serialization.debugger.SerializationDebugger} might have
      * decided to write the value to the stream but this is not required.</p>
      *
+     * @param <O>       the type of the object to write
      * @param fieldName the name of the field to be read, strictly for debugging purpose only
      * @return the a non-null object value read from the buffer
      * @throws java.lang.IndexOutOfBoundsException whenever the buffer is too small to read all elements
@@ -535,6 +542,7 @@ public interface Decoder {
      * of the {@link com.noctarius.tengi.core.serialization.debugger.SerializationDebugger} might have
      * decided to write the value to the stream but this is not required.</p>
      *
+     * @param <O>       the type of the object to read
      * @param fieldName the name of the field to be read, strictly for debugging purpose only
      * @return the an object value read from the buffer or null
      * @throws java.lang.IndexOutOfBoundsException whenever the buffer is too small to read all elements

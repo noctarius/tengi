@@ -16,10 +16,10 @@
  */
 package com.noctarius.tengi.core.connection;
 
-import com.noctarius.tengi.core.model.Identifier;
-import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.core.listener.ConnectionListener;
 import com.noctarius.tengi.core.listener.MessageListener;
+import com.noctarius.tengi.core.model.Identifier;
+import com.noctarius.tengi.core.model.Message;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -100,7 +100,9 @@ public interface Connection
      * on the receiver side.
      *
      * @param object object to write
+     * @param <O>    the type of the object to write
      * @return a CompletionFuture to add additional behavior after the object is written
+     * @throws java.lang.Exception whenever an unexpected situation occurs while writing or sending the object
      */
     <O> CompletableFuture<Message> writeObject(O object)
             throws Exception;

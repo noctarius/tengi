@@ -36,6 +36,8 @@ public interface Marshaller<O>
      * lambdas. It will wrapped the given two functions into a new <tt>Marshaller</tt>
      * instance.
      *
+     * @param <O>          the type of the object to read and write with the generated <tt>Marshaller</tt>
+     * @param <I>          the type of the marshaller id
      * @param marshallerId the protocol id of the marshaller
      * @param reader       the marshall logic implementation (or function)
      * @param writer       the un-marshall logic implementation (or function)

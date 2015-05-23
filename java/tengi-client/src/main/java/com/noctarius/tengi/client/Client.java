@@ -31,7 +31,7 @@ import java.util.concurrent.CompletableFuture;
  * <pre>
  *   Configuration configuration = buildConfiguration();
  *   Client client = Client.create(configuration);
- *   CompletableFuture&lt;Connection> future = client.connect("localhost");
+ *   CompletableFuture&lt;Connection&gt; future = client.connect("localhost");
  * </pre>
  */
 public interface Client {

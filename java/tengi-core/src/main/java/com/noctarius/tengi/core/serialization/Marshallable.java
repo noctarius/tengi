@@ -41,6 +41,7 @@ public interface Marshallable {
      *
      * @param encoder  the <tt>Encoder</tt> to write to
      * @param protocol the <tt>Protocol</tt> instance for additional protocol complexity
+     * @throws java.lang.Exception whenever an unexpected situation occurs while marshalling
      */
     void marshall(Encoder encoder, Protocol protocol)
             throws Exception;
@@ -53,6 +54,7 @@ public interface Marshallable {
      *
      * @param decoder  the <tt>Decoder</tt> to read from
      * @param protocol the <tt>Protocol</tt> instance for additional protocol complexity
+     * @throws java.lang.Exception whenever an unexpected situation occurs while un-marshalling
      */
     void unmarshall(Decoder decoder, Protocol protocol)
             throws Exception;

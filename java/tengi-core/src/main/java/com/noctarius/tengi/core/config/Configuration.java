@@ -63,6 +63,7 @@ public interface Configuration {
      * Returns either the explicitly configured or default port of the given transport. No check if the
      * transport is supported is executed.
      *
+     * @param transport the <tt>Transport</tt> instance to retrieve the port for
      * @return the explicitly configured port if set, otherwise the default port of the transport
      */
     int getTransportPort(Transport transport);

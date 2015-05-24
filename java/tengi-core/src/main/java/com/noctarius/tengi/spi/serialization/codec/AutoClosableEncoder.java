@@ -18,7 +18,11 @@ package com.noctarius.tengi.spi.serialization.codec;
 
 import com.noctarius.tengi.core.serialization.codec.Encoder;
 
+/**
+ * The <tt>AutoClosableEncoder</tt> describes an auto-closable
+ * version of an {@link com.noctarius.tengi.core.serialization.codec.Encoder}
+ * to be used with try-with-resource constructs.
+ */
 public interface AutoClosableEncoder
         extends Encoder, AutoCloseable {
-
 }

@@ -18,7 +18,11 @@ package com.noctarius.tengi.spi.serialization.codec;
 
 import com.noctarius.tengi.core.serialization.codec.Decoder;
 
+/**
+ * The <tt>AutoClosableDecoder</tt> describes an auto-closable
+ * version of a {@link com.noctarius.tengi.core.serialization.codec.Decoder}
+ * to be used with try-with-resource constructs.
+ */
 public interface AutoClosableDecoder
         extends Decoder, AutoCloseable {
-
 }

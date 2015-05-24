@@ -59,7 +59,7 @@ public class DefaultCodec
 
     @Override
     public boolean readBoolean() {
-        return memoryBuffer.readBoolean();
+        return memoryBuffer.readByte() == 0 ? false : true;
     }
 
     @Override
@@ -74,7 +74,7 @@ public class DefaultCodec
 
     @Override
     public short readUnsignedByte() {
-        return memoryBuffer.readUnsignedByte();
+        return (short) (memoryBuffer.readByte() & 0xFF);
     }
 
     @Override
@@ -176,7 +176,7 @@ public class DefaultCodec
 
     @Override
     public void writeBoolean(boolean value) {
-        memoryBuffer.writeBoolean(value);
+        memoryBuffer.writeByte(value ? 1 : 0);
     }
 
     @Override
@@ -191,7 +191,7 @@ public class DefaultCodec
 
     @Override
     public void writeUnsignedByte(short value) {
-        memoryBuffer.writeUnsignedByte(value);
+        memoryBuffer.writeByte(value);
     }
 
     @Override

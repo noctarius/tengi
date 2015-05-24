@@ -19,6 +19,12 @@ package com.noctarius.tengi.spi.serialization.codec;
 import com.noctarius.tengi.core.serialization.codec.Decoder;
 import com.noctarius.tengi.core.serialization.codec.Encoder;
 
+/**
+ * The <tt>Codec</tt> interface describes the combination of
+ * an {@link com.noctarius.tengi.core.serialization.codec.Encoder} and a
+ * {@link com.noctarius.tengi.core.serialization.codec.Decoder}. This is the
+ * default interface to implement when writing a custom protocol.
+ */
 public interface Codec
         extends Decoder, Encoder {
 }

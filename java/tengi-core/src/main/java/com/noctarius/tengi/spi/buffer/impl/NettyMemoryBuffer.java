@@ -86,36 +86,28 @@ class NettyMemoryBuffer
     }
 
     @Override
-    public boolean readBoolean() {
-        return buffer.readBoolean();
-    }
-
-    @Override
     public byte readByte() {
         return buffer.readByte();
     }
 
     @Override
-    public int readBytes(byte[] bytes) {
+    public void readBytes(byte[] bytes) {
         buffer.readBytes(bytes, 0, bytes.length);
-        return bytes.length;
     }
 
     @Override
-    public int readBytes(byte[] bytes, int offset, int length) {
+    public void readBytes(byte[] bytes, int offset, int length) {
         buffer.readBytes(bytes, offset, length);
-        return length;
     }
 
     @Override
-    public int readBuffer(ByteBuffer byteBuffer) {
+    public void readBuffer(ByteBuffer byteBuffer) {
         int remaining = Math.min(byteBuffer.remaining(), readableBytes());
-        int length = readBuffer(byteBuffer, byteBuffer.position(), remaining);
-        return length;
+        readBuffer(byteBuffer, byteBuffer.position(), remaining);
     }
 
     @Override
-    public int readBuffer(ByteBuffer byteBuffer, int offset, int length) {
+    public void readBuffer(ByteBuffer byteBuffer, int offset, int length) {
         int realLength = Math.min(byteBuffer.remaining(), readableBytes());
         if (byteBuffer.hasArray()) {
             int readerIndex = buffer.readerIndex();
@@ -128,17 +120,16 @@ class NettyMemoryBuffer
                 byteBuffer.put(buffer.getByte(pos));
             }
         }
-        return realLength;
     }
 
     @Override
-    public int readBuffer(MemoryBuffer memoryBuffer) {
+    public void readBuffer(MemoryBuffer memoryBuffer) {
         int remaining = Math.min(memoryBuffer.writableBytes(), readableBytes());
-        return readBuffer(memoryBuffer, memoryBuffer.writerIndex(), remaining);
+        readBuffer(memoryBuffer, memoryBuffer.writerIndex(), remaining);
     }
 
     @Override
-    public int readBuffer(MemoryBuffer memoryBuffer, int offset, int length) {
+    public void readBuffer(MemoryBuffer memoryBuffer, int offset, int length) {
         int realLength = Math.min(length, memoryBuffer.writableBytes());
         if (memoryBuffer instanceof NettyMemoryBuffer) {
             NettyMemoryBuffer mb = (NettyMemoryBuffer) memoryBuffer;
@@ -152,12 +143,6 @@ class NettyMemoryBuffer
                 memoryBuffer.writeByte(readByte());
             }
         }
-        return realLength;
-    }
-
-    @Override
-    public short readUnsignedByte() {
-        return buffer.readUnsignedByte();
     }
 
     @Override
@@ -173,11 +158,6 @@ class NettyMemoryBuffer
     @Override
     public boolean writable() {
         return buffer.isWritable();
-    }
-
-    @Override
-    public void writeBoolean(boolean value) {
-        buffer.writeBoolean(value);
     }
 
     @Override
@@ -245,11 +225,6 @@ class NettyMemoryBuffer
                 writeByte(memoryBuffer.readByte());
             }
         }
-    }
-
-    @Override
-    public void writeUnsignedByte(short value) {
-        buffer.writeByte(value);
     }
 
     @Override

@@ -50,7 +50,8 @@ public interface Client {
      *
      * @param host the host address to connect to
      * @return a <tt>CompletableFuture</tt> representing the pending connection process
-     * @throws UnknownHostException whenever the host address is not resolvable
+     * @throws java.net.UnknownHostException  whenever the host address is not resolvable
+     * @throws java.lang.NullPointerException when <tt>host</tt> is null
      */
     default CompletableFuture<Connection> connect(String host)
             throws UnknownHostException {
@@ -72,7 +73,8 @@ public interface Client {
      * @param host              the host address to connect to
      * @param connectedListener the callback to call when a transport was able to connect
      * @return a <tt>CompletableFuture</tt> representing the pending connection process
-     * @throws UnknownHostException whenever the host address is not resolvable
+     * @throws java.net.UnknownHostException  whenever the host address is not resolvable
+     * @throws java.lang.NullPointerException when <tt>host</tt> or <tt>connectedListener</tt> is null
      */
     CompletableFuture<Connection> connect(String host, ConnectedListener connectedListener)
             throws UnknownHostException;
@@ -91,6 +93,7 @@ public interface Client {
      *
      * @param address the host address to connect to
      * @return a <tt>CompletableFuture</tt> representing the pending connection process
+     * @throws java.lang.NullPointerException when <tt>address</tt> is null
      */
     default CompletableFuture<Connection> connect(InetAddress address) {
         return connect(address, null);
@@ -110,6 +113,7 @@ public interface Client {
      * @param address           the host address to connect to
      * @param connectedListener the callback to call when a transport was able to connect
      * @return a <tt>CompletableFuture</tt> representing the pending connection process
+     * @throws java.lang.NullPointerException when <tt>address</tt> or <tt>connectedListener</tt> is null
      */
     CompletableFuture<Connection> connect(InetAddress address, ConnectedListener connectedListener);
 

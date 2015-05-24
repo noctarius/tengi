@@ -61,7 +61,7 @@ public interface Server {
      *
      * @param configuration the configuration to setup the client
      * @return the created server instance bound to the given configuration
-     * @throws java.lang.NullPointerException when <tt>configuration</tt> is null
+     * @throws java.lang.NullPointerException          when <tt>configuration</tt> is null
      * @throws java.security.cert.CertificateException when the server is started with SSL but the SSL context cannot be created
      * @throws java.lang.Exception                     whenever an unexpected situation occurs
      */

@@ -77,6 +77,7 @@ class ServerImpl
     @Override
     public CompletableFuture<Channel> start(ConnectedListener connectedListener) {
         Validate.notNull("connectedListener", connectedListener);
+
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.option(ChannelOption.SO_BACKLOG, 1024).group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
                  .childHandler(new ProtocolNegotiator(connectionManager, serializer));

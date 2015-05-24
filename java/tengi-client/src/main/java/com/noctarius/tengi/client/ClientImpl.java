@@ -49,6 +49,7 @@ class ClientImpl
 
     ClientImpl(Configuration configuration) {
         Validate.notNull("configuration", configuration);
+
         this.clientGroup = new NioEventLoopGroup(5, new DefaultThreadFactory("channel-client-"));
         this.serializer = createSerializer(configuration);
         this.configuration = configuration;
@@ -59,12 +60,18 @@ class ClientImpl
     public CompletableFuture<Connection> connect(String host, ConnectedListener connectedListener)
             throws UnknownHostException {
 
+        Validate.notNull("host", host);
+        Validate.notNull("connectedListener", connectedListener);
+
         InetAddress address = InetAddress.getByName(host);
         return connect(address, connectedListener);
     }
 
     @Override
     public CompletableFuture<Connection> connect(InetAddress address, ConnectedListener connectedListener) {
+        Validate.notNull("address", address);
+        Validate.notNull("connectedListener", connectedListener);
+
         Connector[] connectors = createConnectors(address, configuration.getTransports());
         LOGGER.info("tengi client is connecting, transport priority: %s", configuration.getTransports());
         CompletableFuture<Connection> future = new CompletableFuture<>();

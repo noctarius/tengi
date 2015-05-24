@@ -29,12 +29,27 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 public class DefaultSerializationDebugger
         implements SerializationDebugger {
 
+    /**
+     * Static holder class to prevent eager initialization but provides thread-safe instantiation
+     * of the default serialization debugger implementation.
+     */
+    public static final class Holder {
+
+        /**
+         * Static instance of the default serialization debugger implementation
+         */
+        public static final SerializationDebugger INSTANCE = new DefaultSerializationDebugger();
+    }
+
     private static final ThreadLocal<Stack> STACK = new ThreadLocal<Stack>() {
         @Override
         protected Stack initialValue() {
             return new Stack();
         }
     };
+
+    private DefaultSerializationDebugger() {
+    }
 
     @Override
     public void push(Protocol protocol, Codec codec, Process process, Object value) {

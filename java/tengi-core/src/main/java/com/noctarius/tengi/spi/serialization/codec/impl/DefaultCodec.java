@@ -27,7 +27,7 @@ import com.noctarius.tengi.spi.serialization.codec.impl.utf8.UTF8Codec;
 public class DefaultCodec
         implements Codec {
 
-    private final SerializationDebugger debugger = SerializationDebugger.create();
+    private final SerializationDebugger debugger = SerializationDebugger.instance();
 
     private final Protocol protocol;
 

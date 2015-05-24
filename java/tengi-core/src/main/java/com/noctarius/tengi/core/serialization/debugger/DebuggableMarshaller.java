@@ -20,11 +20,37 @@ import com.noctarius.tengi.core.serialization.codec.Decoder;
 import com.noctarius.tengi.core.serialization.marshaller.Marshaller;
 import com.noctarius.tengi.spi.serialization.Protocol;
 
+/**
+ * The <tt>DebuggableMarshaller</tt> is a special type of
+ * {@link com.noctarius.tengi.core.serialization.marshaller.Marshaller} that is able
+ * to identify types in a byte-stream before the actual deserialization happens.
+ *
+ * @param <O> the type of the written and read object
+ */
 public interface DebuggableMarshaller<O>
         extends Marshaller<O> {
 
+    /**
+     * <p>Returns the real type of the next object in the stream which can be the simple type
+     * for {@link com.noctarius.tengi.core.serialization.marshaller.Marshaller} implementations
+     * that handle just one type or it can read additional information from the stream to gather
+     * necessary type information.</p>
+     * <p>If additional read operations are executed, the stream is automatically reset to the
+     * position before calling this method. No additional preparation is necessary.</p>
+     *
+     * @param decoder  the <tt>Decoder</tt> to read from
+     * @param protocol the <tt>Protocol</tt> instance for additional protocol complexity
+     * @return the type of the next object in the stream
+     */
     Class<?> findType(Decoder decoder, Protocol protocol);
 
+    /**
+     * Returns the debug value of the given object. This debug value is normally
+     * a shrunk down version of the actual content of the value.
+     *
+     * @param value the value to turn into a debug value
+     * @return the debug value of the given object
+     */
     String debugValue(Object value);
 
 }

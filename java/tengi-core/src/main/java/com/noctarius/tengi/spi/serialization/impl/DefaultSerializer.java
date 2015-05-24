@@ -62,7 +62,7 @@ public class DefaultSerializer
                 return decoder.readObject();
 
             } catch (Exception e) {
-                SerializationDebugger debugger = SerializationDebugger.create();
+                SerializationDebugger debugger = SerializationDebugger.instance();
                 debugger.fixFramesToStackTrace(e);
                 throw e;
             }
@@ -91,7 +91,7 @@ public class DefaultSerializer
                     return memoryBuffer;
 
                 } catch (Exception e) {
-                    SerializationDebugger debugger = SerializationDebugger.create();
+                    SerializationDebugger debugger = SerializationDebugger.instance();
                     debugger.fixFramesToStackTrace(e);
                     throw e;
                 }
@@ -113,7 +113,7 @@ public class DefaultSerializer
                 encoder.writeObject(fieldName, object);
 
             } catch (Exception e) {
-                SerializationDebugger debugger = SerializationDebugger.create();
+                SerializationDebugger debugger = SerializationDebugger.instance();
                 debugger.fixFramesToStackTrace(e);
                 throw e;
             }

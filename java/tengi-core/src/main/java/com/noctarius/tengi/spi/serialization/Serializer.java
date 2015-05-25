@@ -145,6 +145,7 @@ public interface Serializer {
      * Creates a new <tt>Serializer</tt> instance with the given
      * {@link com.noctarius.tengi.spi.serialization.Protocol} implementation.
      *
+     * @param protocol the <tt>Protocol</tt> instance to bind
      * @return the <tt>Serializer</tt> instance bound to the given <tt>Protocol</tt>
      */
     public static Serializer create(Protocol protocol) {

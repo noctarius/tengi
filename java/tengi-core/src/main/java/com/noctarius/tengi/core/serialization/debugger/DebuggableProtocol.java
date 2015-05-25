@@ -36,6 +36,7 @@ public interface DebuggableProtocol
      * position before calling this method. No additional preparation is necessary.</p>
      *
      * @param decoder the <tt>Decoder</tt> to read from
+     * @param <T>     the type of the object following up in the stream
      * @return the type of the next object in the stream
      */
     <T> Class<T> findType(Decoder decoder);

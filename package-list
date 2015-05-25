@@ -1,6 +1,7 @@
 com.noctarius.tengi.client
 com.noctarius.tengi.core.config
 com.noctarius.tengi.core.connection
+com.noctarius.tengi.core.connection.handshake
 com.noctarius.tengi.core.exception
 com.noctarius.tengi.core.listener
 com.noctarius.tengi.core.model

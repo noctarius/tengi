@@ -628,6 +628,8 @@ A BitSet is compressed using a chunk based encoding. Every chunk has a minium an
 
 Chunks are named as `Single`, `Double`, `Quad` after the numbers of bytes used to represent them. A `Single` chunk is the only chunk that can be used to store no element which represents a *NULL* value for the serialized BitSet.
 
+The actual content is *always* written from left to right. That said, a `Single` chunk is filled from bit 4 onwards with data.
+
 [[chunk-type-signature]] Chunks are marked using the first two bits of a stream as defined in the following table:
 
 .Chunk Type Signature

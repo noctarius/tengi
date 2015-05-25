@@ -18,10 +18,10 @@ package com.noctarius.tengi.spi.connection;
 
 import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.Transport;
-import com.noctarius.tengi.core.model.Identifier;
-import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.core.listener.ConnectionListener;
 import com.noctarius.tengi.core.listener.MessageListener;
+import com.noctarius.tengi.core.model.Identifier;
+import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.serialization.Serializer;
 
@@ -31,7 +31,11 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
-
+/**
+ * The <tt>AbstractConnection</tt> acts as a base class for server- and client-side
+ * {@link com.noctarius.tengi.core.connection.Connection} implementations. It handles
+ * listener registrations as well as basic notification logic.
+ */
 public abstract class AbstractConnection
         implements Connection, ConnectionListener {
 
@@ -43,6 +47,14 @@ public abstract class AbstractConnection
     private final Map<Identifier, MessageListener> messageListeners = new ConcurrentHashMap<>();
     private final Map<Identifier, ConnectionListener> connectionListeners = new ConcurrentHashMap<>();
 
+    /**
+     * Constructs a new <tt>AbstractConnection</tt> using the given parameters.
+     *
+     * @param connectionContext the <tt>ConnectionContext</tt> to bind
+     * @param connectionId      the connection's connectionId
+     * @param transport         the <tt>Transport</tt> that received the connection request
+     * @param serializer        the <tt>Serializer</tt> to bind
+     */
     protected AbstractConnection(ConnectionContext connectionContext, Identifier connectionId, //
                                  Transport transport, Serializer serializer) {
 
@@ -137,20 +149,43 @@ public abstract class AbstractConnection
     public void onExceptionally(Connection connection, Throwable throwable) {
     }
 
+    /**
+     * Returns all registered {@link com.noctarius.tengi.core.listener.MessageListener}s. The returned
+     * collection is not modifiable.
+     *
+     * @return all registered <tt>MessageListener</tt>s
+     */
     protected Collection<MessageListener> getMessageListeners() {
         return Collections.unmodifiableCollection(messageListeners.values());
     }
 
+    /**
+     * Returns all registered {@link com.noctarius.tengi.core.listener.ConnectionListener}s. The returned
+     * collection is not modifiable.
+     *
+     * @return all registered <tt>ConnectionListener</tt>s
+     */
     protected Collection<ConnectionListener> getConnectionListeners() {
         return Collections.unmodifiableCollection(connectionListeners.values());
     }
 
+    /**
+     * Notifies all registered {@link com.noctarius.tengi.core.listener.ConnectionListener}s about an
+     * unexpected exception occurrence.
+     *
+     * @param throwable the <tt>Throwable</tt> instance to delegate to listeners
+     */
     protected void exceptionally(Throwable throwable) {
         for (ConnectionListener connectionListener : getConnectionListeners()) {
             connectionListener.onExceptionally(this, throwable);
         }
     }
 
+    /**
+     * Returns the <tt>ConnectionContext</tt> bound to this connection.
+     *
+     * @return the bound <tt>ConnectionContext</tt>
+     */
     protected ConnectionContext getConnectionContext() {
         return connectionContext;
     }

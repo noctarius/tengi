@@ -133,18 +133,6 @@ public class NettyMemoryBufferTestCase
     }
 
     @Test
-    public void test_boolean()
-            throws Exception {
-
-        MemoryBuffer memoryBuffer = createMemoryBuffer();
-
-        memoryBuffer.writeBoolean(false);
-        memoryBuffer.writeBoolean(true);
-        assertEquals(false, memoryBuffer.readBoolean());
-        assertEquals(true, memoryBuffer.readBoolean());
-    }
-
-    @Test
     public void test_byte()
             throws Exception {
 
@@ -501,18 +489,6 @@ public class NettyMemoryBufferTestCase
         for (int i = 1; i < 9; i++) {
             assertEquals((byte) i, buffer.readByte());
         }
-    }
-
-    @Test
-    public void test_unsigned_byte()
-            throws Exception {
-
-        short value = 250;
-        MemoryBuffer memoryBuffer = createMemoryBuffer();
-        memoryBuffer.writeByte(value);
-        assertEquals(1, memoryBuffer.writerIndex());
-        short result = memoryBuffer.readUnsignedByte();
-        assertEquals(value, result);
     }
 
     @Test

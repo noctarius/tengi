@@ -22,6 +22,7 @@ import com.noctarius.tengi.client.impl.transport.http.HttpConnector;
 import com.noctarius.tengi.client.impl.transport.tcp.TcpConnector;
 import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.connection.TransportLayer;
+import com.noctarius.tengi.core.connection.handshake.HandshakeHandler;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.channel.EventLoopGroup;
 
@@ -122,8 +123,10 @@ public enum ClientTransport
     }
 
     @Override
-    public Connector create(InetAddress address, int port, Serializer serializer, EventLoopGroup clientGroup) {
-        return connectorFactory.create(address, port, serializer, clientGroup);
+    public Connector create(InetAddress address, int port, Serializer serializer, HandshakeHandler handshakeHandler,
+                            EventLoopGroup clientGroup) {
+
+        return connectorFactory.create(address, port, serializer, handshakeHandler, clientGroup);
     }
 
 }

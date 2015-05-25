@@ -19,11 +19,12 @@ package com.noctarius.tengi.client.impl.transport.tcp;
 import com.noctarius.tengi.client.impl.ClientUtil;
 import com.noctarius.tengi.client.impl.transport.AbstractClientConnector;
 import com.noctarius.tengi.core.connection.Connection;
+import com.noctarius.tengi.core.connection.TransportLayer;
+import com.noctarius.tengi.core.connection.handshake.HandshakeHandler;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.spi.connection.impl.TransportConstants;
-import com.noctarius.tengi.core.connection.TransportLayer;
-import com.noctarius.tengi.spi.connection.packets.HandshakeRequest;
+import com.noctarius.tengi.spi.connection.packets.Handshake;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import com.noctarius.tengi.spi.serialization.codec.AutoClosableEncoder;
 import com.noctarius.tengi.spi.serialization.impl.DefaultProtocolConstants;
@@ -53,13 +54,17 @@ public class TcpConnector
     private final int port;
     private final Serializer serializer;
     private final EventLoopGroup clientGroup;
+    private final HandshakeHandler handshakeHandler;
 
     private volatile Channel channel;
 
-    public TcpConnector(InetAddress address, int port, Serializer serializer, EventLoopGroup clientGroup) {
+    public TcpConnector(InetAddress address, int port, Serializer serializer, HandshakeHandler handshakeHandler,
+                        EventLoopGroup clientGroup) {
+
         this.address = address;
         this.port = port;
         this.serializer = serializer;
+        this.handshakeHandler = handshakeHandler;
         this.clientGroup = clientGroup;
     }
 
@@ -74,6 +79,11 @@ public class TcpConnector
         channelFuture.addListener(connectionListener(connectorFuture, this::handshakeRequest));
 
         return connectorFuture;
+    }
+
+    @Override
+    public HandshakeHandler handshakeHandler() {
+        return handshakeHandler;
     }
 
     @Override
@@ -135,7 +145,7 @@ public class TcpConnector
         try (AutoClosableEncoder encoder = serializer.retrieveEncoder(memoryBuffer)) {
             encoder.writeBytes("magic", DefaultProtocolConstants.PROTOCOL_MAGIC_HEADER);
             encoder.writeBoolean("loggedIn", false);
-            encoder.writeObject("handshake", new HandshakeRequest());
+            encoder.writeObject("handshake", new Handshake());
         }
 
         channel.writeAndFlush(buffer);

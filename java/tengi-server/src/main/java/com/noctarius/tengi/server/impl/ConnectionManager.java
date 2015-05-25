@@ -17,12 +17,13 @@
 package com.noctarius.tengi.server.impl;
 
 import com.noctarius.tengi.core.connection.Connection;
-import com.noctarius.tengi.core.model.Identifier;
-import com.noctarius.tengi.core.model.Message;
+import com.noctarius.tengi.core.connection.Transport;
+import com.noctarius.tengi.core.connection.handshake.HandshakeHandler;
 import com.noctarius.tengi.core.exception.NoSuchConnectionException;
 import com.noctarius.tengi.core.listener.ConnectedListener;
+import com.noctarius.tengi.core.model.Identifier;
+import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
-import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.spi.connection.packets.LongPollingRequest;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.channel.Channel;
@@ -41,10 +42,12 @@ public class ConnectionManager
 
     private final SslContext sslContext;
     private final Serializer serializer;
+    private final HandshakeHandler handshakeHandler;
 
-    public ConnectionManager(SslContext sslContext, Serializer serializer) {
+    public ConnectionManager(SslContext sslContext, Serializer serializer, HandshakeHandler handshakeHandler) {
         this.sslContext = sslContext;
         this.serializer = serializer;
+        this.handshakeHandler = handshakeHandler;
     }
 
     @Override
@@ -61,6 +64,10 @@ public class ConnectionManager
 
     public void registerConnectedListener(ConnectedListener connectedListener) {
         connectedListeners.add(connectedListener);
+    }
+
+    public HandshakeHandler getHandshakeHandler() {
+        return handshakeHandler;
     }
 
     public Connection assignConnection(Identifier connectionId, ConnectionContext connectionContext, Transport transport) {

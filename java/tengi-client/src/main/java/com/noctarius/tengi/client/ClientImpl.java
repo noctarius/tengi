@@ -21,6 +21,7 @@ import com.noctarius.tengi.client.impl.ConnectorFactory;
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.Transport;
+import com.noctarius.tengi.core.connection.handshake.HandshakeHandler;
 import com.noctarius.tengi.core.exception.ConnectionFailedException;
 import com.noctarius.tengi.core.exception.IllegalTransportException;
 import com.noctarius.tengi.core.impl.Validate;
@@ -46,6 +47,7 @@ class ClientImpl
     private final EventLoopGroup clientGroup;
     private final Configuration configuration;
     private final Serializer serializer;
+    private final HandshakeHandler handshakeHandler;
 
     ClientImpl(Configuration configuration) {
         Validate.notNull("configuration", configuration);
@@ -53,6 +55,7 @@ class ClientImpl
         this.clientGroup = new NioEventLoopGroup(5, new DefaultThreadFactory("channel-client-"));
         this.serializer = createSerializer(configuration);
         this.configuration = configuration;
+        this.handshakeHandler = createHandshakeHandler(configuration);
         checkTransports(configuration.getTransports());
     }
 
@@ -96,7 +99,7 @@ class ClientImpl
         int pos = 0;
         for (Transport transport : transports) {
             int port = configuration.getTransportPort(transport);
-            connectors[pos++] = ((ConnectorFactory) transport).create(address, port, serializer, clientGroup);
+            connectors[pos++] = ((ConnectorFactory) transport).create(address, port, serializer, handshakeHandler, clientGroup);
         }
         return connectors;
     }
@@ -116,6 +119,14 @@ class ClientImpl
         Connector connector = connectors[index];
         CompletableFuture<Connection> connectFuture = connector.connect();
         connectFuture.thenAccept(transportHandler(address, future, connectedListener, connectors, index));
+    }
+
+    private HandshakeHandler createHandshakeHandler(Configuration configuration) {
+        HandshakeHandler handshakeHandler = configuration.getHandshakeHandler();
+        if (handshakeHandler == null) {
+            handshakeHandler = (connectionId, handshake) -> null;
+        }
+        return handshakeHandler;
     }
 
     private Consumer<? super Connection> transportHandler(InetAddress address, CompletableFuture<Connection> future, //

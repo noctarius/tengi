@@ -23,8 +23,7 @@ import com.noctarius.tengi.server.ServerTransport;
 import com.noctarius.tengi.server.impl.transport.AbstractStreamingTransportTestCase;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
-import com.noctarius.tengi.spi.connection.packets.HandshakeRequest;
-import com.noctarius.tengi.spi.connection.packets.HandshakeResponse;
+import com.noctarius.tengi.spi.connection.packets.Handshake;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import com.noctarius.tengi.spi.serialization.codec.AutoClosableEncoder;
 import com.noctarius.tengi.spi.serialization.codec.impl.DefaultCodec;
@@ -62,7 +61,7 @@ public class TcpTransportTestCase
             boolean loggedIn = codec.readBoolean();
             Identifier connectionId = codec.readObject();
             Object object = codec.readObject();
-            if (loggedIn && object instanceof HandshakeResponse) {
+            if (loggedIn && object instanceof Handshake) {
                 writeChannel(serializer, ctx, connectionId, message);
                 return;
             }
@@ -79,7 +78,7 @@ public class TcpTransportTestCase
 
             codec.writeBytes("magic", DefaultProtocolConstants.PROTOCOL_MAGIC_HEADER);
             codec.writeBoolean("loggedIn", false);
-            codec.writeObject("handshake", new HandshakeRequest());
+            codec.writeObject("handshake", new Handshake());
             channel.writeAndFlush(buffer);
 
             return future.get(120, TimeUnit.SECONDS);
@@ -105,7 +104,7 @@ public class TcpTransportTestCase
             Identifier connectionId = codec.readObject();
 
             Object object = codec.readObject();
-            if (object instanceof HandshakeResponse) {
+            if (object instanceof Handshake) {
                 Packet packet = new Packet("pingpong");
                 packet.setValue("counter", 1);
                 Message message = Message.create(packet);
@@ -144,7 +143,7 @@ public class TcpTransportTestCase
 
             codec.writeBytes("magic", DefaultProtocolConstants.PROTOCOL_MAGIC_HEADER);
             codec.writeBoolean("loggedIn", false);
-            codec.writeObject("handshake", new HandshakeRequest());
+            codec.writeObject("handshake", new Handshake());
             channel.writeAndFlush(buffer);
 
             return future.get(120, TimeUnit.SECONDS);

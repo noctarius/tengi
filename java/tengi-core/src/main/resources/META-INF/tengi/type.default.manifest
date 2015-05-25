@@ -16,7 +16,6 @@
 ###########################################################################
 
 com.noctarius.tengi.core.model.Packet
-com.noctarius.tengi.spi.connection.packets.HandshakeRequest
-com.noctarius.tengi.spi.connection.packets.HandshakeResponse
+com.noctarius.tengi.spi.connection.packets.Handshake
 com.noctarius.tengi.spi.connection.packets.LongPollingRequest
 com.noctarius.tengi.spi.connection.packets.LongPollingResponse

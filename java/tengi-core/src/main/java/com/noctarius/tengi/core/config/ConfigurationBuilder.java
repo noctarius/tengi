@@ -17,6 +17,7 @@
 package com.noctarius.tengi.core.config;
 
 import com.noctarius.tengi.core.connection.Transport;
+import com.noctarius.tengi.core.connection.handshake.HandshakeHandler;
 import com.noctarius.tengi.core.impl.Validate;
 import com.noctarius.tengi.core.serialization.marshaller.Marshaller;
 import com.noctarius.tengi.core.serialization.marshaller.MarshallerFilter;
@@ -48,6 +49,7 @@ public final class ConfigurationBuilder {
     private final List<Transport> transports = new ArrayList<>();
     private final Map<Transport, Integer> transportPorts = new HashMap<>();
     private boolean sslEnabled = false;
+    private HandshakeHandler handshakeHandler = null;
 
     /**
      * Configures a new {@link com.noctarius.tengi.core.serialization.marshaller.Marshaller} and
@@ -152,6 +154,19 @@ public final class ConfigurationBuilder {
     }
 
     /**
+     * Defines the {@link com.noctarius.tengi.core.connection.handshake.HandshakeHandler} instance
+     * to verify, accept or deny new connection handshakes. On client-side additional information can be
+     * extracted from the handshake response retrieved from the server.
+     *
+     * @param handshakeHandler the <tt>HandshakeHandler</tt> instance to be configured
+     * @return this instance of the <tt>ConfigurationBuilder</tt> for fluent programing style
+     */
+    public ConfigurationBuilder handshakeHandler(HandshakeHandler handshakeHandler) {
+        this.handshakeHandler = handshakeHandler;
+        return this;
+    }
+
+    /**
      * Build the {@link com.noctarius.tengi.core.config.Configuration} instance with any values currently
      * set in this <tt>ConfigurationBuilder</tt> instance. The created configuration is immutable and
      * can't be changed afterwards.
@@ -159,7 +174,7 @@ public final class ConfigurationBuilder {
      * @return an immutable <tt>Configuration</tt> instance bound to the prior configured settings
      */
     public Configuration build() {
-        return new ConfigurationImpl(marshallers, transports, transportPorts, sslEnabled);
+        return new ConfigurationImpl(marshallers, transports, transportPorts, sslEnabled, handshakeHandler);
     }
 
     private static class ConfigurationImpl
@@ -169,14 +184,16 @@ public final class ConfigurationBuilder {
         private final List<Transport> transports;
         private final Map<Transport, Integer> transportPorts;
         private final boolean sslEnabled;
+        private final HandshakeHandler handshakeHandler;
 
         public ConfigurationImpl(Set<MarshallerConfiguration> marshallers, List<Transport> transports,
-                                 Map<Transport, Integer> transportPorts, boolean sslEnabled) {
+                                 Map<Transport, Integer> transportPorts, boolean sslEnabled, HandshakeHandler handshakeHandler) {
 
             this.marshallers = Collections.unmodifiableSet(new HashSet<>(marshallers));
             this.transports = Collections.unmodifiableList(new ArrayList<>(transports));
             this.transportPorts = Collections.unmodifiableMap(new HashMap<>(transportPorts));
             this.sslEnabled = sslEnabled;
+            this.handshakeHandler = handshakeHandler;
         }
 
         @Override
@@ -206,6 +223,11 @@ public final class ConfigurationBuilder {
         @Override
         public boolean isSslEnabled() {
             return sslEnabled;
+        }
+
+        @Override
+        public HandshakeHandler getHandshakeHandler() {
+            return handshakeHandler;
         }
     }
 

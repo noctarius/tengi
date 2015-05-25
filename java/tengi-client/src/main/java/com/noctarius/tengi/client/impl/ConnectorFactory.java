@@ -16,6 +16,7 @@
  */
 package com.noctarius.tengi.client.impl;
 
+import com.noctarius.tengi.core.connection.handshake.HandshakeHandler;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.channel.EventLoopGroup;
 
@@ -23,6 +24,7 @@ import java.net.InetAddress;
 
 public interface ConnectorFactory {
 
-    Connector create(InetAddress address, int port, Serializer serializer, EventLoopGroup clientGroup);
+    Connector create(InetAddress address, int port, Serializer serializer, HandshakeHandler handshakeHandler,
+                     EventLoopGroup clientGroup);
 
 }

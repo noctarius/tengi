@@ -27,8 +27,7 @@ import com.noctarius.tengi.server.ServerTransport;
 import com.noctarius.tengi.server.impl.transport.AbstractLongPollingTransportTestCase;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
-import com.noctarius.tengi.spi.connection.packets.HandshakeRequest;
-import com.noctarius.tengi.spi.connection.packets.HandshakeResponse;
+import com.noctarius.tengi.spi.connection.packets.Handshake;
 import com.noctarius.tengi.spi.connection.packets.LongPollingRequest;
 import com.noctarius.tengi.spi.connection.packets.LongPollingResponse;
 import com.noctarius.tengi.spi.serialization.Serializer;
@@ -78,7 +77,7 @@ public class HttpTransportTestCase
                 if (decoder.readBoolean()) {
                     connectionId = decoder.readObject();
                 }
-                if (!(decoder.readObject() instanceof HandshakeResponse)) {
+                if (!(decoder.readObject() instanceof Handshake)) {
                     fail("No HandshakeResponse received");
                 }
             }
@@ -123,7 +122,7 @@ public class HttpTransportTestCase
                 } else {
                     throw new RuntimeException();
                 }
-                if (!(decoder.readObject() instanceof HandshakeResponse)) {
+                if (!(decoder.readObject() instanceof Handshake)) {
                     fail("No HandshakeResponse received");
                 }
             }
@@ -164,7 +163,7 @@ public class HttpTransportTestCase
     private static ListenableFuture<Response> handshake(AsyncHttpClient client, Serializer serializer)
             throws Exception {
 
-        return writeRequest(client, serializer, null, new HandshakeRequest(), null);
+        return writeRequest(client, serializer, null, new Handshake(), null);
     }
 
     private static ListenableFuture<Response> writeRequest(AsyncHttpClient client, Serializer serializer, //

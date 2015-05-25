@@ -19,10 +19,11 @@ package com.noctarius.tengi.client.impl.transport;
 import com.noctarius.tengi.client.impl.Connector;
 import com.noctarius.tengi.client.impl.ServerConnection;
 import com.noctarius.tengi.core.connection.Connection;
+import com.noctarius.tengi.core.connection.handshake.HandshakeHandler;
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
-import com.noctarius.tengi.spi.connection.packets.HandshakeResponse;
+import com.noctarius.tengi.spi.connection.packets.Handshake;
 import com.noctarius.tengi.spi.logging.Logger;
 import com.noctarius.tengi.spi.logging.LoggerManager;
 import com.noctarius.tengi.spi.serialization.Serializer;
@@ -73,7 +74,10 @@ public abstract class ClientConnectionProcessor<T, C, M>
             Identifier connectionId = decoder.readObject();
             Object object = decoder.readObject();
 
-            if (object instanceof HandshakeResponse) {
+            if (object instanceof Handshake) {
+                HandshakeHandler handshakeHandler = connector.handshakeHandler();
+                handshakeHandler.handleHandshake(connectionId, (Handshake) object);
+
                 CompletableFuture<Connection> connectorFuture = connectionAttribute(ctx, CONNECT_FUTURE, true);
                 ConnectionContext<C> connectionContext = createConnectionContext(ctx, connectionId);
                 Connection connection = createConnection(ctx, connectionContext, connectionId);

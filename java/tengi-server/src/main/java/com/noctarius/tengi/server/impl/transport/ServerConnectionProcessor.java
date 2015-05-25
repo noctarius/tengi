@@ -17,15 +17,15 @@
 package com.noctarius.tengi.server.impl.transport;
 
 import com.noctarius.tengi.core.connection.Connection;
+import com.noctarius.tengi.core.connection.Transport;
+import com.noctarius.tengi.core.connection.handshake.HandshakeHandler;
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
-import com.noctarius.tengi.core.connection.Transport;
-import com.noctarius.tengi.spi.connection.packets.HandshakeRequest;
-import com.noctarius.tengi.spi.connection.packets.HandshakeResponse;
+import com.noctarius.tengi.spi.connection.packets.Handshake;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import com.noctarius.tengi.spi.serialization.codec.AutoClosableDecoder;
 import com.noctarius.tengi.spi.serialization.codec.AutoClosableEncoder;
@@ -71,18 +71,8 @@ public abstract class ServerConnectionProcessor<T>
             boolean loggedIn = decoder.readBoolean();
 
             if (!loggedIn) {
-                Object request = decoder.readObject();
-                if (!(request instanceof HandshakeRequest)) {
-                    ctx.close();
-                    return;
-                }
-                Identifier connectionId = Identifier.randomIdentifier();
-                connectionAttribute(ctx, CONNECTION_ID, connectionId);
-                ConnectionContext connectionContext = createConnectionContext(ctx, connectionId);
-                Connection connection = connectionManager.assignConnection(connectionId, connectionContext, transport);
-                connectionContext.writeSocket(ctx.channel(), connection, createHandshakeResponse(ctx));
+                handleHandshakeRequest(ctx, decoder);
                 return;
-
             }
 
             Identifier connectionId = decoder.readObject();
@@ -109,13 +99,40 @@ public abstract class ServerConnectionProcessor<T>
 
     protected abstract ConnectionContext createConnectionContext(ChannelHandlerContext ctx, Identifier connectionId);
 
-    private MemoryBuffer createHandshakeResponse(ChannelHandlerContext ctx)
+    private void handleHandshakeRequest(ChannelHandlerContext ctx, AutoClosableDecoder decoder)
+            throws Exception {
+
+        Object request = decoder.readObject();
+        if (!(request instanceof Handshake)) {
+            ctx.close();
+            return;
+        }
+
+        Identifier connectionId = Identifier.randomIdentifier();
+        HandshakeHandler handshakeHandler = connectionManager.getHandshakeHandler();
+        Handshake handshakeResponse = handshakeHandler.handleHandshake(connectionId, (Handshake) request);
+        if (handshakeResponse == null) {
+            ctx.close();
+            return;
+        }
+        if (handshakeResponse == request) {
+            ctx.close();
+            throw new IllegalStateException("Handshake could not be accepted, illegal verification");
+        }
+
+        connectionAttribute(ctx, CONNECTION_ID, connectionId);
+        ConnectionContext connectionContext = createConnectionContext(ctx, connectionId);
+        Connection connection = connectionManager.assignConnection(connectionId, connectionContext, transport);
+        connectionContext.writeSocket(ctx.channel(), connection, createHandshakeResponse(ctx, handshakeResponse));
+    }
+
+    private MemoryBuffer createHandshakeResponse(ChannelHandlerContext ctx, Handshake handshakeResponse)
             throws Exception {
 
         ByteBuf buffer = ctx.alloc().buffer();
         MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
         try (AutoClosableEncoder encoder = serializer.retrieveEncoder(memoryBuffer)) {
-            encoder.writeObject("response", new HandshakeResponse());
+            encoder.writeObject("response", handshakeResponse);
         }
         return memoryBuffer;
     }

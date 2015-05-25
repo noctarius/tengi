@@ -20,13 +20,14 @@ import com.noctarius.tengi.client.impl.ClientUtil;
 import com.noctarius.tengi.client.impl.ServerConnection;
 import com.noctarius.tengi.client.impl.transport.AbstractClientConnector;
 import com.noctarius.tengi.core.connection.Connection;
-import com.noctarius.tengi.core.model.Message;
+import com.noctarius.tengi.core.connection.TransportLayer;
+import com.noctarius.tengi.core.connection.handshake.HandshakeHandler;
 import com.noctarius.tengi.core.exception.ConnectionDestroyedException;
+import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.spi.connection.impl.TransportConstants;
-import com.noctarius.tengi.core.connection.TransportLayer;
-import com.noctarius.tengi.spi.connection.packets.HandshakeRequest;
+import com.noctarius.tengi.spi.connection.packets.Handshake;
 import com.noctarius.tengi.spi.connection.packets.LongPollingRequest;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import com.noctarius.tengi.spi.serialization.codec.AutoClosableEncoder;
@@ -72,13 +73,17 @@ public class HttpConnector
     private final int port;
     private final Serializer serializer;
     private final EventLoopGroup clientGroup;
+    private final HandshakeHandler handshakeHandler;
 
     private volatile ByteBufAllocator allocator;
 
-    public HttpConnector(InetAddress address, int port, Serializer serializer, EventLoopGroup clientGroup) {
+    public HttpConnector(InetAddress address, int port, Serializer serializer, HandshakeHandler handshakeHandler,
+                         EventLoopGroup clientGroup) {
+
         this.address = address;
         this.port = port;
         this.serializer = serializer;
+        this.handshakeHandler = handshakeHandler;
         this.clientGroup = clientGroup;
         this.bootstrap = createBootstrap();
     }
@@ -94,6 +99,11 @@ public class HttpConnector
         channelFuture.addListener(connectionListener(connectorFuture, this::handshakeRequest));
 
         return connectorFuture.thenApply(this::activateLongPolling);
+    }
+
+    @Override
+    public HandshakeHandler handshakeHandler() {
+        return handshakeHandler;
     }
 
     @Override
@@ -201,7 +211,7 @@ public class HttpConnector
         MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
         try (AutoClosableEncoder encoder = serializer.retrieveEncoder(memoryBuffer)) {
             encoder.writeBoolean("loggedIn", false);
-            encoder.writeObject("handshake", new HandshakeRequest());
+            encoder.writeObject("handshake", new Handshake());
         }
         channel.writeAndFlush(buildHttpRequest(buffer));
     }

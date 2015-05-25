@@ -18,6 +18,7 @@ package com.noctarius.tengi.client.impl;
 
 import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.Transport;
+import com.noctarius.tengi.core.connection.handshake.HandshakeHandler;
 import io.netty.buffer.ByteBufAllocator;
 
 import java.util.concurrent.CompletableFuture;
@@ -26,6 +27,8 @@ public interface Connector<M>
         extends Transport {
 
     CompletableFuture<Connection> connect();
+
+    HandshakeHandler handshakeHandler();
 
     ByteBufAllocator allocator();
 

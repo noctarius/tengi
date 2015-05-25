@@ -17,6 +17,7 @@
 package com.noctarius.tengi.server;
 
 import com.noctarius.tengi.core.config.Configuration;
+import com.noctarius.tengi.core.connection.handshake.HandshakeHandler;
 import com.noctarius.tengi.core.impl.CompletableFutureUtil;
 import com.noctarius.tengi.core.impl.Validate;
 import com.noctarius.tengi.core.impl.VersionUtil;
@@ -24,6 +25,7 @@ import com.noctarius.tengi.core.listener.ConnectedListener;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.EventManager;
 import com.noctarius.tengi.server.impl.transport.negotiation.TcpBinaryNegotiator;
+import com.noctarius.tengi.spi.connection.packets.Handshake;
 import com.noctarius.tengi.spi.logging.Logger;
 import com.noctarius.tengi.spi.logging.LoggerManager;
 import com.noctarius.tengi.spi.serialization.Serializer;
@@ -70,7 +72,8 @@ class ServerImpl
         this.bossGroup = createEventLoopGroup(5, "boss");
         this.workerGroup = createEventLoopGroup(5, "worker");
         this.serializer = createSerializer(configuration);
-        this.connectionManager = new ConnectionManager(createSslContext(), serializer);
+        HandshakeHandler handshakeHandler = createHandshakeHandler(configuration);
+        this.connectionManager = new ConnectionManager(createSslContext(), serializer, handshakeHandler);
         this.eventManager = new EventManager();
     }
 
@@ -125,6 +128,14 @@ class ServerImpl
 
         SelfSignedCertificate certificate = new SelfSignedCertificate("localhost");
         return SslContextBuilder.forServer(certificate.certificate(), certificate.privateKey()).build();
+    }
+
+    private HandshakeHandler createHandshakeHandler(Configuration configuration) {
+        HandshakeHandler handshakeHandler = configuration.getHandshakeHandler();
+        if (handshakeHandler == null) {
+            handshakeHandler = (connectionId, handshake) -> new Handshake();
+        }
+        return handshakeHandler;
     }
 
     private static class ProtocolNegotiator

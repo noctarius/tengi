@@ -20,11 +20,20 @@ import com.noctarius.tengi.core.model.Packet;
 import com.noctarius.tengi.core.serialization.TypeId;
 import com.noctarius.tengi.spi.serialization.impl.DefaultProtocolConstants;
 
-@TypeId(DefaultProtocolConstants.TYPEID_HANDSHAKE_RESPONSE)
-public class HandshakeResponse
+/**
+ * The <tt>Handshake</tt> is the internal packet to start a new connection handshake
+ * or to respond to a previous handshake request. A <tt>Handshake</tt> instance can
+ * be customized (sub-classed) to add additional values (like a version number or
+ * anything) and handled by a {@link com.noctarius.tengi.core.connection.handshake.HandshakeHandler}.
+ */
+@TypeId(DefaultProtocolConstants.TYPEID_HANDSHAKE)
+public class Handshake
         extends Packet {
 
-    public HandshakeResponse() {
-        super("HandshakeResponse");
+    /**
+     * Constructs a new <tt>Handshake</tt> instance.
+     */
+    public Handshake() {
+        super("Handshake");
     }
 }

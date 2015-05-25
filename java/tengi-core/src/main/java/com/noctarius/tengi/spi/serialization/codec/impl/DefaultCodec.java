@@ -16,6 +16,7 @@
  */
 package com.noctarius.tengi.spi.serialization.codec.impl;
 
+import com.noctarius.tengi.core.impl.Validate;
 import com.noctarius.tengi.core.serialization.debugger.SerializationDebugger;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.ReadableMemoryBuffer;
@@ -191,6 +192,8 @@ public class DefaultCodec
 
     @Override
     public void writeUnsignedByte(short value) {
+        Validate.greaterOrEqual("value", 0, value);
+        Validate.lowerOrEqual("value", 255, value);
         memoryBuffer.writeByte(value);
     }
 
@@ -226,12 +229,12 @@ public class DefaultCodec
 
     @Override
     public void writeFloat(float value) {
-        writeInt32(Float.floatToIntBits(value));
+        writeInt32(Float.floatToRawIntBits(value));
     }
 
     @Override
     public void writeDouble(double value) {
-        writeInt64(Double.doubleToLongBits(value));
+        writeInt64(Double.doubleToRawLongBits(value));
     }
 
     @Override

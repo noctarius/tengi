@@ -90,8 +90,8 @@ public class UTF8Codec {
             throw new IllegalArgumentException("Size of the buffer has to be power of two, was " + buffer.length);
         }
 
-        int length = decoder.readInt32();
-        int lengthCheck = decoder.readInt32();
+        int length = decoder.readInt32("length");
+        int lengthCheck = decoder.readInt32("lengthCheck");
         if (length != lengthCheck) {
             throw new UTFDataFormatException("Length check failed, maybe broken bytestream or wrong stream position");
         }
@@ -109,7 +109,7 @@ public class UTF8Codec {
     private void readShortUTF(Decoder decoder, char[] data, int beginIndex, byte[] buffer)
             throws Exception {
 
-        final int utfLength = decoder.readShort() & 0xFFFF;
+        final int utfLength = decoder.readShort("length") & 0xFFFF;
         // buffer[0] is used to hold read data
         // so actual useful length of buffer is as "length - 1"
         final int minUtfLength = Math.min(utfLength, buffer.length - 1);
@@ -124,7 +124,7 @@ public class UTF8Codec {
         int charArrCount = beginIndex;
 
         // The first readable data is at 1. index since 0. index is used to hold read data.
-        decoder.readBytes(buffer, 1, minUtfLength);
+        decoder.readBytes("data", buffer, 1, minUtfLength);
 
         c1 = buffer[bufferPos++] & 0xFF;
         while (bufferPos != bufferLimit) {
@@ -189,7 +189,7 @@ public class UTF8Codec {
             // Array bounds check by programmatically is not needed like
             // "if (pos < buffer.length)".
             // JVM checks instead of us, so it is unnecessary.
-            decoder.readBytes(buffer, 1, Math.min(buffer.length - 1, utfLength - readCount));
+            decoder.readBytes("data", buffer, 1, Math.min(buffer.length - 1, utfLength - readCount));
             // The first readable data is at 1. index since 0. index is used to
             // hold read data.
             // So the next one will be 2. index.

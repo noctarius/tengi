@@ -94,7 +94,9 @@ public interface Encoder {
      * {@link java.lang.IndexOutOfBoundsException} is thrown.</p>
      *
      * @param value the unsigned byte value to be written to the buffer
-     * @throws java.lang.IndexOutOfBoundsException whenever the buffer is too small to store all elements
+     * @throws com.noctarius.tengi.core.impl.Validate.ValidationException whenever <tt>value</tt> is smaller than 0 or
+     *                                                                    greater than 255
+     * @throws java.lang.IndexOutOfBoundsException                        whenever the buffer is too small to store all elements
      */
     void writeUnsignedByte(short value);
 

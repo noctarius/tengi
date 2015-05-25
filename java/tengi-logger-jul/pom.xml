@@ -36,5 +36,12 @@
       <groupId>com.noctarius.tengi</groupId>
       <artifactId>tengi-java-core</artifactId>
     </dependency>
+
+    <!-- test dependencies -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>

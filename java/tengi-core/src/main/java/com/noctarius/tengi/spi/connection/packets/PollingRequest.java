@@ -23,8 +23,12 @@ import com.noctarius.tengi.core.serialization.codec.Encoder;
 import com.noctarius.tengi.spi.serialization.Protocol;
 import com.noctarius.tengi.spi.serialization.impl.DefaultProtocolConstants;
 
-@TypeId(DefaultProtocolConstants.TYPEID_LONG_POLLING_REQUEST)
-public final class LongPollingRequest
+/**
+ * The <tt>PollingRequest</tt> class describes a basic packet to request
+ * cached messages on non-streaming transports.
+ */
+@TypeId(DefaultProtocolConstants.TYPEID_POLLING_REQUEST)
+public final class PollingRequest
         implements Marshallable {
 
     @Override

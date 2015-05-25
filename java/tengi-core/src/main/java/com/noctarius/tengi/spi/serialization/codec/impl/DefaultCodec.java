@@ -137,7 +137,7 @@ public class DefaultCodec
         if (SerializationDebugger.Debugger.ENABLED) {
             debugger.push(protocol, this);
         }
-        O object = protocol.readObject(this);
+        O object = protocol.readObject("object", this);
         if (SerializationDebugger.Debugger.ENABLED) {
             debugger.pop();
         }

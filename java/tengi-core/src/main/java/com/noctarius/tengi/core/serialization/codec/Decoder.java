@@ -206,7 +206,7 @@ public interface Decoder {
      * {@link java.lang.IndexOutOfBoundsException} is thrown.</p>
      *
      * @param <O> the type of the object to write
-     * @return the a non-null object value read from the buffer
+     * @return the non-null object value read from the buffer
      * @throws java.lang.IndexOutOfBoundsException whenever the buffer is too small to read all elements
      * @throws java.lang.Exception                 whenever any other unexpected situation occurs
      */
@@ -518,7 +518,7 @@ public interface Decoder {
      *
      * @param <O>       the type of the object to write
      * @param fieldName the name of the field to be read, strictly for debugging purpose only
-     * @return the a non-null object value read from the buffer
+     * @return the non-null object value read from the buffer
      * @throws java.lang.IndexOutOfBoundsException whenever the buffer is too small to read all elements
      * @throws java.lang.Exception                 whenever any other unexpected situation occurs
      */

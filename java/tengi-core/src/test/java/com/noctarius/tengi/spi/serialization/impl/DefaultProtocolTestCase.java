@@ -209,7 +209,7 @@ public class DefaultProtocolTestCase
         }
 
         try (AutoClosableDecoder decoder = serializer.retrieveDecoder(memoryBuffer)) {
-            Integer result = protocol.readObject(decoder);
+            Integer result = protocol.readObject("object", decoder);
             assertNotNull(result);
             assertEquals(value, result);
         }

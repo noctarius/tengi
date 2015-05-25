@@ -21,7 +21,7 @@ import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.spi.connection.AbstractConnection;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
-import com.noctarius.tengi.spi.connection.packets.LongPollingResponse;
+import com.noctarius.tengi.spi.connection.packets.PollingResponse;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.channel.Channel;
 
@@ -40,12 +40,12 @@ public class ServerConnection
     }
 
     public void publishMessage(Message message) {
-        if (getTransport().isStreaming() || !(message.getBody() instanceof LongPollingResponse)) {
+        if (getTransport().isStreaming() || !(message.getBody() instanceof PollingResponse)) {
             getMessageListeners().forEach((listener) -> listener.onMessage(this, message));
 
         } else {
-            LongPollingResponse longPollingResponse = message.getBody();
-            for (Message m : longPollingResponse.getMessages()) {
+            PollingResponse pollingResponse = message.getBody();
+            for (Message m : pollingResponse.getMessages()) {
                 getMessageListeners().forEach((listener) -> listener.onMessage(this, m));
             }
         }

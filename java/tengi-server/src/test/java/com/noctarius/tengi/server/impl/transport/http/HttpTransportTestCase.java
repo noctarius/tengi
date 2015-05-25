@@ -28,8 +28,8 @@ import com.noctarius.tengi.server.impl.transport.AbstractLongPollingTransportTes
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.spi.connection.packets.Handshake;
-import com.noctarius.tengi.spi.connection.packets.LongPollingRequest;
-import com.noctarius.tengi.spi.connection.packets.LongPollingResponse;
+import com.noctarius.tengi.spi.connection.packets.PollingRequest;
+import com.noctarius.tengi.spi.connection.packets.PollingResponse;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import com.noctarius.tengi.spi.serialization.codec.AutoClosableDecoder;
 import com.noctarius.tengi.spi.serialization.codec.AutoClosableEncoder;
@@ -198,7 +198,7 @@ public class HttpTransportTestCase
                                          ScheduledExecutorService ses, AtomicBoolean stop, Handler<Message> messageHandler)
             throws Exception {
 
-        Message longPollingMessage = Message.create(new LongPollingRequest());
+        Message longPollingMessage = Message.create(new PollingRequest());
         Handler<Object> handler = createLongPollingHandler(client, serializer, connectionId, ses, stop, messageHandler);
         writeRequest(client, serializer, connectionId, longPollingMessage, handler);
     }
@@ -213,8 +213,8 @@ public class HttpTransportTestCase
 
             Message response = (Message) object;
             Object body = response.getBody();
-            if (body instanceof LongPollingResponse) {
-                for (Message message : ((LongPollingResponse) body).getMessages()) {
+            if (body instanceof PollingResponse) {
+                for (Message message : ((PollingResponse) body).getMessages()) {
                     messageHandler.handle(message);
                 }
             }
@@ -246,7 +246,7 @@ public class HttpTransportTestCase
                     handler.handle(object);
                 }
 
-                Message message = Message.create(new LongPollingRequest());
+                Message message = Message.create(new PollingRequest());
                 writeRequest(client, serializer, connectionId, message, handler);
                 return response;
             }

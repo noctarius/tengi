@@ -30,8 +30,16 @@ public final class Validate {
     private static final String MESSAGE_PARAM_NOT_NULL = "%s must not be null";
 
     public static void validate(MessageBuilder messageBuilder, Validation validation) {
+        validate(messageBuilder, validation, ValidationException::new);
+    }
+
+    public static void validate(MessageBuilder messageBuilder, Validation validation, ExceptionBuilder exceptionBuilder) {
         if (!validation.validate()) {
-            throw new ValidationException(messageBuilder.build());
+            Exception exception = exceptionBuilder.build(messageBuilder.build());
+            if (exception instanceof RuntimeException) {
+                throw (RuntimeException) exception;
+            }
+            ExceptionUtil.rethrow(exception);
         }
     }
 
@@ -56,7 +64,7 @@ public final class Validate {
     }
 
     public static void notNull(String paramName, Object value) {
-        validate(message(MESSAGE_PARAM_NOT_NULL, paramName), () -> value != null);
+        validate(message(MESSAGE_PARAM_NOT_NULL, paramName), () -> value != null, NullPointerException::new);
     }
 
     private Validate() {
@@ -100,6 +108,21 @@ public final class Validate {
          * @return the generated exception message
          */
         String build();
+    }
+
+    /**
+     * The <tt>ExceptionBuilder</tt> interface is used to delay creation of
+     * exception up to the point where a validation really failed and a message
+     * was created.
+     */
+    public static interface ExceptionBuilder {
+
+        /**
+         * Generates the exception using the given exceptional message
+         *
+         * @return the exceptional message
+         */
+        Exception build(String message);
     }
 
     /**

@@ -45,7 +45,7 @@ public interface DefaultProtocolConstants {
     public static final short TYPEID_PACKET = -1000;
 
     public static final short TYPEID_HANDSHAKE = -201;
-    public static final short TYPEID_LONG_POLLING_REQUEST = -202;
-    public static final short TYPEID_LONG_POLLING_RESPONSE = -203;
+    public static final short TYPEID_POLLING_REQUEST = -202;
+    public static final short TYPEID_POLLING_RESPONSE = -203;
 
 }

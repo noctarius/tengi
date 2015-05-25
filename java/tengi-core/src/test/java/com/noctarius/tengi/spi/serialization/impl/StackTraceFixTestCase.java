@@ -45,7 +45,7 @@ public class StackTraceFixTestCase {
             Packet throwing = new SerializationClasses.SubPacketMarshallException("throwing");
             innerPacket.setValue("throwing", throwing);
 
-            serializer.writeObject(packet);
+            serializer.writeObject("packet", packet);
 
         } catch (NullPointerException e) {
 
@@ -85,8 +85,8 @@ public class StackTraceFixTestCase {
             Packet throwing = new SerializationClasses.SubPacketUnmarshallException("throwing");
             innerPacket.setValue("throwing", throwing);
 
-            MemoryBuffer memoryBuffer = serializer.writeObject(packet);
-            serializer.readObject(new DefaultCodec(protocol, memoryBuffer));
+            MemoryBuffer memoryBuffer = serializer.writeObject("packet", packet);
+            serializer.readObject("object", new DefaultCodec(protocol, memoryBuffer));
 
         } catch (NullPointerException e) {
             int serializationFrames = 0;

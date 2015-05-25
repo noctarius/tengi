@@ -27,16 +27,28 @@ import com.noctarius.tengi.spi.serialization.impl.DefaultProtocolConstants;
 import java.util.ArrayList;
 import java.util.Collection;
 
-@TypeId(DefaultProtocolConstants.TYPEID_LONG_POLLING_RESPONSE)
-public final class LongPollingResponse
+/**
+ * The <tt>PollingResponse</tt> class describes a basic packet to respond with
+ * cached messages on non-streaming transports.
+ */
+@TypeId(DefaultProtocolConstants.TYPEID_POLLING_RESPONSE)
+public final class PollingResponse
         implements Marshallable {
 
     private Collection<Message> messages;
 
-    public LongPollingResponse() {
+    /**
+     * Constructs a basic <tt>PollingResponse</tt> instance on deserialization.
+     */
+    public PollingResponse() {
     }
 
-    public LongPollingResponse(Collection<Message> messages) {
+    /**
+     * Constructs a <tt>PollingResponse</tt> instance for responding to a polling request.
+     *
+     * @param messages the cached messages to send
+     */
+    public PollingResponse(Collection<Message> messages) {
         this.messages = messages;
     }
 
@@ -61,7 +73,13 @@ public final class LongPollingResponse
         }
     }
 
+    /**
+     * Returns the delivered messages for message handling on client-side.
+     *
+     * @return a collection of messages from the server
+     */
     public Collection<Message> getMessages() {
         return messages;
     }
+
 }

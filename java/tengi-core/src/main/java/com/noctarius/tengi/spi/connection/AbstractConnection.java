@@ -121,7 +121,7 @@ public abstract class AbstractConnection
             message = Message.create(object);
         }
 
-        MemoryBuffer memoryBuffer = serializer.writeObject(message);
+        MemoryBuffer memoryBuffer = serializer.writeObject("message", message);
         return connectionContext.writeMemoryBuffer(memoryBuffer, message);
     }
 

@@ -25,8 +25,8 @@ import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
 import com.noctarius.tengi.core.connection.Transport;
-import com.noctarius.tengi.spi.connection.packets.LongPollingRequest;
-import com.noctarius.tengi.spi.connection.packets.LongPollingResponse;
+import com.noctarius.tengi.spi.connection.packets.PollingRequest;
+import com.noctarius.tengi.spi.connection.packets.PollingResponse;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import com.noctarius.tengi.spi.serialization.codec.AutoClosableEncoder;
 import com.noctarius.tengi.spi.serialization.impl.DefaultProtocolConstants;
@@ -99,7 +99,7 @@ class HttpConnectionContext
     }
 
     @Override
-    public void processLongPollingRequest(Channel channel, Connection connection, LongPollingRequest request) {
+    public void processPollingRequest(Channel channel, Connection connection, PollingRequest request) {
         try {
             if (!getConnectionId().equals(connection.getConnectionId())) {
                 channel.close().sync();
@@ -119,12 +119,12 @@ class HttpConnectionContext
                 }
             }
 
-            LongPollingResponse pollingResponse = new LongPollingResponse(new QueueEntryMessageList(messages));
+            PollingResponse pollingResponse = new PollingResponse(new QueueEntryMessageList(messages));
 
             ByteBuf buffer = channel.alloc().directBuffer();
             MemoryBuffer memoryBuffer = preparePacket(MemoryBufferFactory.create(buffer));
             try (AutoClosableEncoder encoder = getSerializer().retrieveEncoder(memoryBuffer)) {
-                encoder.writeObject("response", Message.create(pollingResponse));
+                encoder.writeObject("pollingResponse", Message.create(pollingResponse));
             }
 
             sendHttpResponse(channel, buffer);
@@ -136,7 +136,7 @@ class HttpConnectionContext
 
     private void sendHttpResponse(Channel channel, ByteBuf buffer) {
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, buffer);
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, DefaultProtocolConstants.PROTOCOL_MIME_TYPE);
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, getProtocol().getMimeType());
         response.headers().set(HttpHeaderNames.CONTENT_LENGTH, buffer.writerIndex());
         response.headers().set(HttpHeaderNames.CONNECTION, "close");
         ChannelFuture channelFuture = channel.writeAndFlush(response);

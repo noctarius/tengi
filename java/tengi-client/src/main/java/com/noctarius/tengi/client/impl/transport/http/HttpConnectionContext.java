@@ -18,9 +18,9 @@ package com.noctarius.tengi.client.impl.transport.http;
 
 import com.noctarius.tengi.client.impl.Connector;
 import com.noctarius.tengi.core.connection.Connection;
+import com.noctarius.tengi.core.impl.CompletableFutureUtil;
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
-import com.noctarius.tengi.core.impl.CompletableFutureUtil;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
@@ -52,7 +52,7 @@ class HttpConnectionContext
         buffer.writeBuffer(memoryBuffer);
 
         return CompletableFutureUtil.executeAsync(() -> {
-            connector.write(buildHttpRequest(request));
+            connector.write(buildHttpRequest(request, getProtocol().getMimeType()));
             return message;
         });
     }
@@ -65,7 +65,7 @@ class HttpConnectionContext
         MemoryBuffer buffer = preparePacket(MemoryBufferFactory.create(request));
         buffer.writeBuffer(memoryBuffer);
         return CompletableFutureUtil.executeAsync(() -> {
-            channel.writeAndFlush(buildHttpRequest(request)).sync();
+            channel.writeAndFlush(buildHttpRequest(request, getProtocol().getMimeType())).sync();
             return connection;
         });
     }

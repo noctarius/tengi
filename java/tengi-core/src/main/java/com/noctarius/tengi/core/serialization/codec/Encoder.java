@@ -199,7 +199,7 @@ public interface Encoder {
     void writeString(String value);
 
     /**
-     * <p>Transfers the a <b>non-null</b> object to the underlying byte-stream buffer. The content itself will
+     * <p>Transfers a <b>non-null</b> object to the underlying byte-stream buffer. The content itself will
      * be serialized using a registered {@link com.noctarius.tengi.core.serialization.marshaller.Marshaller}
      * or as an internally handled object type. It is up to the
      * {@link com.noctarius.tengi.spi.serialization.codec.Codec} implementation on how to tag the type of the
@@ -216,7 +216,7 @@ public interface Encoder {
             throws Exception;
 
     /**
-     * <p>Transfers the a <b>nullable</b> object to the underlying byte-stream buffer. A marker bit is written
+     * <p>Transfers a <b>nullable</b> object to the underlying byte-stream buffer. A marker bit is written
      * to the stream to identify the object was <tt>null</tt> or actual object content is about to follow up.
      * The content itself will be serialized using a registered
      * {@link com.noctarius.tengi.core.serialization.marshaller.Marshaller} or as an internally handled object
@@ -506,7 +506,7 @@ public interface Encoder {
     }
 
     /**
-     * <p>Transfers the a <b>non-null</b> object to the underlying byte-stream buffer. The content itself will
+     * <p>Transfers a <b>non-null</b> object to the underlying byte-stream buffer. The content itself will
      * be serialized using a registered {@link com.noctarius.tengi.core.serialization.marshaller.Marshaller}
      * or as an internally handled object type. It is up to the
      * {@link com.noctarius.tengi.spi.serialization.codec.Codec} implementation on how to tag the type of the
@@ -531,7 +531,7 @@ public interface Encoder {
     }
 
     /**
-     * <p>Transfers the a <b>nullable</b> object to the underlying byte-stream buffer. A marker bit is written
+     * <p>Transfers a <b>nullable</b> object to the underlying byte-stream buffer. A marker bit is written
      * to the stream to identify the object was <tt>null</tt> or actual object content is about to follow up.
      * The content itself will be serialized using a registered
      * {@link com.noctarius.tengi.core.serialization.marshaller.Marshaller} or as an internally handled object

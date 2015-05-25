@@ -49,7 +49,7 @@ public class PacketSerializationTestCase {
 
         Codec codec = new DefaultCodec(protocol, memoryBuffer);
         protocol.writeObject("packet", packet, codec);
-        Packet read = protocol.readObject(codec);
+        Packet read = protocol.readObject("object", codec);
 
         assertEquals(packet, read);
     }
@@ -67,7 +67,7 @@ public class PacketSerializationTestCase {
 
         Codec codec = new DefaultCodec(protocol, memoryBuffer);
         protocol.writeObject("packet", packet, codec);
-        Packet read = protocol.readObject(codec);
+        Packet read = protocol.readObject("object", codec);
 
         assertEquals(packet, read);
     }
@@ -85,7 +85,7 @@ public class PacketSerializationTestCase {
 
         Codec codec = new DefaultCodec(protocol, memoryBuffer);
         protocol.writeObject("packet", packet, codec);
-        Packet read = protocol.readObject(codec);
+        Packet read = protocol.readObject("object", codec);
 
         assertEquals(packet, read);
     }
@@ -128,7 +128,7 @@ public class PacketSerializationTestCase {
 
             Codec codec = new DefaultCodec(protocol, memoryBuffer);
             serializer.writeObject("packet", packet, codec);
-            Packet read = protocol.readObject(codec);
+            Packet read = protocol.readObject("object", codec);
 
             assertEquals(packet, read);
         } finally {

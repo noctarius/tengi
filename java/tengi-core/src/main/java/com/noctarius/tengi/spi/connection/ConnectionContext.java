@@ -21,7 +21,7 @@ import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
-import com.noctarius.tengi.spi.connection.packets.LongPollingRequest;
+import com.noctarius.tengi.spi.connection.packets.PollingRequest;
 import com.noctarius.tengi.spi.serialization.Protocol;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import com.noctarius.tengi.spi.serialization.codec.AutoClosableEncoder;
@@ -93,13 +93,13 @@ public abstract class ConnectionContext<S> {
 
     /**
      * This method is called when a non-streaming {@link com.noctarius.tengi.core.connection.Transport}
-     * receives a long-polling (or polling) request for all cached elements since the last retrieval.
+     * receives a long-polling or polling request for all cached elements since the last retrieval.
      *
      * @param socket     the socket to send the response to
      * @param connection the bound connection of this context
      * @param request    the request itself
      */
-    public void processLongPollingRequest(S socket, Connection connection, LongPollingRequest request) {
+    public void processPollingRequest(S socket, Connection connection, PollingRequest request) {
     }
 
     /**

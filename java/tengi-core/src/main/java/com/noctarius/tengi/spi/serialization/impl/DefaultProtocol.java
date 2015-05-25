@@ -16,12 +16,13 @@
  */
 package com.noctarius.tengi.spi.serialization.impl;
 
-import com.noctarius.tengi.core.model.Identifier;
-import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.core.config.MarshallerConfiguration;
 import com.noctarius.tengi.core.exception.NoSuchMarshallerException;
 import com.noctarius.tengi.core.exception.UnknownTypeException;
 import com.noctarius.tengi.core.impl.ExceptionUtil;
+import com.noctarius.tengi.core.impl.Validate;
+import com.noctarius.tengi.core.model.Identifier;
+import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.core.serialization.Identifiable;
 import com.noctarius.tengi.core.serialization.TypeId;
 import com.noctarius.tengi.core.serialization.codec.Decoder;
@@ -131,17 +132,19 @@ public class DefaultProtocol
     }
 
     @Override
-    public <O> O readObject(Decoder decoder)
+    public <O> O readObject(String fieldName, Decoder decoder)
             throws Exception {
 
         short typeId = decoder.readShort();
         Marshaller marshaller = marshallerById.get(typeId);
-        return (O) marshaller.unmarshall(decoder, this);
+        return (O) marshaller.unmarshall(fieldName, decoder, this);
     }
 
     @Override
     public <O> void writeObject(String fieldName, O object, Encoder encoder)
             throws Exception {
+
+        Validate.notNull("object", object);
 
         Marshaller marshaller = computeMarshaller(object);
         encoder.writeShort("marshallerId", findMarshallerId(marshaller));

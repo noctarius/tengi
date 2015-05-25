@@ -51,7 +51,7 @@ public class DefaultSerializer
     }
 
     @Override
-    public <O> O readObject(Decoder decoder)
+    public <O> O readObject(String fieldName, Decoder decoder)
             throws Exception {
 
         if (!SerializationDebugger.Debugger.ENABLED) {
@@ -59,7 +59,7 @@ public class DefaultSerializer
 
         } else {
             try {
-                return decoder.readObject();
+                return decoder.readObject(fieldName);
 
             } catch (Exception e) {
                 SerializationDebugger debugger = SerializationDebugger.instance();
@@ -70,7 +70,7 @@ public class DefaultSerializer
     }
 
     @Override
-    public <O> MemoryBuffer writeObject(O object)
+    public <O> MemoryBuffer writeObject(String fieldName, O object)
             throws Exception {
 
         PooledObject<DefaultCodec> po = codecPool.acquire();
@@ -79,7 +79,7 @@ public class DefaultSerializer
                 ByteBuf buffer = Unpooled.buffer();
                 MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
                 DefaultCodec codec = po.getObject().setMemoryBuffer(memoryBuffer);
-                writeObject("object", object, codec);
+                writeObject(fieldName, object, codec);
                 return memoryBuffer;
 
             } else {

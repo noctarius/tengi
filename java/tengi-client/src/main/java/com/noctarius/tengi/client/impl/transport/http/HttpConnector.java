@@ -28,10 +28,10 @@ import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.spi.connection.impl.TransportConstants;
 import com.noctarius.tengi.spi.connection.packets.Handshake;
-import com.noctarius.tengi.spi.connection.packets.LongPollingRequest;
+import com.noctarius.tengi.spi.connection.packets.PollingRequest;
+import com.noctarius.tengi.spi.serialization.Protocol;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import com.noctarius.tengi.spi.serialization.codec.AutoClosableEncoder;
-import com.noctarius.tengi.spi.serialization.impl.DefaultProtocolConstants;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -72,6 +72,7 @@ public class HttpConnector
     private final InetAddress address;
     private final int port;
     private final Serializer serializer;
+    private final Protocol protocol;
     private final EventLoopGroup clientGroup;
     private final HandshakeHandler handshakeHandler;
 
@@ -83,6 +84,7 @@ public class HttpConnector
         this.address = address;
         this.port = port;
         this.serializer = serializer;
+        this.protocol = serializer.getProtocol();
         this.handshakeHandler = handshakeHandler;
         this.clientGroup = clientGroup;
         this.bootstrap = createBootstrap();
@@ -178,15 +180,15 @@ public class HttpConnector
 
             channel.closeFuture().addListener(reconnectLongPolling(connection));
 
-            LongPollingRequest longPollingRequest = new LongPollingRequest();
+            PollingRequest pollingRequest = new PollingRequest();
             ByteBuf buffer = channel.alloc().directBuffer();
             MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
             try (AutoClosableEncoder encoder = serializer.retrieveEncoder(memoryBuffer)) {
                 encoder.writeBoolean("loggedIn", true);
                 encoder.writeObject("connectionId", connection.getConnectionId());
-                encoder.writeObject("longPollingRequest", Message.create(longPollingRequest));
+                encoder.writeObject("pollingRequest", Message.create(pollingRequest));
             }
-            channel.writeAndFlush(buildHttpRequest(buffer));
+            channel.writeAndFlush(buildHttpRequest(buffer, protocol.getMimeType()));
         };
     }
 
@@ -213,7 +215,7 @@ public class HttpConnector
             encoder.writeBoolean("loggedIn", false);
             encoder.writeObject("handshake", new Handshake());
         }
-        channel.writeAndFlush(buildHttpRequest(buffer));
+        channel.writeAndFlush(buildHttpRequest(buffer, protocol.getMimeType()));
     }
 
     private Bootstrap createBootstrap() {
@@ -232,11 +234,11 @@ public class HttpConnector
                 });
     }
 
-    static HttpRequest buildHttpRequest(ByteBuf buffer) {
+    static HttpRequest buildHttpRequest(ByteBuf buffer, String mimeType) {
         HttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/channel", buffer);
         HttpHeaders headers = request.headers();
         headers.set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
-        headers.set(HttpHeaderNames.CONTENT_TYPE, DefaultProtocolConstants.PROTOCOL_MIME_TYPE);
+        headers.set(HttpHeaderNames.CONTENT_TYPE, mimeType);
         headers.set(HttpHeaderNames.CONTENT_LENGTH, buffer.writerIndex());
         headers.set(HttpHeaderNames.USER_AGENT, TransportConstants.TRANSPORT_NAME_HTTP);
         return request;

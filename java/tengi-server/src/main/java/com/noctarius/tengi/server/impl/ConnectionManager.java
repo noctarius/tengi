@@ -24,7 +24,7 @@ import com.noctarius.tengi.core.listener.ConnectedListener;
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
-import com.noctarius.tengi.spi.connection.packets.LongPollingRequest;
+import com.noctarius.tengi.spi.connection.packets.PollingRequest;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.channel.Channel;
 import io.netty.handler.ssl.SslContext;
@@ -84,9 +84,9 @@ public class ConnectionManager
             throw new NoSuchConnectionException("ConnectionId '" + connectionId.toString() + "' is not registered");
         }
 
-        if (!connection.getTransport().isStreaming() && message.getBody() instanceof LongPollingRequest) {
-            LongPollingRequest request = message.getBody();
-            connection.getConnectionContext().processLongPollingRequest(channel, connection, request);
+        if (!connection.getTransport().isStreaming() && message.getBody() instanceof PollingRequest) {
+            PollingRequest request = message.getBody();
+            connection.getConnectionContext().processPollingRequest(channel, connection, request);
 
         } else {
             connection.publishMessage(message);

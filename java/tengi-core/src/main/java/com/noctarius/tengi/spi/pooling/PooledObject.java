@@ -16,8 +16,24 @@
  */
 package com.noctarius.tengi.spi.pooling;
 
+/**
+ * <p>The <tt>PooledObject</tt> interface describes a wrapper type, wrapping
+ * the original object. The real pooled object itself can be retrieved by
+ * calling {@link #getObject()} on the returned <tt>PooledObject</tt>
+ * instance.</p>
+ * <p>This interface is used to simplify and speedup internals of the
+ * {@link com.noctarius.tengi.spi.pooling.ObjectPool} implementation and commonly
+ * stores additional internal properties.</p>
+ *
+ * @param <T> the type of the pooled object
+ */
 public interface PooledObject<T> {
 
+    /**
+     * Returns the real pooled object as created by {@link ObjectHandler#create()}.
+     *
+     * @return the internal pooled object
+     */
     T getObject();
 
 }

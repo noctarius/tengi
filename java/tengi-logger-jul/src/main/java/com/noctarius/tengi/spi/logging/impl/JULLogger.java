@@ -16,6 +16,7 @@
  */
 package com.noctarius.tengi.spi.logging.impl;
 
+import com.noctarius.tengi.core.impl.Validate;
 import com.noctarius.tengi.spi.logging.Level;
 import com.noctarius.tengi.spi.logging.Logger;
 
@@ -36,33 +37,39 @@ class JULLogger
     }
 
     @Override
-    public void log(Level level, Throwable throwable, String message, Object arg) {
-        log(level, throwable, () -> String.format(message, arg));
+    public void log(Level level, Throwable throwable, String format, Object arg) {
+        Validate.notNull("format", format);
+        log(level, throwable, () -> String.format(format, arg));
     }
 
     @Override
-    public void log(Level level, Throwable throwable, String message, Object arg1, Object arg2) {
-        log(level, throwable, () -> String.format(message, arg1, arg2));
+    public void log(Level level, Throwable throwable, String format, Object arg1, Object arg2) {
+        Validate.notNull("format", format);
+        log(level, throwable, () -> String.format(format, arg1, arg2));
     }
 
     @Override
-    public void log(Level level, Throwable throwable, String message, Object arg1, Object arg2, Object arg3) {
-        log(level, throwable, () -> String.format(message, arg1, arg2, arg3));
+    public void log(Level level, Throwable throwable, String format, Object arg1, Object arg2, Object arg3) {
+        Validate.notNull("format", format);
+        log(level, throwable, () -> String.format(format, arg1, arg2, arg3));
     }
 
     @Override
-    public void log(Level level, Throwable throwable, String message, Object arg1, Object arg2, Object arg3, Object... args) {
+    public void log(Level level, Throwable throwable, String format, Object arg1, Object arg2, Object arg3, Object... args) {
+        Validate.notNull("format", format);
         log(level, throwable, () -> {
             Object[] params = new Object[args.length + 3];
             params[0] = arg1;
             params[1] = arg2;
             params[2] = arg3;
             System.arraycopy(args, 0, params, 3, args.length);
-            return String.format(message, params);
+            return String.format(format, params);
         });
     }
 
     private void log(Level level, Throwable throwable, Supplier<String> supplier) {
+        Validate.notNull("level", level);
+        Validate.notNull("supplier", supplier);
         switch (level) {
             case Trace:
                 if (logger.isLoggable(java.util.logging.Level.FINEST)) {

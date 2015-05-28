@@ -24,6 +24,15 @@ import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * The <tt>LoggerManager</tt> is a utility class to create and cache
+ * {@link com.noctarius.tengi.spi.logging.Logger} instances. It will
+ * automatically scan the classpath for implementations of
+ * {@link com.noctarius.tengi.spi.logging.LoggerFactory} classes using
+ * the Java ServiceLoader API and registers each of them, however it
+ * is recommended to have only one logger adapter avaialable at a
+ * given time.
+ */
 public final class LoggerManager {
 
     private static final LoggerManager INSTANCE = new LoggerManager();
@@ -75,6 +84,13 @@ public final class LoggerManager {
         });
     }
 
+    /**
+     * Retrieves a logger bound to the given <tt>binding</tt> type. If a matching binding
+     * for another <tt>Logger</tt> instance already exists the cached instance is returned.
+     *
+     * @param binding the <tt>java.lang.Class</tt> to bind to
+     * @return the new <tt>Logger</tt> instance or a cached one if the binding is already created
+     */
     public static Logger getLogger(Class<?> binding) {
         if (LOGGER_FACTORIES.size() > 1) {
             throw new LoggerException("Multiple Logger frameworks registered, please choose Logger type explicitly");
@@ -82,6 +98,13 @@ public final class LoggerManager {
         return getLogger(binding, SINGLE_AVAILABLE_FACTORY);
     }
 
+    /**
+     * Retrieves a logger bound to the given <tt>binding</tt> string. If a matching binding
+     * for another <tt>Logger</tt> instance already exists the cached instance is returned.
+     *
+     * @param binding the <tt>java.lang.String</tt> to bind to
+     * @return the new <tt>Logger</tt> instance or a cached one if the binding is already created
+     */
     public static Logger getLogger(String binding) {
         if (LOGGER_FACTORIES.size() > 1) {
             throw new LoggerException("Multiple Logger frameworks registered, please choose Logger type explicitly");
@@ -89,6 +112,14 @@ public final class LoggerManager {
         return getLogger(binding, SINGLE_AVAILABLE_FACTORY);
     }
 
+    /**
+     * Retrieves a logger bound to the given <tt>binding</tt> type. If a matching binding
+     * for another <tt>Logger</tt> instance already exists the cached instance is returned.
+     *
+     * @param binding    the <tt>java.lang.Class</tt> to bind to
+     * @param loggerType the {@link com.noctarius.tengi.spi.logging.Logger} type if multiple adapters are registered
+     * @return the new <tt>Logger</tt> instance or a cached one if the binding is already created
+     */
     public static Logger getLogger(Class<?> binding, Class<?> loggerType) {
         LoggerFactory loggerFactory = LOGGER_FACTORIES.get(loggerType);
         if (loggerFactory == null) {
@@ -97,6 +128,14 @@ public final class LoggerManager {
         return getLogger(binding, loggerFactory);
     }
 
+    /**
+     * Retrieves a logger bound to the given <tt>binding</tt> string. If a matching binding
+     * for another <tt>Logger</tt> instance already exists the cached instance is returned.
+     *
+     * @param binding    the <tt>java.lang.String</tt> to bind to
+     * @param loggerType the {@link com.noctarius.tengi.spi.logging.Logger} type if multiple adapters are registered
+     * @return the new <tt>Logger</tt> instance or a cached one if the binding is already created
+     */
     public static Logger getLogger(String binding, Class<?> loggerType) {
         LoggerFactory loggerFactory = LOGGER_FACTORIES.get(loggerType);
         if (loggerFactory == null) {
@@ -128,6 +167,7 @@ public final class LoggerManager {
 
     private static final class NoOpLogger
             implements Logger {
+
         @Override
         public void log(Level level, Throwable throwable, String message) {
         }

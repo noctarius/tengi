@@ -22,7 +22,7 @@ import com.noctarius.tengi.spi.logging.Logger;
 import com.noctarius.tengi.spi.logging.LoggerManager;
 import com.noctarius.tengi.spi.pooling.ObjectHandler;
 import com.noctarius.tengi.spi.pooling.ObjectPool;
-import com.noctarius.tengi.spi.pooling.PoolValidator;
+import com.noctarius.tengi.spi.pooling.ObjectValidator;
 import com.noctarius.tengi.spi.pooling.PooledObject;
 import sun.misc.Unsafe;
 
@@ -58,18 +58,14 @@ public class NonBlockingObjectPool<T>
     private final ThreadLocal<Entry<T>> threadCache = new ThreadLocal<>();
 
     private final ObjectHandler<T> handler;
-    private final PoolValidator<T> validator;
+    private final ObjectValidator<T> validator;
 
     private final Object[] entryPool;
     private final int size;
 
     private volatile int nextAcquireIndex = 0;
 
-    public NonBlockingObjectPool(ObjectHandler<T> handler, int size) {
-        this(handler, null, size);
-    }
-
-    public NonBlockingObjectPool(ObjectHandler<T> handler, PoolValidator<T> validator, int size) {
+    public NonBlockingObjectPool(ObjectHandler<T> handler, ObjectValidator<T> validator, int size) {
         this.handler = handler;
         this.validator = validator;
         this.size = MathUtil.nextPowerOfTwo(size);
@@ -140,7 +136,7 @@ public class NonBlockingObjectPool<T>
         if (state == ENTRY_UNPOOLED) {
             // Intermediate entry, will be discarded by the GC
             LOGGER.trace("Entry is intermediate, let GC handle it: %s", entry);
-            entry.passivate(handler, passivator);
+            entry.passivate(handler, passivator).destroy(handler);
             return;
         } else if (state == ENTRY_FREE) {
             throw new ConcurrentModificationException("Illegal concurrent update on an object pool entry");
@@ -160,6 +156,12 @@ public class NonBlockingObjectPool<T>
         nextAcquireIndex = -1;
         for (int index = 0; index < size; index++) {
             long indexOffset = offset(index);
+
+            // Retrieve element and destroy it
+            Entry<T> entry = (Entry<T>) UNSAFE.getObjectVolatile(entryPool, indexOffset);
+            entry.destroy(handler);
+
+            // Clear field
             UNSAFE.putObjectVolatile(entryPool, indexOffset, null);
         }
     }
@@ -196,6 +198,9 @@ public class NonBlockingObjectPool<T>
         if (validator.isValid(entry.getObject())) {
             return entry.activate(handler, activator);
         }
+
+        // If not valid destroy old element and create a new one
+        entry.destroy(handler);
 
         Entry<T> newEntry = new Entry<>(index, handler.create(), ENTRY_USED);
 
@@ -261,6 +266,10 @@ public class NonBlockingObjectPool<T>
             }
             handler.passivateObject(value);
             return this;
+        }
+
+        private void destroy(ObjectHandler<T> handler) {
+            handler.destroy(value);
         }
 
         private boolean casState(int expectedState, int newState) {

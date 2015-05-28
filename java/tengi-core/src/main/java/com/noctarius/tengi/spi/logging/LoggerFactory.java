@@ -16,12 +16,37 @@
  */
 package com.noctarius.tengi.spi.logging;
 
+/**
+ * <p>The <tt>LoggerFactory</tt> interface describes an entry point for
+ * external logging framework integrations. It is registered using the
+ * Java ServiceLoader API and automatically recognized on startup.</p>
+ * <p>Such a factory is used to create the underlying logger implementations
+ * and delegates to the external logging framework.</p>
+ */
 public interface LoggerFactory {
 
+    /**
+     * Creates a new <tt>Logger</tt> bound to the given <tt>binding</tt> type.
+     *
+     * @param binding the <tt>java.lang.Class</tt> to bind to
+     * @return the <b>new</b> <tt>Logger</tt> instance
+     */
     Logger create(Class<?> binding);
 
+    /**
+     * Creates a new <tt>Logger</tt> bound to the given <tt>binding</tt> string.
+     *
+     * @param binding the <tt>java.lang.String</tt> to bind to
+     * @return the <b>new</b> <tt>Logger</tt> instance
+     */
     Logger create(String binding);
 
+    /**
+     * Returns the type of the <tt>Logger</tt> that is created by this factory
+     * instance.
+     *
+     * @return the type of the created <tt>Logger</tt>s
+     */
     Class<?> loggerClass();
 
 }

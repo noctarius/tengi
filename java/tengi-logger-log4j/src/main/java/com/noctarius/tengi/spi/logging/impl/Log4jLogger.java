@@ -86,16 +86,16 @@ class Log4jLogger
                 break;
 
             case Warning:
-                if (logger.isEnabledFor(org.apache.log4j.Level.INFO)) {
+                if (logger.isEnabledFor(org.apache.log4j.Level.WARN)) {
                     String logMsg = supplier.get();
                     logger.warn(logMsg, throwable);
                 }
                 break;
 
             case Fatal:
-                if (logger.isEnabledFor(org.apache.log4j.Level.ERROR)) {
+                if (logger.isEnabledFor(org.apache.log4j.Level.FATAL)) {
                     String logMsg = supplier.get();
-                    logger.error(logMsg, throwable);
+                    logger.fatal(logMsg, throwable);
                 }
                 break;
 

@@ -17,16 +17,22 @@
 package com.noctarius.tengi.spi.logging.impl;
 
 import com.noctarius.tengi.spi.logging.Logger;
-import com.noctarius.tengi.spi.logging.LoggerManager;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.Filter;
+import org.apache.logging.log4j.core.Layout;
+import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.junit.Test;
 
+import java.io.Serializable;
 import java.util.function.Consumer;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class Log4jV2LoggingTestCase {
@@ -382,19 +388,49 @@ public class Log4jV2LoggingTestCase {
     }
 
     private static void practice(Consumer<Logger> test, Level level) {
-        Logger logger = LoggerManager.getLogger(Log4jV2LoggingTestCase.class);
-        assertTrue(Log4jV2Logger.class.isAssignableFrom(logger.getClass()));
+        org.apache.logging.log4j.Logger realLogger = LogManager.getLogger(Log4jV2LoggingTestCase.class);
 
-        activateLogLevel(level);
+        Logger logger = new Log4jV2Logger(realLogger);
+        VerifierAppender appender = new VerifierAppender("verifier", null, null, false);
+        appender.start();
+
+        activateLogLevel(level, appender);
+
         test.accept(logger);
+
+        assertEquals(level, appender.level);
+        Throwable throwable = appender.throwable;
+        if (throwable != null) {
+            assertTrue(throwable instanceof NullPointerException);
+        }
     }
 
-    private static void activateLogLevel(Level level) {
+    private static void activateLogLevel(Level level, Appender appender) {
         LoggerContext loggerContext = (LoggerContext) LogManager.getContext(ClassLoader.getSystemClassLoader(), false, null);
         Configuration configuration = loggerContext.getConfiguration();
         LoggerConfig loggerConfig = configuration.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
         loggerConfig.setLevel(level);
+        loggerConfig.addAppender(appender, level, null);
         loggerContext.updateLoggers(configuration);
+    }
+
+    private static class VerifierAppender
+            extends AbstractAppender {
+
+        private Level level;
+        private Throwable throwable;
+
+        protected VerifierAppender(String name, Filter filter, Layout<? extends Serializable> layout, boolean ignoreExceptions) {
+            super(name, filter, layout, ignoreExceptions);
+        }
+
+        @Override
+        public void append(LogEvent event) {
+            if (this.level == null) {
+                this.level = event.getLevel();
+                this.throwable = event.getThrown();
+            }
+        }
     }
 
 }

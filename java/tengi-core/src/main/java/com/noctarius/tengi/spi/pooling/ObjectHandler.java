@@ -45,7 +45,8 @@ public interface ObjectHandler<T> {
      *
      * @param object the object instance to destroy
      */
-    void destroy(T object);
+    default void destroy(T object) {
+    }
 
     /**
      * Handles activation process for a pre-allocated object. The object might

@@ -44,7 +44,7 @@ public class NonBlockingObjectPoolTestCase {
     public void test_acquire_null_activator_handler_action()
             throws Exception {
 
-        ObjectPool<Value> pool = new NonBlockingObjectPool<>(new ObjectHandler<Value>() {
+        ObjectPool<Value> pool = ObjectPool.create(new ObjectHandler<Value>() {
             @Override
             public Value create() {
                 return new Value();
@@ -66,7 +66,7 @@ public class NonBlockingObjectPoolTestCase {
     public void test_acquire_null_activator_handler_no_action()
             throws Exception {
 
-        ObjectPool<Value> pool = new NonBlockingObjectPool<>(Value::new, 10);
+        ObjectPool<Value> pool = ObjectPool.create(Value::new, 10);
 
         PooledObject<Value> valuePooledObject = pool.acquire();
         assertNotNull(valuePooledObject);
@@ -78,7 +78,7 @@ public class NonBlockingObjectPoolTestCase {
     public void test_acquire_non_null_activator_handler_action()
             throws Exception {
 
-        ObjectPool<Value> pool = new NonBlockingObjectPool<>(new ObjectHandler<Value>() {
+        ObjectPool<Value> pool = ObjectPool.create(new ObjectHandler<Value>() {
             @Override
             public Value create() {
                 return new Value();
@@ -100,7 +100,7 @@ public class NonBlockingObjectPoolTestCase {
     public void test_acquire_non_null_activator_handler_no_action()
             throws Exception {
 
-        ObjectPool<Value> pool = new NonBlockingObjectPool<>(Value::new, 10);
+        ObjectPool<Value> pool = ObjectPool.create(Value::new, 10);
 
         PooledObject<Value> valuePooledObject = pool.acquire((v) -> v.value = "test");
         assertNotNull(valuePooledObject);
@@ -115,7 +115,7 @@ public class NonBlockingObjectPoolTestCase {
         final Value value = new Value();
         value.value = "test";
 
-        ObjectPool<Value> pool = new NonBlockingObjectPool<>(new ObjectHandler<Value>() {
+        ObjectPool<Value> pool = ObjectPool.create(new ObjectHandler<Value>() {
             @Override
             public Value create() {
                 return value;
@@ -142,7 +142,7 @@ public class NonBlockingObjectPoolTestCase {
         final Value value = new Value();
         value.value = "test";
 
-        ObjectPool<Value> pool = new NonBlockingObjectPool<>(() -> value, 10);
+        ObjectPool<Value> pool = ObjectPool.create(() -> value, 10);
 
         PooledObject<Value> valuePooledObject = pool.acquire();
         assertNotNull(valuePooledObject);
@@ -159,7 +159,7 @@ public class NonBlockingObjectPoolTestCase {
         final Value value = new Value();
         value.value = "test";
 
-        ObjectPool<Value> pool = new NonBlockingObjectPool<>(new ObjectHandler<Value>() {
+        ObjectPool<Value> pool = ObjectPool.create(new ObjectHandler<Value>() {
             @Override
             public Value create() {
                 return value;
@@ -186,7 +186,7 @@ public class NonBlockingObjectPoolTestCase {
         final Value value = new Value();
         value.value = "test";
 
-        ObjectPool<Value> pool = new NonBlockingObjectPool<>(() -> value, 10);
+        ObjectPool<Value> pool = ObjectPool.create(() -> value, 10);
 
         PooledObject<Value> valuePooledObject = pool.acquire();
         assertNotNull(valuePooledObject);
@@ -202,7 +202,7 @@ public class NonBlockingObjectPoolTestCase {
 
         int concurrencyLevel = 100;
 
-        ObjectPool<Value> pool = new NonBlockingObjectPool<>(Value::new, concurrencyLevel);
+        ObjectPool<Value> pool = ObjectPool.create(Value::new, concurrencyLevel);
 
         AtomicReferenceArray<Object> results = new AtomicReferenceArray<>(concurrencyLevel);
 
@@ -245,7 +245,7 @@ public class NonBlockingObjectPoolTestCase {
     public void test_acquire_validator_valid()
             throws Exception {
 
-        ObjectPool<Value> pool = new NonBlockingObjectPool<>(Value::new, (v) -> true, 2);
+        ObjectPool<Value> pool = ObjectPool.create(Value::new, (v) -> true, 2);
         PooledObject<Value> obj1 = pool.acquire();
         assertTrue(!obj1.toString().contains("INTERMEDIATE"));
         PooledObject<Value> obj2 = pool.acquire();
@@ -262,7 +262,7 @@ public class NonBlockingObjectPoolTestCase {
     public void test_acquire_validator_invalid()
             throws Exception {
 
-        ObjectPool<Value> pool = new NonBlockingObjectPool<>(Value::new, (v) -> false, 2);
+        ObjectPool<Value> pool = ObjectPool.create(Value::new, (v) -> false, 2);
         PooledObject<Value> obj1 = pool.acquire();
         assertTrue(!obj1.toString().contains("INTERMEDIATE"));
         PooledObject<Value> obj2 = pool.acquire();
@@ -281,7 +281,7 @@ public class NonBlockingObjectPoolTestCase {
 
         int concurrencyLevel = 100;
 
-        ObjectPool<Value> pool = new NonBlockingObjectPool<>(Value::new, concurrencyLevel);
+        ObjectPool<Value> pool = ObjectPool.create(Value::new, concurrencyLevel);
 
         PooledObject<Value>[] results = new PooledObject[concurrencyLevel];
         AtomicReferenceArray<Throwable> exceptions = new AtomicReferenceArray<>(concurrencyLevel);
@@ -325,7 +325,7 @@ public class NonBlockingObjectPoolTestCase {
     public void test_acquire_but_full_intermediate_entry()
             throws Exception {
 
-        ObjectPool<Value> pool = new NonBlockingObjectPool<>(Value::new, 2);
+        ObjectPool<Value> pool = ObjectPool.create(Value::new, 2);
         PooledObject<Value> obj1 = pool.acquire();
         assertTrue(!obj1.toString().contains("INTERMEDIATE"));
         PooledObject<Value> obj2 = pool.acquire();
@@ -340,7 +340,7 @@ public class NonBlockingObjectPoolTestCase {
     public void test_release_intermediate_entry()
             throws Exception {
 
-        ObjectPool<Value> pool = new NonBlockingObjectPool<>(Value::new, 2);
+        ObjectPool<Value> pool = ObjectPool.create(Value::new, 2);
         PooledObject<Value> obj1 = pool.acquire();
         assertTrue(!obj1.toString().contains("INTERMEDIATE"));
         PooledObject<Value> obj2 = pool.acquire();
@@ -361,7 +361,7 @@ public class NonBlockingObjectPoolTestCase {
     public void test_close()
             throws Exception {
 
-        ObjectPool<Value> pool = new NonBlockingObjectPool<>(Value::new, 2);
+        ObjectPool<Value> pool = ObjectPool.create(Value::new, 2);
         PooledObject<Value> obj = pool.acquire();
         assertNotNull(obj);
         pool.release(obj);
@@ -375,7 +375,7 @@ public class NonBlockingObjectPoolTestCase {
     public void test_release_null_object()
             throws Exception {
 
-        ObjectPool<Value> pool = new NonBlockingObjectPool<>(Value::new, 2);
+        ObjectPool<Value> pool = ObjectPool.create(Value::new, 2);
         pool.release(null);
     }
 
@@ -383,7 +383,7 @@ public class NonBlockingObjectPoolTestCase {
     public void test_release_wrong_typed_object()
             throws Exception {
 
-        ObjectPool<Value> pool = new NonBlockingObjectPool<>(Value::new, 2);
+        ObjectPool<Value> pool = ObjectPool.create(Value::new, 2);
         pool.release(new WrongPooledObject<>());
     }
 
@@ -391,7 +391,7 @@ public class NonBlockingObjectPoolTestCase {
     public void test_release_already_free_object()
             throws Exception {
 
-        ObjectPool<Value> pool = new NonBlockingObjectPool<>(Value::new, 2);
+        ObjectPool<Value> pool = ObjectPool.create(Value::new, 2);
         PooledObject<Value> pooledObject = pool.acquire();
 
         Field field = NonBlockingObjectPool.Entry.class.getDeclaredField("state");

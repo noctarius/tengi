@@ -17,14 +17,16 @@
 package com.noctarius.tengi.spi.logging.impl;
 
 import com.noctarius.tengi.spi.logging.Logger;
-import com.noctarius.tengi.spi.logging.LoggerManager;
 import org.junit.Test;
 
 import java.util.Enumeration;
 import java.util.function.Consumer;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class JulLoggingTestCase {
@@ -380,18 +382,54 @@ public class JulLoggingTestCase {
         practice((logger) -> logger.fatal(new NullPointerException(), "test, %s, %s, %s, %s, %s", 1, 2, 3, 4, 5), Level.SEVERE);
     }
 
-    private static void practice(Consumer<Logger> test, Level level) {
-        Logger logger = LoggerManager.getLogger(JulLoggingTestCase.class);
-        assertTrue(JULLogger.class.isAssignableFrom(logger.getClass()));
+    private void practice(Consumer<Logger> test, Level level) {
+        java.util.logging.Logger realLogger = java.util.logging.Logger.getLogger(JulLoggingTestCase.class.getName());
+
+        Logger logger = new JULLogger(realLogger);
+        VerifierHandler handler = new VerifierHandler();
+        realLogger.addHandler(handler);
 
         activateLogLevel(level);
+
         test.accept(logger);
+        realLogger.removeHandler(handler);
+
+        assertEquals(level, handler.level);
+
+        Throwable throwable = handler.throwable;
+        if (throwable != null) {
+            assertTrue(throwable instanceof NullPointerException);
+        }
     }
 
     private static void activateLogLevel(Level level) {
         Enumeration<String> loggerNames = LogManager.getLogManager().getLoggerNames();
         while (loggerNames.hasMoreElements()) {
             LogManager.getLogManager().getLogger(loggerNames.nextElement()).setLevel(level);
+        }
+    }
+
+    private static class VerifierHandler
+            extends Handler {
+
+        private Level level;
+        private Throwable throwable;
+
+        @Override
+        public void publish(LogRecord record) {
+            if (this.level == null) {
+                this.level = record.getLevel();
+                this.throwable = record.getThrown();
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close()
+                throws SecurityException {
         }
     }
 

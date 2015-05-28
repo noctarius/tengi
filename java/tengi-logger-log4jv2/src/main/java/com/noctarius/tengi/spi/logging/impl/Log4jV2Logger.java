@@ -93,9 +93,9 @@ class Log4jV2Logger
                 break;
 
             case Fatal:
-                if (logger.isErrorEnabled()) {
+                if (logger.isFatalEnabled()) {
                     String logMsg = supplier.get();
-                    logger.error(logMsg, throwable);
+                    logger.fatal(logMsg, throwable);
                 }
                 break;
 

@@ -14,29 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.spi.serialization.impl;
+package com.noctarius.tengi.spi.logging.impl;
 
-import com.noctarius.tengi.spi.pooling.ObjectHandler;
-import com.noctarius.tengi.spi.serialization.Protocol;
-import com.noctarius.tengi.spi.serialization.codec.impl.DefaultCodec;
+import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.Level;
+import org.apache.log4j.spi.LoggingEvent;
+import org.apache.log4j.spi.ThrowableInformation;
 
-class CodecObjectHandler
-        implements ObjectHandler<DefaultCodec> {
+public class VerifierAppender
+        extends AppenderSkeleton {
 
-    private final Protocol protocol;
+    private Level level;
+    private Object message;
+    private ThrowableInformation throwableInformation;
 
-    CodecObjectHandler(Protocol protocol) {
-        this.protocol = protocol;
+    @Override
+    protected void append(LoggingEvent event) {
+        this.level = event.getLevel();
+        this.message = event.getMessage();
+        this.throwableInformation = event.getThrowableInformation();
     }
 
     @Override
-    public DefaultCodec create() {
-        return new DefaultCodec(protocol);
+    public void close() {
     }
 
     @Override
-    public void passivateObject(DefaultCodec object) {
-        object.setMemoryBuffer(null);
+    public boolean requiresLayout() {
+        return false;
     }
 
 }

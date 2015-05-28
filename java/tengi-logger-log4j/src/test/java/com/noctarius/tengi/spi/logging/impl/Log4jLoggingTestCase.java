@@ -17,12 +17,15 @@
 package com.noctarius.tengi.spi.logging.impl;
 
 import com.noctarius.tengi.spi.logging.Logger;
-import com.noctarius.tengi.spi.logging.LoggerManager;
+import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
+import org.apache.log4j.spi.LoggingEvent;
+import org.apache.log4j.spi.ThrowableInformation;
 import org.junit.Test;
 
 import java.util.function.Consumer;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class Log4jLoggingTestCase {
@@ -378,15 +381,52 @@ public class Log4jLoggingTestCase {
     }
 
     private static void practice(Consumer<Logger> test, Level level) {
-        Logger logger = LoggerManager.getLogger(Log4jLoggingTestCase.class);
-        assertTrue(Log4jLogger.class.isAssignableFrom(logger.getClass()));
+        org.apache.log4j.Logger realLogger = org.apache.log4j.Logger.getLogger(Log4jLoggingTestCase.class);
 
-        activateLogLevel(level);
+        Logger logger = new Log4jLogger(realLogger);
+        VerifierAppender appender = new VerifierAppender();
+        realLogger.addAppender(appender);
+
+        activateLogLevel(realLogger, level);
+
         test.accept(logger);
+        realLogger.removeAppender(appender);
+
+        assertEquals(level, appender.level);
+
+        Throwable throwable = appender.throwableInformation != null ? appender.throwableInformation.getThrowable() : null;
+        if (throwable != null) {
+            assertTrue(throwable instanceof NullPointerException);
+        }
     }
 
-    private static void activateLogLevel(Level level) {
+    private static void activateLogLevel(org.apache.log4j.Logger logger, Level level) {
+        logger.setLevel(level);
         org.apache.log4j.Logger.getRootLogger().setLevel(level);
+    }
+
+    private static class VerifierAppender
+            extends AppenderSkeleton {
+
+        private Level level;
+        private ThrowableInformation throwableInformation;
+
+        @Override
+        protected void append(LoggingEvent event) {
+            if (this.level == null) {
+                this.level = event.getLevel();
+                this.throwableInformation = event.getThrowableInformation();
+            }
+        }
+
+        @Override
+        public void close() {
+        }
+
+        @Override
+        public boolean requiresLayout() {
+            return false;
+        }
     }
 
 }

@@ -18,13 +18,17 @@ package com.noctarius.tengi.spi.logging.impl;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.ThrowableProxy;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.AppenderBase;
 import com.noctarius.tengi.spi.logging.Logger;
-import com.noctarius.tengi.spi.logging.LoggerManager;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class SLF4JLoggingTestCase {
@@ -380,17 +384,44 @@ public class SLF4JLoggingTestCase {
     }
 
     private static void practice(Consumer<Logger> test, Level level) {
-        Logger logger = LoggerManager.getLogger(SLF4JLoggingTestCase.class);
-        assertTrue(SLF4JLogger.class.isAssignableFrom(logger.getClass()));
+        org.slf4j.Logger realLogger = LoggerFactory.getLogger(SLF4JLoggingTestCase.class);
 
-        activateLogLevel(level);
+        Logger logger = new SLF4JLogger(realLogger);
+        VerifierAppender appender = new VerifierAppender();
+        appender.start();
+
+        activateLogLevel(level, appender);
         test.accept(logger);
+
+        assertEquals(level, appender.level);
+
+        Throwable throwable = appender.throwable;
+        if (throwable != null) {
+            assertTrue(throwable instanceof NullPointerException);
+        }
     }
 
-    private static void activateLogLevel(Level level) {
+    private static void activateLogLevel(Level level, Appender<ILoggingEvent> appender) {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         for (ch.qos.logback.classic.Logger logger : loggerContext.getLoggerList()) {
             logger.setLevel(level);
+            logger.addAppender(appender);
+        }
+    }
+
+    private static class VerifierAppender
+            extends AppenderBase<ILoggingEvent> {
+
+        private Level level;
+        private Throwable throwable;
+
+        @Override
+        protected void append(ILoggingEvent event) {
+            if (this.level == null) {
+                this.level = event.getLevel();
+                ThrowableProxy throwableProxy = (ThrowableProxy) event.getThrowableProxy();
+                this.throwable = throwableProxy != null ? throwableProxy.getThrowable() : null;
+            }
         }
     }
 

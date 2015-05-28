@@ -25,7 +25,6 @@ import com.noctarius.tengi.spi.buffer.WritableMemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.spi.pooling.ObjectPool;
 import com.noctarius.tengi.spi.pooling.PooledObject;
-import com.noctarius.tengi.spi.pooling.impl.NonBlockingObjectPool;
 import com.noctarius.tengi.spi.serialization.Protocol;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import com.noctarius.tengi.spi.serialization.codec.AutoClosableDecoder;
@@ -42,7 +41,7 @@ public class DefaultSerializer
 
     public DefaultSerializer(Protocol protocol) {
         this.protocol = protocol;
-        this.codecPool = new NonBlockingObjectPool<>(new CodecObjectHandler(protocol), 100);
+        this.codecPool = ObjectPool.create(new CodecObjectHandler(protocol), 100);
     }
 
     @Override

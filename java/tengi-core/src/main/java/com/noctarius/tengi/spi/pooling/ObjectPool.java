@@ -61,6 +61,7 @@ public interface ObjectPool<T> {
      * however, if based on network connection or other unreliable system, it still might
      * become invalid at any given point after acquisition.</p>
      *
+     * @param activator the runtime activator to execute against the object
      * @return the pooled element wrapped into a <tt>PooledObject</tt> instance
      */
     PooledObject<T> acquire(Consumer<T> activator);
@@ -89,7 +90,8 @@ public interface ObjectPool<T> {
      * {@link com.noctarius.tengi.spi.pooling.ObjectHandler#passivateObject(Object)}
      * method.</p>
      *
-     * @param object the pooled object to release
+     * @param object     the pooled object to release
+     * @param passivator the runtime passivator to execute against the object
      */
     void release(PooledObject<T> object, Consumer<T> passivator);
 

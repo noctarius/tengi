@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.client.impl.transport.tcp;
+package com.noctarius.tengi.client.impl.transport.websocket;
 
 import com.noctarius.tengi.client.impl.Connector;
 import com.noctarius.tengi.client.impl.ServerConnection;
@@ -23,11 +23,11 @@ import com.noctarius.tengi.spi.connection.ConnectionContext;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.channel.Channel;
 
-class TcpServerConnection
+class WebsocketServerConnection
         extends ServerConnection {
 
-    TcpServerConnection(ConnectionContext<Channel> connectionContext, Identifier connectionId, //
-                        Connector connector, Serializer serializer) {
+    WebsocketServerConnection(ConnectionContext<Channel> connectionContext, Identifier connectionId, //
+                              Connector connector, Serializer serializer) {
 
         super(connectionContext, connectionId, connector, serializer);
     }

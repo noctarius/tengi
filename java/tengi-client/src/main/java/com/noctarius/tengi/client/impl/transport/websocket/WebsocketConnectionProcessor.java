@@ -14,49 +14,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl.transport.websocket;
+package com.noctarius.tengi.client.impl.transport.websocket;
 
+import com.noctarius.tengi.client.impl.Connector;
+import com.noctarius.tengi.client.impl.ServerConnection;
+import com.noctarius.tengi.client.impl.transport.ClientConnectionProcessor;
+import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.model.Identifier;
-import com.noctarius.tengi.server.ServerTransport;
-import com.noctarius.tengi.server.impl.ConnectionManager;
-import com.noctarius.tengi.server.impl.transport.ServerConnectionProcessor;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import com.noctarius.tengi.spi.serialization.codec.AutoClosableDecoder;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
-import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;
+
+import static com.noctarius.tengi.client.impl.ClientUtil.CONNECTION;
+import static com.noctarius.tengi.client.impl.ClientUtil.connectionAttribute;
 
 public class WebsocketConnectionProcessor
-        extends ServerConnectionProcessor<WebSocketFrame> {
+        extends ClientConnectionProcessor<WebSocketFrame, Channel, WebSocketFrame> {
 
-    private final WebSocketServerHandshaker handshaker;
+    private final WebSocketClientHandshaker handshaker;
+    private final Connector<WebSocketFrame> connector;
 
-    public WebsocketConnectionProcessor(WebSocketServerHandshaker handshaker, //
-                                        ConnectionManager connectionManager, Serializer serializer) {
+    WebsocketConnectionProcessor(WebSocketClientHandshaker handshaker, Serializer serializer,
+                                 Connector<WebSocketFrame> connector) {
 
-        super(connectionManager, serializer, ServerTransport.WEBSOCKET_TRANSPORT);
+        super(serializer, connector);
         this.handshaker = handshaker;
+        this.connector = connector;
     }
 
     @Override
     protected AutoClosableDecoder decode(ChannelHandlerContext ctx, WebSocketFrame frame)
             throws Exception {
 
-        // Check for closing frame
         if (frame instanceof CloseWebSocketFrame) {
             handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
+            ctx.channel().close();
             return null;
         }
-        if (frame instanceof PingWebSocketFrame) {
-            ctx.channel().write(new PongWebSocketFrame(frame.content().retain()));
+        if (frame instanceof PongWebSocketFrame) {
+            // Action?
             return null;
         }
         if (frame instanceof BinaryWebSocketFrame) {
@@ -69,8 +75,17 @@ public class WebsocketConnectionProcessor
     }
 
     @Override
-    protected ConnectionContext createConnectionContext(ChannelHandlerContext ctx, Identifier connectionId) {
-        return new WebsocketConnectionContext(ctx.channel(), connectionId, getSerializer(), getTransport());
+    protected ConnectionContext<Channel> createConnectionContext(ChannelHandlerContext ctx, Identifier connectionId) {
+        return new WebsocketConnectionContext(connectionId, getSerializer(), connector);
+    }
+
+    @Override
+    protected Connection createConnection(ChannelHandlerContext ctx, ConnectionContext<Channel> connectionContext,
+                                          Identifier connectionId) {
+
+        ServerConnection connection = new WebsocketServerConnection(connectionContext, connectionId, connector, getSerializer());
+        connectionAttribute(ctx, CONNECTION, connection);
+        return connection;
     }
 
 }

@@ -30,10 +30,10 @@ import io.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.util.ReferenceCountUtil;
 
+import static com.noctarius.tengi.spi.connection.impl.TransportConstants.WEBSOCKET_RELATIVE_PATH;
+
 public class WebsocketNegotiator
         extends ChannelInboundHandlerAdapter {
-
-    private static final String WEBSOCKET_PATH = "/wss";
 
     private final ConnectionManager connectionManager;
     private final Serializer serializer;
@@ -51,7 +51,7 @@ public class WebsocketNegotiator
             FullHttpRequest request = (FullHttpRequest) object;
 
             // Activate websocket handshake
-            if (WEBSOCKET_PATH.equals(request.uri())) {
+            if (WEBSOCKET_RELATIVE_PATH.equals(request.uri())) {
                 switchToWebsocket(ctx, request);
             } else {
                 switchToHttpLongPolling(ctx);
@@ -85,7 +85,7 @@ public class WebsocketNegotiator
 
     private String getWebSocketLocation(ChannelHandlerContext ctx, FullHttpRequest request) {
         SslHandler handler = ctx.pipeline().get(SslHandler.class);
-        String location = request.headers().get(HttpHeaderNames.HOST) + WEBSOCKET_PATH;
+        String location = request.headers().get(HttpHeaderNames.HOST) + WEBSOCKET_RELATIVE_PATH;
         if (handler != null) {
             return "wss://" + location;
         } else {

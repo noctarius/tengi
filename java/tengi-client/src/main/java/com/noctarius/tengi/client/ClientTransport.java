@@ -20,6 +20,7 @@ import com.noctarius.tengi.client.impl.Connector;
 import com.noctarius.tengi.client.impl.ConnectorFactory;
 import com.noctarius.tengi.client.impl.transport.http.HttpConnector;
 import com.noctarius.tengi.client.impl.transport.tcp.TcpConnector;
+import com.noctarius.tengi.client.impl.transport.websocket.WebsocketConnector;
 import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.core.connection.handshake.HandshakeHandler;
@@ -65,9 +66,11 @@ public enum ClientTransport
     HTTP2_TRANSPORT(null, TRANSPORT_NAME_HTTP2, true, DEFAULT_PORT_TCP, TransportLayer.TCP),
 
     /**
-     * Reserved for later implementation
+     * This constant defines a Websocket based {@link com.noctarius.tengi.core.connection.Transport}
+     * implementation. Using an optimized internal protocol, this transport is one of the suggested standard
+     * transports to be chosen to connect first.
      */
-    WEBSOCKET_TRANSPORT(null, TRANSPORT_NAME_WEBSOCKET, true, DEFAULT_PORT_TCP, TransportLayer.TCP),
+    WEBSOCKET_TRANSPORT(WebsocketConnector::new, TRANSPORT_NAME_WEBSOCKET, true, DEFAULT_PORT_TCP, TransportLayer.TCP),
 
     /**
      * Reserved for later implementation

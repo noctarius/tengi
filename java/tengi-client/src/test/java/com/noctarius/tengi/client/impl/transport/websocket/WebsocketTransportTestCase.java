@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.client.impl.transport.tcp;
+package com.noctarius.tengi.client.impl.transport.websocket;
 
 import com.noctarius.tengi.client.Client;
 import com.noctarius.tengi.client.ClientTransport;
 import com.noctarius.tengi.client.impl.transport.AbstractClientTransportTestCase;
-import com.noctarius.tengi.core.connection.Connection;
-import com.noctarius.tengi.core.model.Message;
-import com.noctarius.tengi.core.model.Packet;
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.config.ConfigurationBuilder;
-import com.noctarius.tengi.core.listener.MessageListener;
+import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.listener.ConnectedListener;
+import com.noctarius.tengi.core.listener.MessageListener;
+import com.noctarius.tengi.core.model.Message;
+import com.noctarius.tengi.core.model.Packet;
 import com.noctarius.tengi.server.ServerTransport;
 import org.junit.Test;
 
@@ -34,20 +34,20 @@ import java.util.concurrent.CompletableFuture;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class TcpTransportTestCase
+public class WebsocketTransportTestCase
         extends AbstractClientTransportTestCase {
 
     @Test
     public void test_simple_tcp_connection()
             throws Exception {
 
-        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransport.TCP_TRANSPORT).build();
+        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransport.WEBSOCKET_TRANSPORT).build();
         Client client = Client.create(configuration);
 
         Connection connection = null;
         try {
             CompletableFuture<Connection> f = new CompletableFuture<>();
-            connection = practice(client, f::complete, f::get, false, ServerTransport.TCP_TRANSPORT);
+            connection = practice(client, f::complete, f::get, false, ServerTransport.WEBSOCKET_TRANSPORT);
             assertNotNull(connection);
         } finally {
             if (connection != null) {
@@ -60,7 +60,7 @@ public class TcpTransportTestCase
     public void test_simple_tcp_simple_round_trip()
             throws Exception {
 
-        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransport.TCP_TRANSPORT).build();
+        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransport.WEBSOCKET_TRANSPORT).build();
         Client client = Client.create(configuration);
 
         CompletableFuture<Message> messageFuture = new CompletableFuture<>();
@@ -82,7 +82,7 @@ public class TcpTransportTestCase
             }
         };
 
-        Message result = practice(client, listener, messageFuture::get, false, ServerTransport.TCP_TRANSPORT);
+        Message result = practice(client, listener, messageFuture::get, false, ServerTransport.WEBSOCKET_TRANSPORT);
         assertNotNull(result);
 
         Packet p = result.getBody();
@@ -94,7 +94,7 @@ public class TcpTransportTestCase
     public void test_simple_tcp_multi_round_trip()
             throws Exception {
 
-        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransport.TCP_TRANSPORT).build();
+        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransport.WEBSOCKET_TRANSPORT).build();
         Client client = Client.create(configuration);
 
         CompletableFuture<Message> messageFuture = new CompletableFuture<>();
@@ -127,7 +127,7 @@ public class TcpTransportTestCase
             }
         };
 
-        Message result = practice(client, listener, messageFuture::get, false, ServerTransport.TCP_TRANSPORT);
+        Message result = practice(client, listener, messageFuture::get, false, ServerTransport.WEBSOCKET_TRANSPORT);
         assertNotNull(result);
 
         Packet p = result.getBody();

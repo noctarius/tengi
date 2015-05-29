@@ -31,4 +31,6 @@ public final class TransportConstants {
     public static final int DEFAULT_PORT_TCP = 8080;
     public static final int DEFAULT_PORT_UDP = 9090;
 
+    public static final String WEBSOCKET_RELATIVE_PATH = "/wss";
+
 }

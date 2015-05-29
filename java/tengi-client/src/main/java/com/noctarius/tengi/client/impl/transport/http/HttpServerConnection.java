@@ -31,4 +31,5 @@ class HttpServerConnection
 
         super(connectionContext, connectionId, connector, serializer);
     }
+
 }

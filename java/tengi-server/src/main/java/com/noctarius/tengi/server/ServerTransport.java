@@ -20,6 +20,7 @@ import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.server.impl.transport.http.HttpTransport;
 import com.noctarius.tengi.server.impl.transport.tcp.TcpTransport;
+import com.noctarius.tengi.server.impl.transport.websocket.WebsocketTransport;
 
 /**
  * <p>The <tt>ServerTransport</tt> enum defines built-in, server-side
@@ -45,9 +46,11 @@ public enum ServerTransport
     HTTP2_TRANSPORT(null),
 
     /**
-     * Reserved for later implementation
+     * This constant defines a Websocket based {@link com.noctarius.tengi.core.connection.Transport}
+     * implementation. Using an optimized internal protocol, this transport is one of the suggested standard
+     * transports to be chosen to connect first.
      */
-    WEBSOCKET_TRANSPORT(null),
+    WEBSOCKET_TRANSPORT(new WebsocketTransport()),
 
     /**
      * Reserved for later implementation

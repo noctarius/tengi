@@ -16,6 +16,8 @@
  */
 package com.noctarius.tengi.server.impl.transport.negotiation;
 
+import com.noctarius.tengi.core.exception.ConnectionFailedException;
+import com.noctarius.tengi.server.ServerTransport;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.transport.http2.Http2ConnectionProcessor;
 import com.noctarius.tengi.spi.serialization.Serializer;
@@ -35,11 +37,13 @@ import static io.netty.handler.codec.http2.Http2CodecUtil.TLS_UPGRADE_PROTOCOL_N
 public class Http2Negotiator
         extends ByteToMessageDecoder {
 
+    private final int port;
     private final int maxHttpContentLength;
     private final ConnectionManager connectionManager;
     private final Serializer serializer;
 
-    public Http2Negotiator(int maxHttpContentLength, ConnectionManager connectionManager, Serializer serializer) {
+    public Http2Negotiator(int port, int maxHttpContentLength, ConnectionManager connectionManager, Serializer serializer) {
+        this.port = port;
         this.maxHttpContentLength = maxHttpContentLength;
         this.connectionManager = connectionManager;
         this.serializer = serializer;
@@ -48,6 +52,7 @@ public class Http2Negotiator
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out)
             throws Exception {
+
         System.out.println(in);
         if (initPipeline(ctx)) {
             // When we reached here we can remove this handler as its now clear
@@ -76,6 +81,9 @@ public class Http2Negotiator
                 switchToHttp(ctx);
                 break;
             case HTTP_2:
+                if (!connectionManager.acceptTransport(ServerTransport.HTTP2_TRANSPORT, port)) {
+                    throw new ConnectionFailedException("Transport not enabled");
+                }
                 switchToHttp2(ctx);
                 break;
             case HTTP_1_0:
@@ -99,7 +107,7 @@ public class Http2Negotiator
         ChannelPipeline pipeline = ctx.pipeline();
         pipeline.addLast("httpCodec", new HttpServerCodec());
         pipeline.addLast("httpChunkAggregator", new HttpObjectAggregator(maxHttpContentLength));
-        pipeline.addLast("websocketNegotiator", new WebsocketNegotiator(connectionManager, serializer));
+        pipeline.addLast("websocketNegotiator", new WebsocketNegotiator(port, connectionManager, serializer));
     }
 
     private SelectedProtocol getProtocol(SSLEngine engine) {

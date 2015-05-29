@@ -47,6 +47,8 @@
     <ning.http.client.version>1.9.21</ning.http.client.version>
     <logback.version>1.1.3</logback.version>
     <mockito.version>1.9.5</mockito.version>
+    <tyrus.version>1.1</tyrus.version>
+    <javax.websocket.version>1.0</javax.websocket.version>
   </properties>
 
   <modules>
@@ -122,11 +124,6 @@
         <artifactId>log4j-core</artifactId>
         <version>${log4jv2.version}</version>
       </dependency>
-      <dependency>
-        <groupId>ch.qos.logback</groupId>
-        <artifactId>logback-classic</artifactId>
-        <version>${logback.version}</version>
-      </dependency>
 
       <!-- test dependencies -->
       <dependency>
@@ -143,6 +140,25 @@
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
         <version>${mockito.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.websocket</groupId>
+        <artifactId>javax.websocket-client-api</artifactId>
+        <version>${javax.websocket.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish.tyrus</groupId>
+        <artifactId>tyrus-client</artifactId>
+        <version>${tyrus.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish.tyrus</groupId>
+        <artifactId>tyrus-container-grizzly</artifactId>
+        <version>${tyrus.version}</version>
+      </dependency>      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>${logback.version}</version>
       </dependency>
 
       <!-- build time dependencies -->

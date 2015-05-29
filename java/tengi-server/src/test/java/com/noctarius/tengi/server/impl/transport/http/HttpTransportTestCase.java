@@ -68,7 +68,7 @@ public class HttpTransportTestCase
 
         CompletableFuture<Object> future = new CompletableFuture<>();
 
-        Object result = AbstractLongPollingTransportTestCase.practice(() -> {
+        Object result = practice(() -> {
             AsyncHttpClient client = new AsyncHttpClient();
             Response response = handshake(client, serializer).get();
 
@@ -111,7 +111,7 @@ public class HttpTransportTestCase
 
         CompletableFuture<Packet> future = new CompletableFuture<>();
 
-        Packet result = AbstractLongPollingTransportTestCase.practice(() -> {
+        Packet result = practice(() -> {
             AsyncHttpClient client = new AsyncHttpClient();
             Response response = handshake(client, serializer).get();
 

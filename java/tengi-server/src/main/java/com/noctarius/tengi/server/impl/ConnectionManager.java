@@ -16,6 +16,7 @@
  */
 package com.noctarius.tengi.server.impl;
 
+import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.connection.handshake.HandshakeHandler;
@@ -40,11 +41,15 @@ public class ConnectionManager
     private final Set<ConnectedListener> connectedListeners = new ConcurrentSet<>();
     private final Map<Identifier, ClientConnection> connections = new ConcurrentHashMap<>();
 
+    private final Configuration configuration;
     private final SslContext sslContext;
     private final Serializer serializer;
     private final HandshakeHandler handshakeHandler;
 
-    public ConnectionManager(SslContext sslContext, Serializer serializer, HandshakeHandler handshakeHandler) {
+    public ConnectionManager(Configuration configuration, SslContext sslContext, //
+                             Serializer serializer, HandshakeHandler handshakeHandler) {
+
+        this.configuration = configuration;
         this.sslContext = sslContext;
         this.serializer = serializer;
         this.handshakeHandler = handshakeHandler;
@@ -56,6 +61,15 @@ public class ConnectionManager
 
     @Override
     public void stop() {
+    }
+
+    public boolean acceptTransport(Transport transport, int port) {
+        for (Transport candidate : configuration.getTransports()) {
+            if (candidate.equals(transport) && port == configuration.getTransportPort(transport)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public SslContext getSslContext() {

@@ -16,6 +16,8 @@
  */
 package com.noctarius.tengi.server.impl.transport.negotiation;
 
+import com.noctarius.tengi.core.exception.ConnectionFailedException;
+import com.noctarius.tengi.server.ServerTransport;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.transport.tcp.TcpConnectionProcessor;
 import com.noctarius.tengi.spi.serialization.Serializer;
@@ -33,14 +35,16 @@ import io.netty.handler.ssl.SslHandler;
 public class TcpBinaryNegotiator
         extends ChannelInboundHandlerAdapter {
 
+    private final int port;
     private final boolean detectSsl;
     private final boolean detectCompression;
     private final ConnectionManager connectionManager;
     private final Serializer serializer;
 
-    public TcpBinaryNegotiator(boolean detectSsl, boolean detectCompression, //
+    public TcpBinaryNegotiator(int port, boolean detectSsl, boolean detectCompression, //
                                ConnectionManager connectionManager, Serializer serializer) {
 
+        this.port = port;
         this.detectSsl = detectSsl;
         this.detectCompression = detectCompression;
         this.connectionManager = connectionManager;
@@ -117,6 +121,9 @@ public class TcpBinaryNegotiator
 
             case 'T':
                 if (magic1 == 'e' && magic2 == 'N' && magic3 == 'g') {
+                    if (!connectionManager.acceptTransport(ServerTransport.TCP_TRANSPORT, port)) {
+                        throw new ConnectionFailedException("Transport not enabled");
+                    }
                     in.skipBytes(DefaultProtocolConstants.PROTOCOL_MAGIC_HEADER.length);
                     switchToNativeTcp(ctx);
                 }
@@ -130,8 +137,15 @@ public class TcpBinaryNegotiator
     }
 
     private void switchToHttpNegotiation(ChannelHandlerContext ctx) {
+        if (!connectionManager.acceptTransport(ServerTransport.HTTP_TRANSPORT, port) //
+                && !connectionManager.acceptTransport(ServerTransport.HTTP2_TRANSPORT, port) //
+                && !connectionManager.acceptTransport(ServerTransport.WEBSOCKET_TRANSPORT, port)) {
+
+            throw new ConnectionFailedException("Transport not enabled");
+        }
+
         ChannelPipeline pipeline = ctx.pipeline();
-        pipeline.addLast("httpNegotiator", new Http2Negotiator(1024 * 1024, connectionManager, serializer));
+        pipeline.addLast("httpNegotiator", new Http2Negotiator(port, 1024 * 1024, connectionManager, serializer));
         pipeline.remove(this);
     }
 
@@ -151,7 +165,7 @@ public class TcpBinaryNegotiator
     private void enableSsl(ChannelHandlerContext ctx) {
         ChannelPipeline pipeline = ctx.pipeline();
         pipeline.addLast("ssl", connectionManager.getSslContext().newHandler(ctx.alloc()));
-        pipeline.addLast("negotiationSSL", new TcpBinaryNegotiator(false, true, connectionManager, serializer));
+        pipeline.addLast("negotiationSSL", new TcpBinaryNegotiator(port, false, true, connectionManager, serializer));
         pipeline.remove(this);
     }
 
@@ -159,7 +173,7 @@ public class TcpBinaryNegotiator
         ChannelPipeline pipeline = ctx.pipeline();
         pipeline.addLast("gzipinflater", ZlibCodecFactory.newZlibEncoder(ZlibWrapper.GZIP));
         pipeline.addLast("gzipdeflater", ZlibCodecFactory.newZlibDecoder(ZlibWrapper.GZIP));
-        pipeline.addLast("negotiationGZIP", new TcpBinaryNegotiator(true, false, connectionManager, serializer));
+        pipeline.addLast("negotiationGZIP", new TcpBinaryNegotiator(port, true, false, connectionManager, serializer));
         pipeline.remove(this);
     }
 
@@ -167,7 +181,7 @@ public class TcpBinaryNegotiator
         ChannelPipeline pipeline = ctx.pipeline();
         pipeline.addLast("snappyinflater", new SnappyFrameEncoder());
         pipeline.addLast("snappydeflater", new SnappyFrameDecoder());
-        pipeline.addLast("negotiationSnappy", new TcpBinaryNegotiator(true, false, connectionManager, serializer));
+        pipeline.addLast("negotiationSnappy", new TcpBinaryNegotiator(port, true, false, connectionManager, serializer));
         pipeline.remove(this);
     }
 

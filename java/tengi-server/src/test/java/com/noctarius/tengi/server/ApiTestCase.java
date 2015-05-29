@@ -24,7 +24,6 @@ import com.noctarius.tengi.core.serialization.codec.Decoder;
 import com.noctarius.tengi.core.serialization.codec.Encoder;
 import com.noctarius.tengi.core.serialization.marshaller.MarshallerFilter;
 import com.noctarius.tengi.spi.serialization.Protocol;
-import io.netty.channel.Channel;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -39,21 +38,21 @@ public class ApiTestCase {
                 // Configure custom Marshaller
                 .addMarshaller(ApiTestCase::isMarshallable, (short) 100, ApiTestCase::read, ApiTestCase::write)
 
-                        // Configure available transports
+                // Configure available transports
                 .addTransport(ServerTransport.TCP_TRANSPORT)
 
-                        // Build final configuration
+                // Build final configuration
                 .build();
 
         // Create server instance using configuration
         Server server = Server.create(configuration);
 
         // Start server and wait for client connections
-        CompletableFuture<Channel> future = server.start(connection -> connection.addMessageListener(ApiTestCase::onMessage));
+        CompletableFuture<Server> future = server.start(connection -> connection.addMessageListener(ApiTestCase::onMessage));
 
-        future.handle((channel, throwable) -> {
-            if (channel != null) {
-                System.out.println("BAM: " + channel);
+        future.handle((s, throwable) -> {
+            if (s != null) {
+                System.out.println("BAM: " + s);
             } else {
                 throwable.printStackTrace();
             }

@@ -45,7 +45,7 @@ public interface Server {
      * @throws java.lang.NullPointerException  when <tt>connectedListener</tt> is null
      * @throws java.lang.IllegalStateException whenever the server instance is in a non-startable state
      */
-    CompletableFuture<Channel> start(ConnectedListener connectedListener);
+    CompletableFuture<Server> start(ConnectedListener connectedListener);
 
     /**
      * Stops the current server instance and unbinds the transport ports. In addition it closes all
@@ -53,7 +53,7 @@ public interface Server {
      *
      * @return a <tt>CompletableFuture</tt> representing the pending stop process
      */
-    CompletableFuture<Channel> stop();
+    CompletableFuture<Server> stop();
 
     /**
      * This factory method is used to create new <tt>Server</tt> instances. It will use the given configuration

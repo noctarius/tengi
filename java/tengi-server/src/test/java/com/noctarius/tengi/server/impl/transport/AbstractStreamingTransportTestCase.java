@@ -16,30 +16,22 @@
  */
 package com.noctarius.tengi.server.impl.transport;
 
-import com.noctarius.tengi.core.connection.Connection;
-import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.config.ConfigurationBuilder;
-import com.noctarius.tengi.server.Server;
+import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.Transport;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
+import com.noctarius.tengi.core.model.Message;
+import com.noctarius.tengi.server.Server;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 public abstract class AbstractStreamingTransportTestCase {
 
-    protected static <T> T practice(Initializer initializer, Runner<T> runner, boolean ssl, Transport... serverTransports)
+    protected static <T, C> T practice(Runner<T, C> runner,
+                                       ClientFactory<C> clientFactory, boolean ssl, Transport... serverTransports)
             throws Exception {
 
         Configuration configuration = new ConfigurationBuilder().addTransport(serverTransports).ssl(ssl).build();
@@ -49,45 +41,14 @@ public abstract class AbstractStreamingTransportTestCase {
         EventLoopGroup group = new NioEventLoopGroup();
 
         try {
-            Bootstrap bootstrap = new Bootstrap().group(group) //
-                    .channel(NioSocketChannel.class).handler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        protected void initChannel(SocketChannel channel)
-                                throws Exception {
+            C client = clientFactory.createClient("localhost", 8080, ssl, group);
+            T result = runner.run(client);
 
-                            ChannelPipeline pipeline = channel.pipeline();
-
-                            if (ssl) {
-                                SslContext sslContext = SslContextBuilder //
-                                        .forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build();
-
-                                pipeline.addLast(sslContext.newHandler(channel.alloc(), "localhost", 8080));
-                            }
-
-                            initializer.initChannel(pipeline);
-                        }
-                    });
-
-            ChannelFuture future = bootstrap.connect("localhost", 8080);
-            Channel channel = future.sync().channel();
-            T result = runner.run(channel);
-            channel.close().sync();
             return result;
         } finally {
             group.shutdownGracefully();
             server.stop().get();
         }
-    }
-
-    protected static <T> SimpleChannelInboundHandler<T> inboundHandler(ChannelReader<T> channelReader) {
-        return new SimpleChannelInboundHandler<T>() {
-            @Override
-            protected void channelRead0(ChannelHandlerContext ctx, T object)
-                    throws Exception {
-
-                channelReader.channelRead(ctx, object);
-            }
-        };
     }
 
     private static void onConnection(Connection connection) {
@@ -102,18 +63,19 @@ public abstract class AbstractStreamingTransportTestCase {
         }
     }
 
-    protected static interface Initializer {
-        void initChannel(ChannelPipeline pipeline)
+    protected static interface Runner<T, C> {
+        T run(C client)
                 throws Exception;
     }
 
-    protected static interface Runner<T> {
-        T run(Channel channel)
+    protected static interface ChannelReader<Ctx, T> {
+        void channelRead(Ctx ctx, T object)
                 throws Exception;
     }
 
-    protected static interface ChannelReader<T> {
-        void channelRead(ChannelHandlerContext ctx, T object)
+    protected static interface ClientFactory<C> {
+        C createClient(String host, int port, boolean ssl, EventLoopGroup group)
                 throws Exception;
     }
+
 }

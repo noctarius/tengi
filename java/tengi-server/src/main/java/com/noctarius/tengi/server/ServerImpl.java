@@ -17,7 +17,9 @@
 package com.noctarius.tengi.server;
 
 import com.noctarius.tengi.core.config.Configuration;
+import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.core.connection.handshake.HandshakeHandler;
+import com.noctarius.tengi.core.exception.IllegalTransportException;
 import com.noctarius.tengi.core.impl.CompletableFutureUtil;
 import com.noctarius.tengi.core.impl.Validate;
 import com.noctarius.tengi.core.impl.VersionUtil;
@@ -25,10 +27,12 @@ import com.noctarius.tengi.core.listener.ConnectedListener;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.EventManager;
 import com.noctarius.tengi.server.impl.transport.negotiation.TcpBinaryNegotiator;
+import com.noctarius.tengi.server.impl.transport.negotiation.UdpBinaryNegotiator;
 import com.noctarius.tengi.spi.connection.packets.Handshake;
 import com.noctarius.tengi.spi.logging.Logger;
 import com.noctarius.tengi.spi.logging.LoggerManager;
 import com.noctarius.tengi.spi.serialization.Serializer;
+import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -43,7 +47,13 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 class ServerImpl
         implements Server {
@@ -57,9 +67,10 @@ class ServerImpl
     private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
 
+    private final Configuration configuration;
     private final Serializer serializer;
 
-    private volatile Channel serverChannel;
+    private final List<Channel> channels = new CopyOnWriteArrayList<>();
 
     ServerImpl(Configuration configuration)
             throws Exception {
@@ -69,39 +80,35 @@ class ServerImpl
         LOGGER.info("tengi Server [version: %s, build-date: %s] is starting", //
                 VersionUtil.VERSION, VersionUtil.BUILD_DATE);
 
+        this.configuration = configuration;
         this.bossGroup = createEventLoopGroup(5, "boss");
         this.workerGroup = createEventLoopGroup(5, "worker");
         this.serializer = createSerializer(configuration);
         HandshakeHandler handshakeHandler = createHandshakeHandler(configuration);
-        this.connectionManager = new ConnectionManager(createSslContext(), serializer, handshakeHandler);
+        this.connectionManager = new ConnectionManager(configuration, createSslContext(), serializer, handshakeHandler);
         this.eventManager = new EventManager();
     }
 
     @Override
-    public CompletableFuture<Channel> start(ConnectedListener connectedListener) {
+    public CompletableFuture<Server> start(ConnectedListener connectedListener) {
         Validate.notNull("connectedListener", connectedListener);
 
-        ServerBootstrap bootstrap = new ServerBootstrap();
-        bootstrap.option(ChannelOption.SO_BACKLOG, 1024).group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
-                 .childHandler(new ProtocolNegotiator(connectionManager, serializer));
-
-        ChannelFuture future = bootstrap.bind(8080);
         return CompletableFutureUtil.executeAsync(() -> {
-            Channel serverChannel = future.sync().channel();
+            bindChannels();
 
             connectionManager.registerConnectedListener(connectedListener);
             connectionManager.start();
             eventManager.start();
 
-            return (this.serverChannel = serverChannel);
+            return ServerImpl.this;
         });
     }
 
     @Override
-    public CompletableFuture<Channel> stop() {
+    public CompletableFuture<Server> stop() {
         return CompletableFutureUtil.executeAsync(() -> {
-            if (serverChannel != null) {
-                serverChannel.close().sync();
+            for (Channel channel : channels) {
+                channel.close().sync();
             }
 
             bossGroup.shutdownGracefully();
@@ -110,12 +117,21 @@ class ServerImpl
             connectionManager.stop();
             eventManager.stop();
 
-            return serverChannel;
+            return ServerImpl.this;
         });
     }
 
-    private Serializer createSerializer(Configuration configuration) {
-        return Serializer.create(configuration.getMarshallers());
+    private void bindChannels()
+            throws InterruptedException {
+
+        EnumMap<TransportLayer, int[]> transportLayers = collectTransportLayers(configuration);
+        for (Map.Entry<TransportLayer, int[]> entry : transportLayers.entrySet()) {
+            TransportLayer transportLayer = entry.getKey();
+            int[] ports = entry.getValue();
+            for (int port : ports) {
+                channels.add(createChannel(transportLayer, port));
+            }
+        }
     }
 
     private EventLoopGroup createEventLoopGroup(int threadCount, String name) {
@@ -138,22 +154,108 @@ class ServerImpl
         return handshakeHandler;
     }
 
-    private static class ProtocolNegotiator
+    private EnumMap<TransportLayer, int[]> collectTransportLayers(Configuration configuration) {
+        Set<Integer> tcpPorts = configuration.getTransports().stream() //
+                .filter((transport) -> transport.getTransportLayer() == TransportLayer.TCP) //
+                .map(configuration::getTransportPort).collect(Collectors.toSet());
+
+        Set<Integer> udpPorts = configuration.getTransports().stream() //
+                .filter((transport) -> transport.getTransportLayer() == TransportLayer.UDP) //
+                .map(configuration::getTransportPort).collect(Collectors.toSet());
+
+        boolean match = udpPorts.stream().anyMatch(tcpPorts::contains);
+
+        if (match) {
+            throw new IllegalTransportException("TCP and UDP ports can't match up");
+        }
+
+        EnumMap<TransportLayer, int[]> portMapping = new EnumMap<>(TransportLayer.class);
+        portMapping.put(TransportLayer.TCP, tcpPorts.stream().mapToInt((v) -> v).toArray());
+        portMapping.put(TransportLayer.UDP, udpPorts.stream().mapToInt((v) -> v).toArray());
+
+        return portMapping;
+    }
+
+    private Channel createChannel(TransportLayer transportLayer, int port)
+            throws InterruptedException {
+
+        switch (transportLayer) {
+            case TCP:
+                return createTcpChannel(port);
+
+            case UDP:
+                return createUdpChannel(port);
+
+            default:
+                throw new IllegalTransportException("Transport not yet supported");
+        }
+    }
+
+    private Channel createUdpChannel(int port)
+            throws InterruptedException {
+
+        Bootstrap bootstrap = new Bootstrap();
+        bootstrap.option(ChannelOption.SO_BROADCAST, false).group(workerGroup) //
+                .handler(new UdpProtocolNegotiator(connectionManager, serializer, port));
+
+        return bootstrap.bind(port).sync().channel();
+    }
+
+    private Channel createTcpChannel(int port)
+            throws InterruptedException {
+
+        ServerBootstrap bootstrap = new ServerBootstrap();
+        bootstrap.option(ChannelOption.SO_BACKLOG, 1024).group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
+                 .childHandler(new TcpProtocolNegotiator(connectionManager, serializer, port));
+
+        ChannelFuture future = bootstrap.bind(port);
+        return future.sync().channel();
+    }
+
+    private Serializer createSerializer(Configuration configuration) {
+        return Serializer.create(configuration.getMarshallers());
+    }
+
+    private static class TcpProtocolNegotiator
             extends ChannelInitializer<SocketChannel> {
 
         private final ConnectionManager connectionManager;
         private final Serializer serializer;
+        private final int port;
 
-        private ProtocolNegotiator(ConnectionManager connectionManager, Serializer serializer) {
+        private TcpProtocolNegotiator(ConnectionManager connectionManager, Serializer serializer, int port) {
             this.connectionManager = connectionManager;
             this.serializer = serializer;
+            this.port = port;
         }
 
         @Override
         protected void initChannel(SocketChannel channel)
                 throws Exception {
 
-            channel.pipeline().addLast(new TcpBinaryNegotiator(true, true, connectionManager, serializer));
+            channel.pipeline().addLast(new TcpBinaryNegotiator(port, true, true, connectionManager, serializer));
         }
     }
+
+    private static class UdpProtocolNegotiator
+            extends ChannelInitializer<SocketChannel> {
+
+        private final ConnectionManager connectionManager;
+        private final Serializer serializer;
+        private final int port;
+
+        private UdpProtocolNegotiator(ConnectionManager connectionManager, Serializer serializer, int port) {
+            this.connectionManager = connectionManager;
+            this.serializer = serializer;
+            this.port = port;
+        }
+
+        @Override
+        protected void initChannel(SocketChannel channel)
+                throws Exception {
+
+            channel.pipeline().addLast(new UdpBinaryNegotiator(port, connectionManager, serializer));
+        }
+    }
+
 }

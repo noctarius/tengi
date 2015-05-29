@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl.transport.tcp;
+package com.noctarius.tengi.server.impl.transport.websocket;
 
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
@@ -23,39 +23,35 @@ import com.noctarius.tengi.server.ServerTransport;
 import com.noctarius.tengi.server.impl.transport.AbstractStreamingTransportTestCase;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
+import com.noctarius.tengi.spi.connection.impl.TransportConstants;
 import com.noctarius.tengi.spi.connection.packets.Handshake;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import com.noctarius.tengi.spi.serialization.codec.AutoClosableEncoder;
 import com.noctarius.tengi.spi.serialization.codec.impl.DefaultCodec;
 import com.noctarius.tengi.spi.serialization.impl.DefaultProtocol;
-import com.noctarius.tengi.spi.serialization.impl.DefaultProtocolConstants;
-import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.junit.Test;
 
+import javax.websocket.ClientEndpoint;
+import javax.websocket.ContainerProvider;
+import javax.websocket.OnMessage;
+import javax.websocket.Session;
+import javax.websocket.WebSocketContainer;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
-public class TcpTransportTestCase
+public class WebsocketTransportTestCase
         extends AbstractStreamingTransportTestCase {
 
     @Test(timeout = 120000)
-    public void test_tcp_transport()
+    public void test_websocket_transport()
             throws Exception {
 
         Serializer serializer = Serializer.create(new DefaultProtocol(Collections.emptyList()));
@@ -65,7 +61,7 @@ public class TcpTransportTestCase
         packet.setValue("username", "Stan");
         Message message = Message.create(packet);
 
-        ChannelReader<ChannelHandlerContext, ByteBuf> channelReader = (ctx, buffer) -> {
+        ChannelReader<WebsocketTestClient, ByteBuf> channelReader = (client, buffer) -> {
             MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
             DefaultCodec codec = new DefaultCodec(serializer.getProtocol(), memoryBuffer);
 
@@ -73,43 +69,40 @@ public class TcpTransportTestCase
             Identifier connectionId = codec.readObject();
             Object object = codec.readObject();
             if (loggedIn && object instanceof Handshake) {
-                writeChannel(serializer, ctx, connectionId, message);
+                writeChannel(serializer, client, connectionId, message);
                 return;
             }
 
             future.complete(object);
         };
 
-        Initializer initializer = (pipeline) -> pipeline.addLast(inboundHandler(channelReader));
-
-        Runner<Object, Channel> runner = (channel) -> {
+        Runner<Object, WebsocketTestClient> runner = (client) -> {
             ByteBuf buffer = Unpooled.buffer();
             MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
             DefaultCodec codec = new DefaultCodec(serializer.getProtocol(), memoryBuffer);
 
-            codec.writeBytes("magic", DefaultProtocolConstants.PROTOCOL_MAGIC_HEADER);
             codec.writeBoolean("loggedIn", false);
             codec.writeObject("handshake", new Handshake());
-            channel.writeAndFlush(buffer);
+            client.sendMessage(buffer);
 
             Object result = future.get(120, TimeUnit.SECONDS);
-            channel.close().sync();
+            client.close();
             return result;
         };
 
-        Object response = practice(runner, clientFactory(initializer), false, ServerTransport.TCP_TRANSPORT);
+        Object response = practice(runner, clientFactory(channelReader), false, ServerTransport.WEBSOCKET_TRANSPORT);
         assertEquals(message, response);
     }
 
     @Test(timeout = 120000)
-    public void test_tcp_transport_ping_pong()
+    public void test_websocket_transport_ping_pong()
             throws Exception {
 
         Serializer serializer = Serializer.create(new DefaultProtocol(Collections.emptyList()));
 
         CompletableFuture<Packet> future = new CompletableFuture<>();
 
-        ChannelReader<ChannelHandlerContext, ByteBuf> channelReader = (ctx, buffer) -> {
+        ChannelReader<WebsocketTestClient, ByteBuf> channelReader = (client, buffer) -> {
             MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
             DefaultCodec codec = new DefaultCodec(serializer.getProtocol(), memoryBuffer);
 
@@ -121,7 +114,7 @@ public class TcpTransportTestCase
                 Packet packet = new Packet("pingpong");
                 packet.setValue("counter", 1);
                 Message message = Message.create(packet);
-                writeChannel(serializer, ctx, connectionId, message);
+                writeChannel(serializer, client, connectionId, message);
                 return;
             }
 
@@ -143,84 +136,85 @@ public class TcpTransportTestCase
                 codec2.writeObject("connectionId", connectionId);
                 serializer.writeObject("message", message, codec2);
 
-                ctx.channel().writeAndFlush(buffer2);
+                client.sendMessage(buffer2);
             }
         };
 
-        Initializer initializer = (pipeline) -> pipeline.addLast(inboundHandler(channelReader));
-
-        Runner<Packet, Channel> runner = (channel) -> {
+        Runner<Packet, WebsocketTestClient> runner = (client) -> {
             ByteBuf buffer = Unpooled.buffer();
             MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
             DefaultCodec codec = new DefaultCodec(serializer.getProtocol(), memoryBuffer);
 
-            codec.writeBytes("magic", DefaultProtocolConstants.PROTOCOL_MAGIC_HEADER);
             codec.writeBoolean("loggedIn", false);
             codec.writeObject("handshake", new Handshake());
-            channel.writeAndFlush(buffer);
+            client.sendMessage(buffer);
 
             Packet result = future.get(120, TimeUnit.SECONDS);
-            channel.close().sync();
+            client.close();
             return result;
         };
 
-        Packet response = practice(runner, clientFactory(initializer), false, ServerTransport.TCP_TRANSPORT);
+        Packet response = practice(runner, clientFactory(channelReader), false, ServerTransport.WEBSOCKET_TRANSPORT);
         assertEquals(4, (int) response.getValue("counter"));
     }
 
-    protected static <T> SimpleChannelInboundHandler<T> inboundHandler(ChannelReader<ChannelHandlerContext, T> channelReader) {
-        return new SimpleChannelInboundHandler<T>() {
-            @Override
-            protected void channelRead0(ChannelHandlerContext ctx, T object)
-                    throws Exception {
-
-                channelReader.channelRead(ctx, object);
-            }
-        };
-    }
-
-    private static void writeChannel(Serializer serializer, ChannelHandlerContext ctx, Identifier connectionId, Object value)
+    private static void writeChannel(Serializer serializer, WebsocketTestClient client, Identifier connectionId, Object value)
             throws Exception {
 
-        ByteBuf buffer = ctx.alloc().directBuffer();
+        ByteBuf buffer = Unpooled.directBuffer();
         MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
         try (AutoClosableEncoder encoder = serializer.retrieveEncoder(memoryBuffer)) {
             encoder.writeBoolean("loggedIn", true);
             encoder.writeObject("connectionId", connectionId);
             serializer.writeObject("value", value, encoder);
         }
-        ctx.channel().writeAndFlush(buffer);
+        client.sendMessage(buffer);
     }
 
-    private static ClientFactory<Channel> clientFactory(Initializer initializer) {
-        return (host, port, ssl, group) -> {
-            Bootstrap bootstrap = new Bootstrap().group(group) //
-                    .channel(NioSocketChannel.class).handler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        protected void initChannel(SocketChannel channel)
-                                throws Exception {
-
-                            ChannelPipeline pipeline = channel.pipeline();
-
-                            if (ssl) {
-                                SslContext sslContext = SslContextBuilder //
-                                        .forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build();
-
-                                pipeline.addLast(sslContext.newHandler(channel.alloc(), "localhost", 8080));
-                            }
-
-                            initializer.initChannel(pipeline);
-                        }
-                    });
-
-            ChannelFuture future = bootstrap.connect("localhost", 8080);
-            return future.sync().channel();
-        };
+    private static ClientFactory<WebsocketTestClient> clientFactory(ChannelReader<WebsocketTestClient, ByteBuf> channelReader) {
+        return (host, port, ssl, group) -> new WebsocketTestClient(host, port, ssl, channelReader);
     }
 
-    private static interface Initializer {
-        void initChannel(ChannelPipeline pipeline)
-                throws Exception;
+    @ClientEndpoint
+    public static class WebsocketTestClient {
+
+        private final Session session;
+        private final ChannelReader<WebsocketTestClient, ByteBuf> channelReader;
+
+        private WebsocketTestClient(String host, int port, boolean ssl, ChannelReader<WebsocketTestClient, ByteBuf> channelReader)
+                throws Exception {
+
+            WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+            this.session = container.connectToServer(this, createURI(host, port, ssl));
+            this.channelReader = channelReader;
+        }
+
+        private URI createURI(String host, int port, boolean ssl) {
+            String url = (ssl ? "wss" : "ws") + "://" + host + ":" + port + TransportConstants.WEBSOCKET_RELATIVE_PATH;
+            return URI.create(url);
+        }
+
+        @OnMessage
+        public void onMessage(ByteBuffer byteBuffer)
+                throws Exception {
+
+            ByteBuf buffer = Unpooled.wrappedBuffer(byteBuffer);
+            channelReader.channelRead(this, buffer);
+        }
+
+        private void sendMessage(ByteBuf buffer) {
+            ByteBuffer nioBuffer = buffer.nioBuffer();
+            if (buffer.isDirect()) {
+                nioBuffer = Unpooled.copiedBuffer(buffer).nioBuffer();
+            }
+            session.getAsyncRemote().sendBinary(nioBuffer);
+        }
+
+        private void close()
+                throws IOException {
+
+            session.close();
+        }
     }
 
 }

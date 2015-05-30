@@ -24,7 +24,7 @@ import com.noctarius.tengi.spi.serialization.impl.DefaultProtocolConstants;
  * The <tt>Handshake</tt> is the internal packet to start a new connection handshake
  * or to respond to a previous handshake request. A <tt>Handshake</tt> instance can
  * be customized (sub-classed) to add additional values (like a version number or
- * anything) and handled by a {@link com.noctarius.tengi.core.connection.handshake.HandshakeHandler}.
+ * anything) and handled by a {@link com.noctarius.tengi.core.connection.HandshakeHandler}.
  */
 @TypeId(DefaultProtocolConstants.TYPEID_HANDSHAKE)
 public class Handshake

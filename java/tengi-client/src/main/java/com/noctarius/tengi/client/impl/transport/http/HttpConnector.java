@@ -21,7 +21,7 @@ import com.noctarius.tengi.client.impl.ServerConnection;
 import com.noctarius.tengi.client.impl.transport.AbstractClientConnector;
 import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.TransportLayer;
-import com.noctarius.tengi.core.connection.handshake.HandshakeHandler;
+import com.noctarius.tengi.core.connection.HandshakeHandler;
 import com.noctarius.tengi.core.exception.ConnectionDestroyedException;
 import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;

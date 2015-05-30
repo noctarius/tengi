@@ -17,7 +17,7 @@
 package com.noctarius.tengi.core.config;
 
 import com.noctarius.tengi.core.connection.Transport;
-import com.noctarius.tengi.core.connection.handshake.HandshakeHandler;
+import com.noctarius.tengi.core.connection.HandshakeHandler;
 import com.noctarius.tengi.core.impl.Validate;
 import com.noctarius.tengi.core.serialization.marshaller.Marshaller;
 import com.noctarius.tengi.core.serialization.marshaller.MarshallerFilter;
@@ -154,7 +154,7 @@ public final class ConfigurationBuilder {
     }
 
     /**
-     * Defines the {@link com.noctarius.tengi.core.connection.handshake.HandshakeHandler} instance
+     * Defines the {@link com.noctarius.tengi.core.connection.HandshakeHandler} instance
      * to verify, accept or deny new connection handshakes. On client-side additional information can be
      * extracted from the handshake response retrieved from the server.
      *

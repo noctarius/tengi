@@ -21,7 +21,7 @@ import com.noctarius.tengi.client.impl.ConnectorFactory;
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.Transport;
-import com.noctarius.tengi.core.connection.handshake.HandshakeHandler;
+import com.noctarius.tengi.core.connection.HandshakeHandler;
 import com.noctarius.tengi.core.exception.ConnectionFailedException;
 import com.noctarius.tengi.core.exception.IllegalTransportException;
 import com.noctarius.tengi.core.impl.Validate;

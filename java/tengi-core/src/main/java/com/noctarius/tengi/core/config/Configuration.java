@@ -17,7 +17,7 @@
 package com.noctarius.tengi.core.config;
 
 import com.noctarius.tengi.core.connection.Transport;
-import com.noctarius.tengi.core.connection.handshake.HandshakeHandler;
+import com.noctarius.tengi.core.connection.HandshakeHandler;
 
 import java.util.List;
 import java.util.Map;
@@ -79,7 +79,7 @@ public interface Configuration {
     boolean isSslEnabled();
 
     /**
-     * Returns the configured {@link com.noctarius.tengi.core.connection.handshake.HandshakeHandler} instance
+     * Returns the configured {@link com.noctarius.tengi.core.connection.HandshakeHandler} instance
      * to verify, accept or deny new connection handshakes. On client-side additional information can be
      * extracted from the handshake response retrieved from the server.
      *

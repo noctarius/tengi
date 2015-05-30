@@ -18,7 +18,7 @@ package com.noctarius.tengi.server.impl.transport;
 
 import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.Transport;
-import com.noctarius.tengi.core.connection.handshake.HandshakeHandler;
+import com.noctarius.tengi.core.connection.HandshakeHandler;
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.server.impl.ConnectionManager;

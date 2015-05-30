@@ -19,7 +19,7 @@ package com.noctarius.tengi.server.impl;
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.Transport;
-import com.noctarius.tengi.core.connection.handshake.HandshakeHandler;
+import com.noctarius.tengi.core.connection.HandshakeHandler;
 import com.noctarius.tengi.core.exception.NoSuchConnectionException;
 import com.noctarius.tengi.core.listener.ConnectedListener;
 import com.noctarius.tengi.core.model.Identifier;

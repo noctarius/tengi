@@ -20,7 +20,7 @@ import com.noctarius.tengi.client.impl.ClientUtil;
 import com.noctarius.tengi.client.impl.transport.AbstractClientConnector;
 import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.TransportLayer;
-import com.noctarius.tengi.core.connection.handshake.HandshakeHandler;
+import com.noctarius.tengi.core.connection.HandshakeHandler;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.spi.connection.impl.TransportConstants;

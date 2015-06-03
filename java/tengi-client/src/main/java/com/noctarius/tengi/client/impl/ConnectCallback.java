@@ -16,23 +16,18 @@
  */
 package com.noctarius.tengi.client.impl;
 
-import com.noctarius.tengi.core.connection.Transport;
-import com.noctarius.tengi.core.connection.HandshakeHandler;
-import io.netty.buffer.ByteBufAllocator;
+import com.noctarius.tengi.core.connection.Connection;
 
-public interface Connector<M>
-        extends Transport {
+public interface ConnectCallback {
 
-    void connect(ConnectCallback connectCallback);
+    void on(Connection connection, Throwable throwable);
 
-    HandshakeHandler handshakeHandler();
+    default void on(Connection connection) {
+        on(connection, null);
+    }
 
-    ByteBufAllocator allocator();
-
-    void write(M message)
-            throws Exception;
-
-    void destroy()
-            throws Exception;
+    default void on(Throwable throwable) {
+        on(null, throwable);
+    }
 
 }

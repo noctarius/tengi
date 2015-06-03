@@ -122,6 +122,7 @@ public class TcpBinaryNegotiator
             case 'T':
                 if (magic1 == 'e' && magic2 == 'N' && magic3 == 'g') {
                     if (!connectionManager.acceptTransport(ServerTransport.TCP_TRANSPORT, port)) {
+                        ctx.close();
                         throw new ConnectionFailedException("Transport not enabled");
                     }
                     in.skipBytes(DefaultProtocolConstants.PROTOCOL_MAGIC_HEADER.length);
@@ -141,6 +142,7 @@ public class TcpBinaryNegotiator
                 && !connectionManager.acceptTransport(ServerTransport.HTTP2_TRANSPORT, port) //
                 && !connectionManager.acceptTransport(ServerTransport.WEBSOCKET_TRANSPORT, port)) {
 
+            ctx.close();
             throw new ConnectionFailedException("Transport not enabled");
         }
 

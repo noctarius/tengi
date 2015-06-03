@@ -17,22 +17,9 @@
 package com.noctarius.tengi.client.impl;
 
 import com.noctarius.tengi.core.connection.Transport;
-import com.noctarius.tengi.core.connection.HandshakeHandler;
-import io.netty.buffer.ByteBufAllocator;
 
-public interface Connector<M>
-        extends Transport {
+public interface TransportHandler {
 
-    void connect(ConnectCallback connectCallback);
-
-    HandshakeHandler handshakeHandler();
-
-    ByteBufAllocator allocator();
-
-    void write(M message)
-            throws Exception;
-
-    void destroy()
-            throws Exception;
+    void onConnector(Transport transport, boolean success, Throwable cause);
 
 }

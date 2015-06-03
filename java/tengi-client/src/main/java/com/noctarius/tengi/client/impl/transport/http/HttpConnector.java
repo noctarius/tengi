@@ -16,12 +16,12 @@
  */
 package com.noctarius.tengi.client.impl.transport.http;
 
-import com.noctarius.tengi.client.impl.ClientUtil;
+import com.noctarius.tengi.client.impl.ConnectCallback;
 import com.noctarius.tengi.client.impl.ServerConnection;
 import com.noctarius.tengi.client.impl.transport.AbstractClientConnector;
 import com.noctarius.tengi.core.connection.Connection;
-import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.core.connection.HandshakeHandler;
+import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.core.exception.ConnectionDestroyedException;
 import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
@@ -56,9 +56,12 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpVersion;
 
 import java.net.InetAddress;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static com.noctarius.tengi.client.impl.ClientUtil.CONNECTION;
+import static com.noctarius.tengi.client.impl.ClientUtil.CONNECT_FUTURE;
+import static com.noctarius.tengi.client.impl.ClientUtil.connectionAttribute;
 
 public class HttpConnector
         extends AbstractClientConnector<HttpRequest> {
@@ -91,16 +94,22 @@ public class HttpConnector
     }
 
     @Override
-    public CompletableFuture<Connection> connect() {
-        CompletableFuture<Connection> connectorFuture = new CompletableFuture<>();
-
+    public void connect(ConnectCallback connectCallback) {
         Bootstrap bootstrap = createBootstrap();
-        bootstrap.attr(ClientUtil.CONNECT_FUTURE, connectorFuture);
+
+        ConnectCallback wrapper = (connection, throwable) -> {
+            if (connection != null) {
+                activateLongPolling(connection);
+                connectCallback.on(connection);
+            } else {
+                connectCallback.on(throwable);
+            }
+        };
+
+        bootstrap.attr(CONNECT_FUTURE, wrapper);
 
         ChannelFuture channelFuture = bootstrap.connect(address, port);
-        channelFuture.addListener(connectionListener(connectorFuture, this::handshakeRequest));
-
-        return connectorFuture.thenApply(this::activateLongPolling);
+        channelFuture.addListener(connectionListener(wrapper, this::handshakeRequest, this::handleChannelClose));
     }
 
     @Override
@@ -163,10 +172,21 @@ public class HttpConnector
         return new HttpConnectionProcessor(serializer, HttpConnector.this);
     }
 
+    private void handleChannelClose(ChannelFuture channelFuture)
+            throws Exception {
+
+        Channel channel = channelFuture.channel();
+        ConnectCallback connectCallback = connectionAttribute(channel, CONNECT_FUTURE);
+        if (connectCallback != null) {
+            clientGroup.shutdownGracefully();
+            connectCallback.on(null, null);
+        }
+    }
+
     private Connection activateLongPolling(Connection connection) {
         if (connection != null) {
             ServerConnection serverConnection = (ServerConnection) connection;
-            Bootstrap bootstrap = this.bootstrap.attr(ClientUtil.CONNECTION, serverConnection);
+            Bootstrap bootstrap = this.bootstrap.attr(CONNECTION, serverConnection);
             ChannelFuture channelFuture = bootstrap.connect(address, port);
             channelFuture.addListener(fireLongPollingRequest(serverConnection));
         }
@@ -221,6 +241,7 @@ public class HttpConnector
     private Bootstrap createBootstrap() {
         return new Bootstrap().channel(NioSocketChannel.class) //
                 .group(clientGroup).option(ChannelOption.TCP_NODELAY, true) //
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000) //
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel channel)

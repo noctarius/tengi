@@ -16,22 +16,29 @@
  */
 package com.noctarius.tengi.client.impl.transport;
 
+import com.noctarius.tengi.client.impl.ConnectCallback;
 import com.noctarius.tengi.client.impl.Connector;
-import com.noctarius.tengi.core.connection.Connection;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
-
-import java.util.concurrent.CompletableFuture;
 
 public abstract class AbstractClientConnector<M>
         implements Connector<M> {
 
-    protected ChannelFutureListener connectionListener(CompletableFuture<Connection> future, CatchingConsumer success) {
+    protected ChannelFutureListener connectionListener(ConnectCallback connectCallback, CatchingConsumer success,
+                                                       ChannelFutureListener closeHandler) {
+
         return (channelFuture) -> {
             if (channelFuture.isSuccess()) {
-                success.consume(channelFuture.channel());
+                Channel channel = channelFuture.channel();
+                channel.closeFuture().addListener(closeHandler);
+                success.consume(channel);
             } else {
-                future.complete(null);
+                Throwable cause = channelFuture.cause();
+                if (cause != null) {
+                    connectCallback.on(cause);
+                } else {
+                    connectCallback.on(null, null);
+                }
             }
         };
     }

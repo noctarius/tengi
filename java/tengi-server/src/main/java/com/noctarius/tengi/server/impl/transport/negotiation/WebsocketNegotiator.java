@@ -57,11 +57,13 @@ public class WebsocketNegotiator
             // Activate websocket handshake
             if (WEBSOCKET_RELATIVE_PATH.equals(request.uri())) {
                 if (!connectionManager.acceptTransport(ServerTransport.WEBSOCKET_TRANSPORT, port)) {
+                    ctx.close();
                     throw new ConnectionFailedException("Transport not enabled");
                 }
                 switchToWebsocket(ctx, request);
             } else {
                 if (!connectionManager.acceptTransport(ServerTransport.HTTP_TRANSPORT, port)) {
+                    ctx.close();
                     throw new ConnectionFailedException("Transport not enabled");
                 }
                 switchToHttpLongPolling(ctx);

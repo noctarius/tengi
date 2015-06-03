@@ -43,13 +43,13 @@ import static com.noctarius.tengi.core.serialization.marshaller.Marshaller.marsh
  * <p>The internal design of the <tt>ConfigurationBuilder</tt> is not thread-safe and
  * therefore it is not recommended to use if from multiple threads concurrently.</p>
  */
-public final class ConfigurationBuilder {
+public class ConfigurationBuilder {
 
-    private final Set<MarshallerConfiguration> marshallers = new HashSet<>();
-    private final List<Transport> transports = new ArrayList<>();
-    private final Map<Transport, Integer> transportPorts = new HashMap<>();
-    private boolean sslEnabled = false;
-    private HandshakeHandler handshakeHandler = null;
+    protected final Set<MarshallerConfiguration> marshallers = new HashSet<>();
+    protected final List<Transport> transports = new ArrayList<>();
+    protected final Map<Transport, Integer> transportPorts = new HashMap<>();
+    protected boolean sslEnabled = false;
+    protected HandshakeHandler handshakeHandler = null;
 
     /**
      * Configures a new {@link com.noctarius.tengi.core.serialization.marshaller.Marshaller} and
@@ -177,7 +177,7 @@ public final class ConfigurationBuilder {
         return new ConfigurationImpl(marshallers, transports, transportPorts, sslEnabled, handshakeHandler);
     }
 
-    private static class ConfigurationImpl
+    protected static class ConfigurationImpl
             implements Configuration {
 
         private final Set<MarshallerConfiguration> marshallers;
@@ -186,7 +186,7 @@ public final class ConfigurationBuilder {
         private final boolean sslEnabled;
         private final HandshakeHandler handshakeHandler;
 
-        public ConfigurationImpl(Set<MarshallerConfiguration> marshallers, List<Transport> transports,
+        protected ConfigurationImpl(Set<MarshallerConfiguration> marshallers, List<Transport> transports,
                                  Map<Transport, Integer> transportPorts, boolean sslEnabled, HandshakeHandler handshakeHandler) {
 
             this.marshallers = Collections.unmodifiableSet(new HashSet<>(marshallers));

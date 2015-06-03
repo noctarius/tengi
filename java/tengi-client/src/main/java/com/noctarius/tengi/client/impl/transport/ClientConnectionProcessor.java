@@ -16,6 +16,7 @@
  */
 package com.noctarius.tengi.client.impl.transport;
 
+import com.noctarius.tengi.client.impl.ConnectCallback;
 import com.noctarius.tengi.client.impl.Connector;
 import com.noctarius.tengi.client.impl.ServerConnection;
 import com.noctarius.tengi.core.connection.Connection;
@@ -30,8 +31,6 @@ import com.noctarius.tengi.spi.serialization.Serializer;
 import com.noctarius.tengi.spi.serialization.codec.AutoClosableDecoder;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-
-import java.util.concurrent.CompletableFuture;
 
 import static com.noctarius.tengi.client.impl.ClientUtil.CONNECTION;
 import static com.noctarius.tengi.client.impl.ClientUtil.CONNECT_FUTURE;
@@ -78,10 +77,10 @@ public abstract class ClientConnectionProcessor<T, C, M>
                 HandshakeHandler handshakeHandler = connector.handshakeHandler();
                 handshakeHandler.handleHandshake(connectionId, (Handshake) object);
 
-                CompletableFuture<Connection> connectorFuture = connectionAttribute(ctx, CONNECT_FUTURE, true);
+                ConnectCallback connectCallback = connectionAttribute(ctx, CONNECT_FUTURE, true);
                 ConnectionContext<C> connectionContext = createConnectionContext(ctx, connectionId);
                 Connection connection = createConnection(ctx, connectionContext, connectionId);
-                connectorFuture.complete(connection);
+                connectCallback.on(connection);
 
             } else {
                 ServerConnection connection = connectionAttribute(ctx, CONNECTION);

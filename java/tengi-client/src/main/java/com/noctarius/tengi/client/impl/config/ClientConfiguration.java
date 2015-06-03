@@ -14,25 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.client.impl;
+package com.noctarius.tengi.client.impl.config;
 
-import com.noctarius.tengi.core.connection.Transport;
-import com.noctarius.tengi.core.connection.HandshakeHandler;
-import io.netty.buffer.ByteBufAllocator;
+import com.noctarius.tengi.client.impl.TransportHandler;
+import com.noctarius.tengi.core.config.Configuration;
 
-public interface Connector<M>
-        extends Transport {
+public interface ClientConfiguration
+        extends Configuration {
 
-    void connect(ConnectCallback connectCallback);
-
-    HandshakeHandler handshakeHandler();
-
-    ByteBufAllocator allocator();
-
-    void write(M message)
-            throws Exception;
-
-    void destroy()
-            throws Exception;
+    TransportHandler getTransportHandler();
 
 }

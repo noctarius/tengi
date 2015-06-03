@@ -22,14 +22,17 @@ import com.noctarius.tengi.client.impl.transport.AbstractClientTransportTestCase
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.config.ConfigurationBuilder;
 import com.noctarius.tengi.core.connection.Connection;
+import com.noctarius.tengi.core.exception.ConnectionFailedException;
 import com.noctarius.tengi.core.listener.ConnectedListener;
 import com.noctarius.tengi.core.listener.MessageListener;
 import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.core.model.Packet;
 import com.noctarius.tengi.server.ServerTransport;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -53,6 +56,44 @@ public class WebsocketTransportTestCase
             if (connection != null) {
                 connection.disconnect();
             }
+        }
+    }
+
+    @Test(expected = ConnectionFailedException.class)
+    public void test_disconnect_http_connection_not_enabled()
+            throws Exception {
+
+        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransport.WEBSOCKET_TRANSPORT).build();
+        Client client = Client.create(configuration);
+
+        Connection connection = null;
+        try {
+            CompletableFuture<Connection> f = new CompletableFuture<>();
+            connection = practice(client, f::complete, f::get, false, ServerTransport.TCP_TRANSPORT);
+            assertNotNull(connection);
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+    }
+
+    @Test(expected = ConnectionFailedException.class)
+    public void test_port_not_open()
+            throws Exception {
+
+        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransport.WEBSOCKET_TRANSPORT).build();
+        Client client = Client.create(configuration);
+
+        try {
+            CompletableFuture<Connection> future = client.connect("localhost", Assert::assertNull);
+            future.get();
+        } catch (ExecutionException exception) {
+            Throwable cause = exception.getCause();
+            if (cause instanceof RuntimeException) {
+                throw (RuntimeException) cause;
+            }
+            throw new RuntimeException(cause);
         }
     }
 

@@ -16,17 +16,14 @@
  */
 package com.noctarius.tengi.client.impl;
 
-import com.noctarius.tengi.core.connection.Connection;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 
-import java.util.concurrent.CompletableFuture;
+public class ClientUtil {
 
-public final class ClientUtil {
-
-    public static final AttributeKey<CompletableFuture<Connection>> CONNECT_FUTURE = AttributeKey.newInstance("CONNECT_FUTURE");
-
+    public static final AttributeKey<ConnectCallback> CONNECT_FUTURE = AttributeKey.newInstance("CONNECT_FUTURE");
     public static final AttributeKey<ServerConnection> CONNECTION = AttributeKey.newInstance("CONNECTION");
 
     public static <T> T connectionAttribute(ChannelHandlerContext ctx, AttributeKey<T> key) {
@@ -43,6 +40,23 @@ public final class ClientUtil {
 
     public static <T> void connectionAttribute(ChannelHandlerContext ctx, AttributeKey<T> key, T value) {
         Attribute<T> attribute = ctx.attr(key);
+        attribute.set(value);
+    }
+
+    public static <T> T connectionAttribute(Channel channel, AttributeKey<T> key) {
+        return connectionAttribute(channel, key, false);
+    }
+
+    public static <T> T connectionAttribute(Channel channel, AttributeKey<T> key, boolean remove) {
+        Attribute<T> attribute = channel.attr(key);
+        if (attribute != null) {
+            return remove ? attribute.getAndRemove() : attribute.get();
+        }
+        return null;
+    }
+
+    public static <T> void connectionAttribute(Channel channel, AttributeKey<T> key, T value) {
+        Attribute<T> attribute = channel.attr(key);
         attribute.set(value);
     }
 

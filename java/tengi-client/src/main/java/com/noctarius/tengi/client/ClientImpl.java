@@ -16,13 +16,10 @@
  */
 package com.noctarius.tengi.client;
 
-import com.noctarius.tengi.client.impl.Connector;
 import com.noctarius.tengi.client.impl.ConnectorFactory;
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.Transport;
-import com.noctarius.tengi.core.connection.HandshakeHandler;
-import com.noctarius.tengi.core.exception.ConnectionFailedException;
 import com.noctarius.tengi.core.exception.IllegalTransportException;
 import com.noctarius.tengi.core.impl.Validate;
 import com.noctarius.tengi.core.listener.ConnectedListener;
@@ -37,7 +34,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
 class ClientImpl
         implements Client {
@@ -47,16 +43,16 @@ class ClientImpl
     private final EventLoopGroup clientGroup;
     private final Configuration configuration;
     private final Serializer serializer;
-    private final HandshakeHandler handshakeHandler;
 
     ClientImpl(Configuration configuration) {
         Validate.notNull("configuration", configuration);
 
+        // Validate all configured transports are also ConnectorFactory
+        checkTransports(configuration.getTransports());
+
         this.clientGroup = new NioEventLoopGroup(5, new DefaultThreadFactory("channel-client-"));
         this.serializer = createSerializer(configuration);
         this.configuration = configuration;
-        this.handshakeHandler = createHandshakeHandler(configuration);
-        checkTransports(configuration.getTransports());
     }
 
     @Override
@@ -75,11 +71,14 @@ class ClientImpl
         Validate.notNull("address", address);
         Validate.notNull("connectedListener", connectedListener);
 
-        Connector[] connectors = createConnectors(address, configuration.getTransports());
         LOGGER.info("tengi client is connecting, transport priority: %s", configuration.getTransports());
-        CompletableFuture<Connection> future = new CompletableFuture<>();
-        connect(address, future, connectedListener, connectors, 0);
-        return future;
+        ConnectorContext connectorContext = new ConnectorContext(configuration, serializer, clientGroup);
+
+        CompletableFuture<Connection> connectFuture = connectorContext.connect(address);
+        return connectFuture.thenApply((connection) -> {
+            connectedListener.onConnection(connection);
+            return connection;
+        });
     }
 
     private Serializer createSerializer(Configuration configuration) {
@@ -92,57 +91,6 @@ class ClientImpl
                 throw new IllegalTransportException("Illegal Transport configured: " + transport);
             }
         }
-    }
-
-    private Connector[] createConnectors(InetAddress address, List<Transport> transports) {
-        Connector[] connectors = new Connector[transports.size()];
-        int pos = 0;
-        for (Transport transport : transports) {
-            int port = configuration.getTransportPort(transport);
-            connectors[pos++] = ((ConnectorFactory) transport).create(address, port, serializer, handshakeHandler, clientGroup);
-        }
-        return connectors;
-    }
-
-    private void connect(InetAddress address, CompletableFuture<Connection> future, //
-                         ConnectedListener connectedListener, Connector[] connectors, int index) {
-
-        if (index >= connectors.length) {
-            future.completeExceptionally(new ConnectionFailedException("No transport was able to connect"));
-        }
-        connectTransport(address, future, connectedListener, connectors, index);
-    }
-
-    private void connectTransport(InetAddress address, CompletableFuture<Connection> future, //
-                                  ConnectedListener connectedListener, Connector[] connectors, int index) {
-
-        Connector connector = connectors[index];
-        CompletableFuture<Connection> connectFuture = connector.connect();
-        connectFuture.thenAccept(transportHandler(address, future, connectedListener, connectors, index));
-    }
-
-    private HandshakeHandler createHandshakeHandler(Configuration configuration) {
-        HandshakeHandler handshakeHandler = configuration.getHandshakeHandler();
-        if (handshakeHandler == null) {
-            handshakeHandler = (connectionId, handshake) -> null;
-        }
-        return handshakeHandler;
-    }
-
-    private Consumer<? super Connection> transportHandler(InetAddress address, CompletableFuture<Connection> future, //
-                                                          ConnectedListener connectedListener, Connector[] connectors,
-                                                          int index) {
-
-        return (connection) -> {
-            if (connection == null) {
-                connect(address, future, connectedListener, connectors, index + 1);
-            } else {
-                if (connectedListener != null) {
-                    connectedListener.onConnection(connection);
-                }
-                future.complete(connection);
-            }
-        };
     }
 
 }

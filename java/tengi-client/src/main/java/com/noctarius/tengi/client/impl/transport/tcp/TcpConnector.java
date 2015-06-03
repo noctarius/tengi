@@ -16,11 +16,11 @@
  */
 package com.noctarius.tengi.client.impl.transport.tcp;
 
-import com.noctarius.tengi.client.impl.ClientUtil;
+import com.noctarius.tengi.client.impl.ConnectCallback;
+import com.noctarius.tengi.client.impl.ServerConnection;
 import com.noctarius.tengi.client.impl.transport.AbstractClientConnector;
-import com.noctarius.tengi.core.connection.Connection;
-import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.core.connection.HandshakeHandler;
+import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.spi.connection.impl.TransportConstants;
@@ -42,8 +42,11 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.net.InetAddress;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.noctarius.tengi.client.impl.ClientUtil.CONNECTION;
+import static com.noctarius.tengi.client.impl.ClientUtil.CONNECT_FUTURE;
+import static com.noctarius.tengi.client.impl.ClientUtil.connectionAttribute;
 
 public class TcpConnector
         extends AbstractClientConnector<ByteBuf> {
@@ -69,16 +72,12 @@ public class TcpConnector
     }
 
     @Override
-    public CompletableFuture<Connection> connect() {
-        CompletableFuture<Connection> connectorFuture = new CompletableFuture<>();
-
+    public void connect(ConnectCallback connectCallback) {
         Bootstrap bootstrap = createBootstrap();
-        bootstrap.attr(ClientUtil.CONNECT_FUTURE, connectorFuture);
+        bootstrap.attr(CONNECT_FUTURE, connectCallback);
 
         ChannelFuture channelFuture = bootstrap.connect(address, port);
-        channelFuture.addListener(connectionListener(connectorFuture, this::handshakeRequest));
-
-        return connectorFuture;
+        channelFuture.addListener(connectionListener(connectCallback, this::handshakeRequest, this::handleChannelClose));
     }
 
     @Override
@@ -149,6 +148,19 @@ public class TcpConnector
         }
 
         channel.writeAndFlush(buffer);
+    }
+
+    private void handleChannelClose(ChannelFuture channelFuture) {
+        Channel channel = channelFuture.channel();
+        ConnectCallback connectCallback = connectionAttribute(channel, CONNECT_FUTURE);
+        if (connectCallback != null) {
+            connectCallback.on(null, null);
+        } else {
+            ServerConnection connection = connectionAttribute(channel, CONNECTION);
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
     }
 
     private Bootstrap createBootstrap() {

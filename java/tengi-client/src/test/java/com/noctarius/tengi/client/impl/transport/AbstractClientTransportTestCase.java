@@ -17,13 +17,15 @@
 package com.noctarius.tengi.client.impl.transport;
 
 import com.noctarius.tengi.client.Client;
-import com.noctarius.tengi.core.connection.Connection;
-import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.config.ConfigurationBuilder;
-import com.noctarius.tengi.core.listener.ConnectedListener;
-import com.noctarius.tengi.server.Server;
+import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.Transport;
+import com.noctarius.tengi.core.listener.ConnectedListener;
+import com.noctarius.tengi.core.model.Message;
+import com.noctarius.tengi.server.Server;
+
+import java.util.concurrent.ExecutionException;
 
 public abstract class AbstractClientTransportTestCase {
 
@@ -45,6 +47,12 @@ public abstract class AbstractClientTransportTestCase {
                     connection.close();
                 }
             }
+        } catch (ExecutionException exception) {
+            Throwable cause = exception.getCause();
+            if (cause instanceof RuntimeException) {
+                throw (RuntimeException) cause;
+            }
+            throw new RuntimeException(cause);
         } finally {
             server.stop().get();
         }

@@ -17,10 +17,11 @@
 package com.noctarius.tengi.client.impl.transport.websocket;
 
 import com.noctarius.tengi.client.impl.ClientUtil;
+import com.noctarius.tengi.client.impl.ConnectCallback;
+import com.noctarius.tengi.client.impl.ServerConnection;
 import com.noctarius.tengi.client.impl.transport.AbstractClientConnector;
-import com.noctarius.tengi.core.connection.Connection;
-import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.core.connection.HandshakeHandler;
+import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.spi.connection.impl.TransportConstants;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.bootstrap.Bootstrap;
@@ -43,8 +44,11 @@ import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 
 import java.net.InetAddress;
 import java.net.URI;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.noctarius.tengi.client.impl.ClientUtil.CONNECTION;
+import static com.noctarius.tengi.client.impl.ClientUtil.CONNECT_FUTURE;
+import static com.noctarius.tengi.client.impl.ClientUtil.connectionAttribute;
 
 public class WebsocketConnector
         extends AbstractClientConnector<WebSocketFrame> {
@@ -70,17 +74,13 @@ public class WebsocketConnector
     }
 
     @Override
-    public CompletableFuture<Connection> connect() {
-        CompletableFuture<Connection> connectorFuture = new CompletableFuture<>();
-
+    public void connect(ConnectCallback connectCallback) {
         WebSocketClientHandshaker handshaker = createHandshaker();
         Bootstrap bootstrap = createBootstrap(handshaker);
-        bootstrap.attr(ClientUtil.CONNECT_FUTURE, connectorFuture);
+        bootstrap.attr(ClientUtil.CONNECT_FUTURE, connectCallback);
 
         ChannelFuture channelFuture = bootstrap.connect(address, port);
-        channelFuture.addListener(connectionListener(connectorFuture, (c) -> channel = c));
-
-        return connectorFuture;
+        channelFuture.addListener(connectionListener(connectCallback, (c) -> channel = c, this::handleChannelClose));
     }
 
     @Override
@@ -140,6 +140,19 @@ public class WebsocketConnector
     private URI createURI() {
         String url = "ws://" + address.getHostAddress() + ":" + port + TransportConstants.WEBSOCKET_RELATIVE_PATH;
         return URI.create(url);
+    }
+
+    private void handleChannelClose(ChannelFuture channelFuture) {
+        Channel channel = channelFuture.channel();
+        ConnectCallback connectCallback = connectionAttribute(channel, CONNECT_FUTURE);
+        if (connectCallback != null) {
+            connectCallback.on(null, null);
+        } else {
+            ServerConnection connection = connectionAttribute(channel, CONNECTION);
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
     }
 
     private Bootstrap createBootstrap(WebSocketClientHandshaker handshaker) {

@@ -82,6 +82,7 @@ public class Http2Negotiator
                 break;
             case HTTP_2:
                 if (!connectionManager.acceptTransport(ServerTransport.HTTP2_TRANSPORT, port)) {
+                    ctx.close();
                     throw new ConnectionFailedException("Transport not enabled");
                 }
                 switchToHttp2(ctx);

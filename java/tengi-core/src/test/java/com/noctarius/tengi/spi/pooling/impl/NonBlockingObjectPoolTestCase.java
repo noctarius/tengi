@@ -238,7 +238,7 @@ public class NonBlockingObjectPoolTestCase {
             values.add((Value) result);
         }
 
-        assertEquals(100, values.size());
+        assertEquals(concurrencyLevel, values.size());
     }
 
     @Test

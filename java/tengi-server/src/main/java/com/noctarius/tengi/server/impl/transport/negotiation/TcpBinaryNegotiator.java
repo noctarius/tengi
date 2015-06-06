@@ -19,6 +19,7 @@ package com.noctarius.tengi.server.impl.transport.negotiation;
 import com.noctarius.tengi.core.exception.ConnectionFailedException;
 import com.noctarius.tengi.server.ServerTransport;
 import com.noctarius.tengi.server.impl.ConnectionManager;
+import com.noctarius.tengi.server.impl.transport.http2.Http2ConnectionProcessor;
 import com.noctarius.tengi.server.impl.transport.tcp.TcpConnectionProcessor;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import com.noctarius.tengi.spi.serialization.impl.DefaultProtocolConstants;
@@ -111,6 +112,9 @@ public class TcpBinaryNegotiator
                 if (magic1 == 'O' && magic2 == 'S' && magic3 == 'T') {
                     switchToHttpNegotiation(ctx);
                 }
+                if (magic1 == 'R' && magic2 == 'I' && magic3 == ' ') {
+                    switchToNativeHttp2(ctx);
+                }
                 break;
 
             case 'C':
@@ -148,6 +152,13 @@ public class TcpBinaryNegotiator
 
         ChannelPipeline pipeline = ctx.pipeline();
         pipeline.addLast("httpNegotiator", new Http2Negotiator(port, 1024 * 1024, connectionManager, serializer));
+        pipeline.remove(this);
+    }
+
+    private void switchToNativeHttp2(ChannelHandlerContext ctx) {
+        ChannelPipeline pipeline = ctx.pipeline();
+        pipeline.addLast("http2-connection-processor", new Http2ConnectionProcessor(connectionManager, serializer));
+        //pipeline.addLast("connection-processor", new ConnectionProcessor(connectionManager, serializer));
         pipeline.remove(this);
     }
 

@@ -99,7 +99,7 @@ public class Http2Negotiator
 
     private void switchToHttp2(ChannelHandlerContext ctx) {
         ChannelPipeline pipeline = ctx.pipeline();
-        pipeline.addLast("http2-connection-processor", new Http2ConnectionProcessor(serializer));
+        pipeline.addLast("http2-connection-processor", new Http2ConnectionProcessor(connectionManager, serializer));
         //pipeline.addLast("connection-processor", new ConnectionProcessor(connectionManager, serializer));
         pipeline.remove(this);
     }

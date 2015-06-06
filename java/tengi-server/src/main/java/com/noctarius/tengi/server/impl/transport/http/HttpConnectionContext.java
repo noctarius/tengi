@@ -17,19 +17,18 @@
 package com.noctarius.tengi.server.impl.transport.http;
 
 import com.noctarius.tengi.core.connection.Connection;
-import com.noctarius.tengi.core.model.Identifier;
-import com.noctarius.tengi.core.model.Message;
+import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.impl.CompletableFutureUtil;
 import com.noctarius.tengi.core.impl.ExceptionUtil;
+import com.noctarius.tengi.core.model.Identifier;
+import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
-import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.spi.connection.packets.PollingRequest;
 import com.noctarius.tengi.spi.connection.packets.PollingResponse;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import com.noctarius.tengi.spi.serialization.codec.AutoClosableEncoder;
-import com.noctarius.tengi.spi.serialization.impl.DefaultProtocolConstants;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -95,7 +94,7 @@ class HttpConnectionContext
 
     @Override
     public CompletableFuture<Connection> close(Connection connection) {
-        return CompletableFutureUtil.executeAsync(() -> connection);
+        return CompletableFuture.completedFuture(connection);
     }
 
     @Override

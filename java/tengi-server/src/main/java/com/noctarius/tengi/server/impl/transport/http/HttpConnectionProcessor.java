@@ -27,9 +27,9 @@ import com.noctarius.tengi.spi.serialization.Serializer;
 import com.noctarius.tengi.spi.serialization.codec.AutoClosableDecoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -41,6 +41,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.CharsetUtil;
 
+@ChannelHandler.Sharable
 public class HttpConnectionProcessor
         extends ServerConnectionProcessor<FullHttpRequest> {
 
@@ -54,15 +55,14 @@ public class HttpConnectionProcessor
 
         // Only POST requests are allowed, kill the request
         if (HttpMethod.POST != request.method()) {
-            sendHttpResponse(ctx.channel(), request,
+            sendHttpResponse(ctx, request,
                     new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.METHOD_NOT_ALLOWED));
             return null;
         }
 
         // Unknown uri, kill the request
         if (!"/channel".equals(request.uri())) {
-            sendHttpResponse(ctx.channel(), request,
-                    new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.FORBIDDEN));
+            sendHttpResponse(ctx, request, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.FORBIDDEN));
             return null;
         }
 
@@ -71,8 +71,7 @@ public class HttpConnectionProcessor
 
         // Wrong content type, kill the request
         if (!mimeType.equals(contentType)) {
-            sendHttpResponse(ctx.channel(), request,
-                    new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_ACCEPTABLE));
+            sendHttpResponse(ctx, request, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_ACCEPTABLE));
             return null;
         }
 
@@ -86,7 +85,7 @@ public class HttpConnectionProcessor
         return new HttpConnectionContext(connectionId, getSerializer(), getTransport());
     }
 
-    static void sendHttpResponse(Channel channel, FullHttpRequest request, FullHttpResponse response) {
+    static void sendHttpResponse(ChannelHandlerContext ctx, FullHttpRequest request, FullHttpResponse response) {
         // Generate an error page if response getStatus code is not OK (200).
         if (response.status().code() != 200) {
             ByteBuf buf = Unpooled.copiedBuffer(response.status().toString(), CharsetUtil.UTF_8);
@@ -96,7 +95,7 @@ public class HttpConnectionProcessor
         }
 
         // Send the response and close the connection if necessary.
-        ChannelFuture f = channel.writeAndFlush(response);
+        ChannelFuture f = ctx.writeAndFlush(response);
         if (!HttpHeaderUtil.isKeepAlive(request) || response.status().code() != 200) {
             f.addListener(ChannelFutureListener.CLOSE);
         }

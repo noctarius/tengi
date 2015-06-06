@@ -19,6 +19,7 @@ package com.noctarius.tengi.server;
 import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.server.impl.transport.http.HttpTransport;
+import com.noctarius.tengi.server.impl.transport.http2.Http2Transport;
 import com.noctarius.tengi.server.impl.transport.tcp.TcpTransport;
 import com.noctarius.tengi.server.impl.transport.websocket.WebsocketTransport;
 
@@ -43,7 +44,7 @@ public enum ServerTransport
     /**
      * Reserved for later implementation
      */
-    HTTP2_TRANSPORT(null),
+    HTTP2_TRANSPORT(new Http2Transport()),
 
     /**
      * This constant defines a Websocket based {@link com.noctarius.tengi.core.connection.Transport}

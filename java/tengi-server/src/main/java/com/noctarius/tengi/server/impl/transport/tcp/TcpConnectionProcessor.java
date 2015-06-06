@@ -26,8 +26,10 @@ import com.noctarius.tengi.spi.connection.ConnectionContext;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import com.noctarius.tengi.spi.serialization.codec.AutoClosableDecoder;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 
+@ChannelHandler.Sharable
 public class TcpConnectionProcessor
         extends ServerConnectionProcessor<ByteBuf> {
 

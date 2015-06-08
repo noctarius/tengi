@@ -17,8 +17,8 @@
 package com.noctarius.tengi.server;
 
 import com.noctarius.tengi.core.config.Configuration;
-import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.core.connection.HandshakeHandler;
+import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.core.exception.IllegalTransportException;
 import com.noctarius.tengi.core.impl.CompletableFutureUtil;
 import com.noctarius.tengi.core.impl.Validate;
@@ -122,7 +122,7 @@ class ServerImpl
     }
 
     private void bindChannels()
-            throws InterruptedException {
+            throws Throwable {
 
         EnumMap<TransportLayer, int[]> transportLayers = collectTransportLayers(configuration);
         for (Map.Entry<TransportLayer, int[]> entry : transportLayers.entrySet()) {
@@ -177,7 +177,7 @@ class ServerImpl
     }
 
     private Channel createChannel(TransportLayer transportLayer, int port)
-            throws InterruptedException {
+            throws Throwable {
 
         switch (transportLayer) {
             case TCP:
@@ -192,24 +192,31 @@ class ServerImpl
     }
 
     private Channel createUdpChannel(int port)
-            throws InterruptedException {
+            throws Throwable {
 
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.option(ChannelOption.SO_BROADCAST, false).group(workerGroup) //
                 .handler(new UdpProtocolNegotiator(connectionManager, serializer, port));
 
-        return bootstrap.bind(port).sync().channel();
+        ChannelFuture future = bootstrap.bind(port).sync();
+        if (future.cause() != null) {
+            throw future.cause();
+        }
+        return future.channel();
     }
 
     private Channel createTcpChannel(int port)
-            throws InterruptedException {
+            throws Throwable {
 
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.option(ChannelOption.SO_BACKLOG, 1024).group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
                  .childHandler(new TcpProtocolNegotiator(connectionManager, serializer, port));
 
-        ChannelFuture future = bootstrap.bind(port);
-        return future.sync().channel();
+        ChannelFuture future = bootstrap.bind(port).sync();
+        if (future.cause() != null) {
+            throw future.cause();
+        }
+        return future.channel();
     }
 
     private Serializer createSerializer(Configuration configuration) {

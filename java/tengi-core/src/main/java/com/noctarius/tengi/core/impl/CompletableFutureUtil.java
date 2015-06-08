@@ -43,7 +43,7 @@ public final class CompletableFutureUtil {
         }
 
         T getOrThrow()
-                throws Exception;
+                throws Throwable;
     }
 
 }

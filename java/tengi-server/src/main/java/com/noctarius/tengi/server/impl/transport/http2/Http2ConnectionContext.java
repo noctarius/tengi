@@ -18,7 +18,7 @@ package com.noctarius.tengi.server.impl.transport.http2;
 
 import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.Transport;
-import com.noctarius.tengi.core.impl.CompletableFutureUtil;
+import com.noctarius.tengi.core.impl.FutureUtil;
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
@@ -61,7 +61,7 @@ class Http2ConnectionContext
         MemoryBuffer buffer = preparePacket(MemoryBufferFactory.create(bb));
         buffer.writeBuffer(memoryBuffer);
 
-        return CompletableFutureUtil.executeAsync(() -> {
+        return FutureUtil.executeAsync(() -> {
             Http2Headers headers = new DefaultHttp2Headers().status(HttpResponseStatus.OK.codeAsText());
             encoder.writeHeaders(ctx, streamId, headers, 0, false, ctx.newPromise());
             encoder.writeData(ctx, streamId, bb, 0, false, ctx.newPromise());
@@ -79,7 +79,7 @@ class Http2ConnectionContext
         MemoryBuffer buffer = preparePacket(MemoryBufferFactory.create(bb));
         buffer.writeBuffer(memoryBuffer);
 
-        return CompletableFutureUtil.executeAsync(() -> {
+        return FutureUtil.executeAsync(() -> {
             Http2Headers headers = new DefaultHttp2Headers().status(HttpResponseStatus.OK.codeAsText());
             encoder.writeHeaders(ctx, streamId, headers, 0, false, ctx.newPromise());
             encoder.writeData(ctx, streamId, bb, 0, false, ctx.newPromise());
@@ -90,7 +90,7 @@ class Http2ConnectionContext
 
     @Override
     public CompletableFuture<Connection> close(Connection connection) {
-        return CompletableFutureUtil.executeAsync(() -> {
+        return FutureUtil.executeAsync(() -> {
             encoder.close();
             ctx.close();
             return connection;

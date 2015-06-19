@@ -18,7 +18,7 @@ package com.noctarius.tengi.client.impl.transport.websocket;
 
 import com.noctarius.tengi.client.impl.Connector;
 import com.noctarius.tengi.core.connection.Connection;
-import com.noctarius.tengi.core.impl.CompletableFutureUtil;
+import com.noctarius.tengi.core.impl.FutureUtil;
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
@@ -50,7 +50,7 @@ class WebsocketConnectionContext
         MemoryBuffer buffer = preparePacket(MemoryBufferFactory.create(request));
         buffer.writeBuffer(memoryBuffer);
 
-        return CompletableFutureUtil.executeAsync(() -> {
+        return FutureUtil.executeAsync(() -> {
             connector.write(new BinaryWebSocketFrame(request));
             return message;
         });
@@ -63,7 +63,7 @@ class WebsocketConnectionContext
         ByteBuf request = channel.alloc().directBuffer();
         MemoryBuffer buffer = preparePacket(MemoryBufferFactory.create(request));
         buffer.writeBuffer(memoryBuffer);
-        return CompletableFutureUtil.executeAsync(() -> {
+        return FutureUtil.executeAsync(() -> {
             channel.writeAndFlush(new BinaryWebSocketFrame(request)).sync();
             return connection;
         });
@@ -71,7 +71,7 @@ class WebsocketConnectionContext
 
     @Override
     public CompletableFuture<Connection> close(Connection connection) {
-        return CompletableFutureUtil.executeAsync(() -> {
+        return FutureUtil.executeAsync(() -> {
             connector.destroy();
             return connection;
         });

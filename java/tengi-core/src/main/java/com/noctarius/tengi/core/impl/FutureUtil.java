@@ -19,9 +19,9 @@ package com.noctarius.tengi.core.impl;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
-public final class CompletableFutureUtil {
+public final class FutureUtil {
 
-    private CompletableFutureUtil() {
+    private FutureUtil() {
     }
 
     public static <T> CompletableFuture<T> executeAsync(CatchingSupplier<T> supplier) {

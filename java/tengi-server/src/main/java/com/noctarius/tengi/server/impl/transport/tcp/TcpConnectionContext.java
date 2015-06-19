@@ -19,7 +19,7 @@ package com.noctarius.tengi.server.impl.transport.tcp;
 import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
-import com.noctarius.tengi.core.impl.CompletableFutureUtil;
+import com.noctarius.tengi.core.impl.FutureUtil;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
@@ -48,7 +48,7 @@ class TcpConnectionContext
         MemoryBuffer buffer = preparePacket(MemoryBufferFactory.create(response));
         buffer.writeBuffer(memoryBuffer);
 
-        return CompletableFutureUtil.executeAsync(() -> {
+        return FutureUtil.executeAsync(() -> {
             channel.writeAndFlush(response);
             return message;
         });
@@ -61,7 +61,7 @@ class TcpConnectionContext
         ByteBuf response = channel.alloc().directBuffer();
         MemoryBuffer buffer = preparePacket(MemoryBufferFactory.create(response));
         buffer.writeBuffer(memoryBuffer);
-        return CompletableFutureUtil.executeAsync(() -> {
+        return FutureUtil.executeAsync(() -> {
             channel.writeAndFlush(response);
             return connection;
         });
@@ -69,7 +69,7 @@ class TcpConnectionContext
 
     @Override
     public CompletableFuture<Connection> close(Connection connection) {
-        return CompletableFutureUtil.executeAsync(() -> {
+        return FutureUtil.executeAsync(() -> {
             channel.close().sync();
             return connection;
         });

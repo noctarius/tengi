@@ -20,7 +20,7 @@ import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.connection.HandshakeHandler;
 import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.core.exception.IllegalTransportException;
-import com.noctarius.tengi.core.impl.CompletableFutureUtil;
+import com.noctarius.tengi.core.impl.FutureUtil;
 import com.noctarius.tengi.core.impl.Validate;
 import com.noctarius.tengi.core.impl.VersionUtil;
 import com.noctarius.tengi.core.listener.ConnectedListener;
@@ -93,7 +93,7 @@ class ServerImpl
     public CompletableFuture<Server> start(ConnectedListener connectedListener) {
         Validate.notNull("connectedListener", connectedListener);
 
-        return CompletableFutureUtil.executeAsync(() -> {
+        return FutureUtil.executeAsync(() -> {
             bindChannels();
 
             connectionManager.registerConnectedListener(connectedListener);
@@ -106,7 +106,7 @@ class ServerImpl
 
     @Override
     public CompletableFuture<Server> stop() {
-        return CompletableFutureUtil.executeAsync(() -> {
+        return FutureUtil.executeAsync(() -> {
             for (Channel channel : channels) {
                 channel.close().sync();
             }

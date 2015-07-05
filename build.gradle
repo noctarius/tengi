@@ -10,11 +10,13 @@ buildscript {
         mavenLocal()
         mavenCentral()
         maven { url 'http://dl.bintray.com/content/netflixoss/external-gradle-plugins/' }
+        maven { url "https://repo.spring.io/plugins-release" }
     }
 
     dependencies {
     	classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.6.1'
     	classpath 'gradle-release:gradle-release:1.1.5'
+        classpath 'org.apache.ant:ant:1.9.4'
     }
 
     ext.timestamp = { def date = new Date(); date.format('yyyy-MM-dd HH:mm') }()

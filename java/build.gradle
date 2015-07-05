@@ -1,4 +1,6 @@
 allprojects {
+    apply plugin: 'java'
+
     // external versions
     ext.junitVersion = '4.11'
     ext.findbugsAnnotationsVersion = '2.0.2'
@@ -66,7 +68,6 @@ allprojects {
 }
 
 subprojects {
-    apply plugin: 'java'
     apply plugin: 'maven'
     apply plugin: 'signing'
 
@@ -93,6 +94,32 @@ subprojects {
     }
 }
 
+javadoc {
+    exclude '**/impl/**'
+
+    options {
+        windowTitle = "tengi: Version ${project.version} API"
+        header = "tengi: Near-Realtime Communication Foundation"
+        links "http://docs.oracle.com/javase/8/docs/api/"
+        memberLevel = org.gradle.external.javadoc.JavadocMemberLevel.PUBLIC
+
+        group 'Core Packages', 'com.noctarius.tengi.core*'
+        group 'Server Packages', 'com.noctarius.tengi.server*'
+        group 'Client Packages', 'com.noctarius.tengi.client*'
+        group 'SPI Packages', 'com.noctarius.tengi.spi*'
+    }
+
+    def apiSources = subprojects.findAll({ project -> project.name != 'runtime' })
+    classpath = files(apiSources.collect { p -> p.sourceSets.main.compileClasspath })
+
+    doLast {
+        copy {
+            from "src/main/docs"
+            into "$buildDir/docs/javadoc"
+        }
+    }
+}
+
 project('tengi-client') {
     dependencies {
         compile libs.tengiCore
@@ -113,7 +140,7 @@ project('tengi-core') {
 
     processResources {
         filter org.apache.tools.ant.filters.ReplaceTokens, tokens: [
-                "project.version": project.version,
+                "project.version"  : project.version,
                 "project.timestamp": rootProject.timestamp
         ]
     }
@@ -165,4 +192,4 @@ project('tengi-server') {
     }
 }
 
-task build(dependsOn: subprojects.tasks.build)
+task build(dependsOn: [subprojects.tasks.build, javadoc])

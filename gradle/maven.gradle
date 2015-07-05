@@ -16,10 +16,6 @@ allprojects {
         test.compileClasspath += configurations.provided
         test.runtimeClasspath += configurations.provided
     }
-
-    dependencies {
-        provided 'org.apache.ant:ant:1.9.4'
-    }
 }
 
 subprojects {

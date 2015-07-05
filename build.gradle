@@ -1,0 +1,25 @@
+apply from: file('gradle/functions.gradle')
+
+ext.supportedGradleVersion = '2.4'
+
+status = project.hasProperty('preferredStatus') ? project.preferredStatus : (version.contains('SNAPSHOT') ? 'snapshot' : 'release')
+version = '0.0.1-SNAPSHOT'
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url 'http://dl.bintray.com/content/netflixoss/external-gradle-plugins/' }
+    }
+
+    dependencies {
+    	classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.6.1'
+    	classpath 'gradle-release:gradle-release:1.1.5'
+    }
+
+    ext.timestamp = { def date = new Date(); date.format('yyyy-MM-dd HH:mm') }()
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = supportedGradleVersion
+}

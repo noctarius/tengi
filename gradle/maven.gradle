@@ -1,0 +1,112 @@
+allprojects {
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
+
+    configurations {
+        provided {
+            transitive = true
+        }
+        compile.extendsFrom provided
+    }
+
+    sourceSets {
+        main.compileClasspath += configurations.provided
+        test.compileClasspath += configurations.provided
+        test.runtimeClasspath += configurations.provided
+    }
+
+    dependencies {
+        provided 'org.apache.ant:ant:1.9.4'
+    }
+}
+
+subprojects {
+    signing {
+        required { gradle.taskGraph.hasTask(uploadMavenCentral) }
+        sign configurations.archives
+    }
+
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        from sourceSets.main.allSource
+        classifier 'sources'
+        extension 'jar'
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        from javadoc.destinationDir
+        classifier 'javadoc'
+        extension 'jar'
+    }
+
+    artifacts {
+        archives sourcesJar
+        archives javadocJar
+    }
+
+    /**
+     * Publishing to Maven Central example provided from http://jedicoder.blogspot.com/2011/11/automated-gradle-project-deployment-to.html
+     * artifactory will execute uploadArchives to force generation of ivy.xml, and we don't want that to trigger an upload to maven
+     * central, so using custom upload task.
+     */
+    task uploadMavenCentral(type: Upload, dependsOn: signArchives) {
+        configuration = configurations.archives
+        onlyIf { ['release', 'snapshot'].contains(project.status) }
+        repositories.mavenDeployer {
+            beforeDeployment { signing.signPom(it) }
+
+            // To test deployment locally, use the following instead of oss.sonatype.org
+            //repository(url: "file://localhost/${rootProject.rootDir}/repo")
+
+            def sonatypeUsername = rootProject.hasProperty('sonatypeUsername') ? rootProject.sonatypeUsername : ''
+            def sonatypePassword = rootProject.hasProperty('sonatypePassword') ? rootProject.sonatypePassword : ''
+
+            repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2') {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+
+            snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+
+            // Prevent datastamp from being appending to artifacts during deployment
+            uniqueVersion = false
+
+            // Closure to configure all the POM with extra info, common to all projects
+            pom.project {
+                name "${project.name}"
+                description "${project.description}"
+                developers {
+                    developer {
+                        id 'cengelbert'
+                        name 'Christoph Engelbert (@noctarius2k)'
+                        email 'noctarius@apache.org'
+                        timezone '+1'
+                    }
+                }
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                    }
+                }
+                scm {
+                    connection "scm:git:git://github.com/noctarius/tengi.git"
+                    url "https://github.com/noctarius/tengi/"
+                    developerConnection "scm:git:git@github.com:noctarius/tengi.git"
+                    tag "HEAD"
+                }
+                issueManagement {
+                    system 'github'
+                    url "https://github.com/noctarius/tengi/issues"
+                }
+                ciManagement {
+                    system 'jenkins'
+                    url "https://noctarius.ci.cloudbees.com/job/tengi"
+                }
+            }
+        }
+    }
+}

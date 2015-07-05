@@ -1,0 +1,3 @@
+buildscript {
+    ext.dependencyList = { deps -> def result = []; deps.each { dep -> result.add(dependencies.create(dep)) }; result }
+}

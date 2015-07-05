@@ -1,0 +1,168 @@
+allprojects {
+    // external versions
+    ext.junitVersion = '4.11'
+    ext.findbugsAnnotationsVersion = '2.0.2'
+    ext.javaxValidationAnnotationVersion = '1.0.0.GA'
+    ext.nettyVersion = '4.1.0.Beta5'
+    ext.hppcVersion = '0.6.1'
+    ext.log4jVersion = '1.2.17'
+    ext.log4jv2Version = '2.2'
+    ext.slf4jVersion = '1.7.12'
+    ext.ningHttpClientVersion = '1.9.21'
+    ext.logbackVersion = '1.1.3'
+    ext.mockitoVersion = '1.9.5'
+    ext.tyrusVersion = '1.1'
+    ext.javaxWebsocketVersion = '1.0'
+    ext.jettyHttp2Version = '9.3.0.RC1'
+
+    // dependencies
+    ext.libs = [
+            // project dependencies
+            tengiCore                  : project(':java:tengi-core'),
+            tengiServer                : project(':java:tengi-server'),
+
+            // external dependencies
+            nettyBuffer                : "io.netty:netty-buffer:${nettyVersion}",
+            nettyCodecHttp             : "io.netty:netty-codec-http:${nettyVersion}",
+            nettyCodecHttp2            : "io.netty:netty-codec-http2:${nettyVersion}",
+            netty                      : dependencyList([
+                    "io.netty:netty-buffer:${nettyVersion}",
+                    "io.netty:netty-codec:${nettyVersion}",
+                    "io.netty:netty-transport:${nettyVersion}"
+            ]),
+
+            hppc                       : "com.carrotsearch:hppc:${hppcVersion}",
+
+            slf4j                      : "org.slf4j:slf4j-api:${slf4jVersion}",
+
+            log4j                      : "log4j:log4j:${log4jVersion}",
+
+            log4jv2                    : "org.apache.logging.log4j:log4j-api:${log4jv2Version}",
+
+            // test dependencies
+            junit                      : "junit:junit:${junitVersion}",
+
+            ningHttpClient             : "com.ning:async-http-client:${ningHttpClientVersion}",
+
+            mockito                    : "org.mockito:mockito-core:${mockitoVersion}",
+
+            javaxWebsocket             : "javax.websocket:javax.websocket-client-api:${javaxWebsocketVersion}",
+
+            tyrus                      : dependencyList([
+                    "org.glassfish.tyrus:tyrus-client:${tyrusVersion}",
+                    "org.glassfish.tyrus:tyrus-container-grizzly:${tyrusVersion}"
+            ]),
+
+            logback                    : "ch.qos.logback:logback-classic:${logbackVersion}",
+
+            jettyHttp2                 : "org.eclipse.jetty.http2:http2-client:${jettyHttp2Version}",
+
+            log4jv2Core                : "org.apache.logging.log4j:log4j-core:${log4jv2Version}",
+
+            // build time only dependencies
+            findbugsAnnotations        : "com.google.code.findbugs:annotations:${findbugsAnnotationsVersion}",
+            javaxValidationsAnnotations: "javax.validation:validation-api:${javaxValidationAnnotationVersion}"
+    ]
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven'
+    apply plugin: 'signing'
+
+    group = 'com.noctarius.tengi.java'
+    version = rootProject.version
+
+    description = "tengi: Java module - ${project.name}"
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+    compileJava.options.encoding = 'UTF-8'
+    compileTestJava.options.encoding = 'UTF-8'
+
+    status = rootProject.status
+
+    apply from: rootProject.file('gradle/maven.gradle')
+
+    dependencies {
+        testCompile libs.junit
+        testCompile libs.mockito
+
+        provided libs.findbugsAnnotations
+        provided libs.javaxValidationsAnnotations
+    }
+}
+
+project('tengi-client') {
+    dependencies {
+        compile libs.tengiCore
+        compile libs.netty
+
+        provided libs.nettyCodecHttp
+        provided libs.nettyCodecHttp2
+
+        testCompile libs.tengiServer
+    }
+}
+
+project('tengi-core') {
+    dependencies {
+        compile libs.nettyBuffer
+        compile libs.hppc
+    }
+
+    processResources {
+        filter org.apache.tools.ant.filters.ReplaceTokens, tokens: [
+                "project.version": project.version,
+                "project.timestamp": rootProject.timestamp
+        ]
+    }
+}
+
+project('tengi-logger-jul') {
+    dependencies {
+        compile libs.tengiCore
+    }
+}
+
+project('tengi-logger-log4j') {
+    dependencies {
+        compile libs.tengiCore
+        compile libs.log4j
+    }
+}
+
+project('tengi-logger-log4jv2') {
+    dependencies {
+        compile libs.tengiCore
+        compile libs.log4jv2
+
+        testCompile libs.log4jv2Core
+    }
+}
+
+project('tengi-logger-slf4j') {
+    dependencies {
+        compile libs.tengiCore
+        compile libs.slf4j
+
+        testCompile libs.logback
+    }
+}
+
+project('tengi-server') {
+    dependencies {
+        compile libs.tengiCore
+        compile libs.netty
+
+        provided libs.nettyCodecHttp
+        provided libs.nettyCodecHttp2
+
+        testCompile libs.ningHttpClient
+        testCompile libs.javaxWebsocket
+        testCompile libs.tyrus
+        testCompile libs.jettyHttp2
+    }
+}
+
+task build(dependsOn: subprojects.tasks.build)

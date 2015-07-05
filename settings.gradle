@@ -1,0 +1,8 @@
+include 'java'
+include 'java:tengi-core'
+include 'java:tengi-server'
+include 'java:tengi-client'
+include 'java:tengi-logger-jul'
+include 'java:tengi-logger-log4j'
+include 'java:tengi-logger-log4jv2'
+include 'java:tengi-logger-slf4j'

@@ -17,3 +17,4 @@ com.noctarius.tengi.spi.pooling
 com.noctarius.tengi.spi.ringbuffer
 com.noctarius.tengi.spi.serialization
 com.noctarius.tengi.spi.serialization.codec
+com.noctarius.tengi.spi.statemachine

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Christoph Engelbert (aka noctarius) and
+ * Copyright (c) 2015-2016, Christoph Engelbert (aka noctarius) and
  * contributors. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -93,7 +93,9 @@ class ClientImpl
         CompletableFuture<Connection> connectFuture = connectorContext.connect(address);
         return connectFuture.thenApply((connection) -> {
             registerConnection(connection);
-            connectedListener.onConnection(connection);
+            if (clientState.transit(ClientState.Started)) {
+                connectedListener.onConnection(connection);
+            }
             return connection;
         });
     }
@@ -101,7 +103,7 @@ class ClientImpl
     @Override
     public CompletableFuture<Client> stop() {
         return FutureUtil.executeAsync(() -> {
-            if (clientState.transit(ClientState.Stopped)) {
+            if (clientState.transit(ClientState.Shutdown)) {
                 if (!clientGroup.isTerminated()) {
                     clientGroup.shutdownGracefully();
                 }
@@ -109,6 +111,8 @@ class ClientImpl
                 for (Connection connection : connections) {
                     connection.close();
                 }
+
+                clientState.transit(ClientState.Stopped);
             }
             return ClientImpl.this;
         });
@@ -130,7 +134,9 @@ class ClientImpl
 
     private StateMachine<ClientState> createStateMachine() {
         StateMachine.Builder<ClientState> builder = StateMachine.newBuilder();
-        builder.addTransition(ClientState.Prepared, ClientState.Stopped);
+        builder.addTransition(ClientState.Prepared, ClientState.Started);
+        builder.addTransition(ClientState.Started, ClientState.Shutdown);
+        builder.addTransition(ClientState.Shutdown, ClientState.Stopped);
         return builder.build(ClientState.Prepared, false);
     }
 

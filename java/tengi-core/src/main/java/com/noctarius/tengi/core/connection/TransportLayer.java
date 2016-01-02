@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Christoph Engelbert (aka noctarius) and
+ * Copyright (c) 2015-2016, Christoph Engelbert (aka noctarius) and
  * contributors. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,5 +41,4 @@ public enum TransportLayer {
      * uses an internal <tt>SCTP</tt> socket to make or accept connections.
      */
     SCTP
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Christoph Engelbert (aka noctarius) and
+ * Copyright (c) 2015-2016, Christoph Engelbert (aka noctarius) and
  * contributors. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +25,7 @@ public final class TransportConstants {
     public static final String TRANSPORT_NAME_HTTP = "tengi::transport::http/1.1";
     public static final String TRANSPORT_NAME_HTTP2 = "tengi::transport::http/2.0";
     public static final String TRANSPORT_NAME_WEBSOCKET = "tengi::transport::websocket/binary";
+    public static final String TRANSPORT_NAME_UDT = "tengi::transport::udt";
     public static final String TRANSPORT_NAME_UDP = "tengi::transport::udp";
     public static final String TRANSPORT_NAME_RDP = "tengi::transport::rdp";
 

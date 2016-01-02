@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Christoph Engelbert (aka noctarius) and
+ * Copyright (c) 2015-2016, Christoph Engelbert (aka noctarius) and
  * contributors. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,5 +19,6 @@ package com.noctarius.tengi.server;
 enum ServerState {
     Prepared,
     Started,
-    Shutdown
+    Shutdown,
+    Stopped
 }

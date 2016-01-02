@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Christoph Engelbert (aka noctarius) and
+ * Copyright (c) 2015-2016, Christoph Engelbert (aka noctarius) and
  * contributors. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -121,6 +121,8 @@ class ServerImpl
 
                 connectionManager.stop();
                 eventManager.stop();
+
+                serverState.transit(ServerState.Stopped);
             }
             return ServerImpl.this;
         });
@@ -232,6 +234,7 @@ class ServerImpl
         StateMachine.Builder<ServerState> builder = StateMachine.newBuilder();
         builder.addTransition(ServerState.Prepared, ServerState.Started);
         builder.addTransition(ServerState.Started, ServerState.Shutdown);
+        builder.addTransition(ServerState.Shutdown, ServerState.Stopped);
         return builder.build(ServerState.Prepared, false);
     }
 

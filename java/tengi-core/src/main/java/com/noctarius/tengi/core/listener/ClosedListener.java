@@ -14,26 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.client.impl;
+package com.noctarius.tengi.core.listener;
 
 import com.noctarius.tengi.core.connection.Connection;
-import com.noctarius.tengi.core.connection.Transport;
-import com.noctarius.tengi.core.connection.HandshakeHandler;
-import io.netty.buffer.ByteBufAllocator;
 
-public interface Connector<M>
-        extends Transport {
+/**
+ * The <tt>ClosedListener</tt> defines handlers that are able to
+ * handle close events of connections.
+ */
+public interface ClosedListener extends Listener {
 
-    void connect(ConnectCallback connectCallback);
-
-    HandshakeHandler handshakeHandler();
-
-    ByteBufAllocator allocator();
-
-    void write(M message)
-            throws Exception;
-
-    void destroy(Connection connection)
-            throws Exception;
+    /**
+     * <p>This method is called whenever a connection has been closed and all
+     * additional resources have been freed.</p>
+     * <p>Event handlers are called in an internal event thread-pool which
+     * is not meant to handle long running operations. If long operations
+     * need to be executed, offloading to another thread-pool is strongly
+     * recommended.</p>
+     *
+     * @param connection the closed <tt>Connection</tt>
+     */
+    void onClose(Connection connection);
 
 }

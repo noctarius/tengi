@@ -19,11 +19,11 @@ package com.noctarius.tengi.core.listener;
 import com.noctarius.tengi.core.connection.Connection;
 
 /**
- * The <tt>ConnectedListener</tt> defines handles that are able to
+ * The <tt>ConnectedListener</tt> defines handlers that are able to
  * handle connect events of connections to setup application state for
  * this connection or allocate additional resource.
  */
-public interface ConnectedListener {
+public interface ConnectedListener extends Listener {
 
     /**
      * <p>This method is called whenever a connection has connected to

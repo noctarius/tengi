@@ -17,11 +17,11 @@
 package com.noctarius.tengi.core.listener;
 
 /**
- * The <tt>ConnectionListener</tt> interface describes a handler that is able
+ * The <tt>ConnectionListener</tt> interface describes handlers that are able
  * to handle any kind of {@link com.noctarius.tengi.core.connection.Connection}
  * related events. It is a combined interface consisting of listeners for
- * <tt>connected</tt>, <tt>disconnected</tt> and <tt>exception</tt> cases.
+ * <tt>disconnected</tt>, <tt>closed </tt>and <tt>exception</tt> cases.
  */
 public interface ConnectionListener
-        extends ConnectedListener, DisconnectedListener, ExceptionListener {
+        extends DisconnectedListener, ExceptionListener, ClosedListener {
 }

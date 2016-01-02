@@ -118,6 +118,14 @@ public interface Client {
     CompletableFuture<Connection> connect(InetAddress address, ConnectedListener connectedListener);
 
     /**
+     * Stops the current client instance and unbinds the transport ports. In addition it closes all
+     * currently open connections created by this client instance and releases internally used resources.
+     *
+     * @return a <tt>CompletableFuture</tt> representing the pending stop process
+     */
+    CompletableFuture<Client> stop();
+
+    /**
      * This factory method is used to create new <tt>Client</tt> instances. It will use the given configuration
      * to setup internals and to register necessary transports.
      *

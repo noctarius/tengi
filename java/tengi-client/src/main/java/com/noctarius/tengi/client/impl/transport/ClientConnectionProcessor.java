@@ -55,7 +55,7 @@ public abstract class ClientConnectionProcessor<T, C, M>
 
         ctx.channel().close();
         ServerConnection connection = connectionAttribute(ctx, CONNECTION);
-        connection.exceptionally(cause);
+        connection.notifyException(cause);
     }
 
     @Override

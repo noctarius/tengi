@@ -18,7 +18,10 @@ package com.noctarius.tengi.spi.connection;
 
 import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.Transport;
-import com.noctarius.tengi.core.listener.ConnectionListener;
+import com.noctarius.tengi.core.listener.ClosedListener;
+import com.noctarius.tengi.core.listener.DisconnectedListener;
+import com.noctarius.tengi.core.listener.ExceptionListener;
+import com.noctarius.tengi.core.listener.Listener;
 import com.noctarius.tengi.core.listener.MessageListener;
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
@@ -30,6 +33,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * The <tt>AbstractConnection</tt> acts as a base class for server- and client-side
@@ -37,7 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * listener registrations as well as basic notification logic.
  */
 public abstract class AbstractConnection
-        implements Connection, ConnectionListener {
+        implements Connection {
 
     private final ConnectionContext connectionContext;
     private final Identifier connectionId;
@@ -45,7 +50,7 @@ public abstract class AbstractConnection
     private final Serializer serializer;
 
     private final Map<Identifier, MessageListener> messageListeners = new ConcurrentHashMap<>();
-    private final Map<Identifier, ConnectionListener> connectionListeners = new ConcurrentHashMap<>();
+    private final Map<Identifier, Listener> listeners = new ConcurrentHashMap<>();
 
     /**
      * Constructs a new <tt>AbstractConnection</tt> using the given parameters.
@@ -93,21 +98,21 @@ public abstract class AbstractConnection
     }
 
     @Override
-    public Identifier addConnectionListener(ConnectionListener connectionListener) {
-        for (ConnectionListener cl : connectionListeners.values()) {
-            if (cl == connectionListener) {
+    public Identifier addConnectionListener(Listener listener) {
+        for (Listener cl : listeners.values()) {
+            if (cl == listener) {
                 throw new IllegalStateException("ConnectionListener is already registered");
             }
         }
 
         Identifier identifier = Identifier.randomIdentifier();
-        connectionListeners.put(identifier, connectionListener);
+        listeners.put(identifier, listener);
         return identifier;
     }
 
     @Override
     public void removeConnectionListener(Identifier registrationIdentifier) {
-        connectionListeners.remove(registrationIdentifier);
+        listeners.remove(registrationIdentifier);
     }
 
     @Override
@@ -137,16 +142,30 @@ public abstract class AbstractConnection
         disconnect().get();
     }
 
-    @Override
-    public void onConnection(Connection connection) {
+    /**
+     * Notifies all registered {@link com.noctarius.tengi.core.listener.Listener}s about an
+     * unexpected exception occurrence.
+     *
+     * @param throwable the <tt>Throwable</tt> instance to delegate to listeners
+     */
+    public void notifyException(Throwable throwable) {
+        notify(ExceptionListener.class, l -> l.onExceptionally(this, throwable));
     }
 
-    @Override
-    public void onDisconnect(Connection connection) {
+    /**
+     * Notifies all registered {@link com.noctarius.tengi.core.listener.Listener}s about
+     * the connection's disconnect event.
+     */
+    public void notifyDisconnect() {
+        notify(DisconnectedListener.class, l -> l.onDisconnect(this));
     }
 
-    @Override
-    public void onExceptionally(Connection connection, Throwable throwable) {
+    /**
+     * Notifies all registered {@link com.noctarius.tengi.core.listener.Listener}s about
+     * the connection's close event.
+     */
+    public void notifyClose() {
+        notify(ClosedListener.class, l -> l.onClose(this));
     }
 
     /**
@@ -165,20 +184,8 @@ public abstract class AbstractConnection
      *
      * @return all registered <tt>ConnectionListener</tt>s
      */
-    protected Collection<ConnectionListener> getConnectionListeners() {
-        return Collections.unmodifiableCollection(connectionListeners.values());
-    }
-
-    /**
-     * Notifies all registered {@link com.noctarius.tengi.core.listener.ConnectionListener}s about an
-     * unexpected exception occurrence.
-     *
-     * @param throwable the <tt>Throwable</tt> instance to delegate to listeners
-     */
-    protected void exceptionally(Throwable throwable) {
-        for (ConnectionListener connectionListener : getConnectionListeners()) {
-            connectionListener.onExceptionally(this, throwable);
-        }
+    protected Collection<Listener> getConnectionListeners() {
+        return Collections.unmodifiableCollection(listeners.values());
     }
 
     /**
@@ -188,6 +195,11 @@ public abstract class AbstractConnection
      */
     protected ConnectionContext getConnectionContext() {
         return connectionContext;
+    }
+
+    private <L extends Listener> void notify(Class<L> clazz, Consumer<L> notifier) {
+        Stream<Listener> listeners = getConnectionListeners().stream();
+        listeners.filter(l -> clazz.isInstance(l)).map(l -> clazz.cast(l)).forEach(notifier);
     }
 
 }

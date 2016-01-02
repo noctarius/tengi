@@ -14,26 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.client.impl;
+package com.noctarius.tengi.core.listener;
 
-import com.noctarius.tengi.core.connection.Connection;
-import com.noctarius.tengi.core.connection.Transport;
-import com.noctarius.tengi.core.connection.HandshakeHandler;
-import io.netty.buffer.ByteBufAllocator;
-
-public interface Connector<M>
-        extends Transport {
-
-    void connect(ConnectCallback connectCallback);
-
-    HandshakeHandler handshakeHandler();
-
-    ByteBufAllocator allocator();
-
-    void write(M message)
-            throws Exception;
-
-    void destroy(Connection connection)
-            throws Exception;
-
+public interface Listener {
 }

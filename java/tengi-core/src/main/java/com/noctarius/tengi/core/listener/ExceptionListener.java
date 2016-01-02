@@ -19,11 +19,11 @@ package com.noctarius.tengi.core.listener;
 import com.noctarius.tengi.core.connection.Connection;
 
 /**
- * The <tt>ExceptionListener</tt> defines handles that are able to
+ * The <tt>ExceptionListener</tt> defines handlers that are able to
  * handle exceptions thrown from any operation based on a known
  * connection.
  */
-public interface ExceptionListener {
+public interface ExceptionListener extends Listener {
 
     /**
      * <p>This method is called whenever an operations, that is assigned to

@@ -19,10 +19,12 @@ package com.noctarius.tengi.client.impl.transport.tcp;
 import com.noctarius.tengi.client.impl.ConnectCallback;
 import com.noctarius.tengi.client.impl.ServerConnection;
 import com.noctarius.tengi.client.impl.transport.AbstractClientConnector;
+import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.HandshakeHandler;
 import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
+import com.noctarius.tengi.spi.connection.AbstractConnection;
 import com.noctarius.tengi.spi.connection.impl.TransportConstants;
 import com.noctarius.tengi.spi.connection.packets.Handshake;
 import com.noctarius.tengi.spi.serialization.Serializer;
@@ -98,13 +100,16 @@ public class TcpConnector
     }
 
     @Override
-    public void destroy()
+    public void destroy(Connection connection)
             throws Exception {
 
         if (destroyed.compareAndSet(false, true)) {
             Channel channel = this.channel;
             if (channel != null) {
                 channel.disconnect().sync();
+            }
+            if (connection instanceof AbstractConnection) {
+                ((AbstractConnection) connection).notifyClose();
             }
         }
     }

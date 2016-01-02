@@ -32,6 +32,7 @@ import com.noctarius.tengi.spi.connection.packets.Handshake;
 import com.noctarius.tengi.spi.logging.Logger;
 import com.noctarius.tengi.spi.logging.LoggerManager;
 import com.noctarius.tengi.spi.serialization.Serializer;
+import com.noctarius.tengi.spi.statemachine.StateMachine;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -59,6 +60,8 @@ class ServerImpl
         implements Server {
 
     private static final Logger LOGGER = LoggerManager.getLogger(ServerImpl.class);
+
+    private final StateMachine<ServerState> serverState = createStateMachine();
 
     private final ConnectionManager connectionManager;
 
@@ -94,12 +97,13 @@ class ServerImpl
         Validate.notNull("connectedListener", connectedListener);
 
         return FutureUtil.executeAsync(() -> {
-            bindChannels();
+            if (serverState.transit(ServerState.Started)) {
+                bindChannels();
 
-            connectionManager.registerConnectedListener(connectedListener);
-            connectionManager.start();
-            eventManager.start();
-
+                connectionManager.registerConnectedListener(connectedListener);
+                connectionManager.start();
+                eventManager.start();
+            }
             return ServerImpl.this;
         });
     }
@@ -107,16 +111,17 @@ class ServerImpl
     @Override
     public CompletableFuture<Server> stop() {
         return FutureUtil.executeAsync(() -> {
-            for (Channel channel : channels) {
-                channel.close().sync();
+            if (serverState.transit(ServerState.Shutdown)) {
+                for (Channel channel : channels) {
+                    channel.close().sync();
+                }
+
+                bossGroup.shutdownGracefully();
+                workerGroup.shutdownGracefully();
+
+                connectionManager.stop();
+                eventManager.stop();
             }
-
-            bossGroup.shutdownGracefully();
-            workerGroup.shutdownGracefully();
-
-            connectionManager.stop();
-            eventManager.stop();
-
             return ServerImpl.this;
         });
     }
@@ -221,6 +226,13 @@ class ServerImpl
 
     private Serializer createSerializer(Configuration configuration) {
         return Serializer.create(configuration.getMarshallers());
+    }
+
+    private StateMachine<ServerState> createStateMachine() {
+        StateMachine.Builder<ServerState> builder = StateMachine.newBuilder();
+        builder.addTransition(ServerState.Prepared, ServerState.Started);
+        builder.addTransition(ServerState.Started, ServerState.Shutdown);
+        return builder.build(ServerState.Prepared, false);
     }
 
     private static class TcpProtocolNegotiator

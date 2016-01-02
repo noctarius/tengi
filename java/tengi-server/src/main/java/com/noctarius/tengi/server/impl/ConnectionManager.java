@@ -110,7 +110,7 @@ public class ConnectionManager
     public void exceptionally(Identifier connectionId, Throwable throwable) {
         ClientConnection connection = connections.get(connectionId);
         if (connection != null) {
-            connection.exceptionally(throwable);
+            connection.notifyException(throwable);
         }
     }
 

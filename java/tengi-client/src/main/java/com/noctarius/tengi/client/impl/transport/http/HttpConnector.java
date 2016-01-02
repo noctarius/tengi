@@ -26,6 +26,7 @@ import com.noctarius.tengi.core.exception.ConnectionDestroyedException;
 import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
+import com.noctarius.tengi.spi.connection.AbstractConnection;
 import com.noctarius.tengi.spi.connection.impl.TransportConstants;
 import com.noctarius.tengi.spi.connection.packets.Handshake;
 import com.noctarius.tengi.spi.connection.packets.PollingRequest;
@@ -137,13 +138,17 @@ public class HttpConnector
     }
 
     @Override
-    public void destroy()
+    public void destroy(Connection connection)
             throws Exception {
 
         if (destroyed.compareAndSet(false, true)) {
             Channel channel = downstream.get();
             if (channel != null) {
                 channel.close().sync();
+
+            }
+            if (connection instanceof AbstractConnection) {
+                ((AbstractConnection) connection).notifyClose();
             }
         }
     }

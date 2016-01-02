@@ -72,7 +72,7 @@ class WebsocketConnectionContext
     @Override
     public CompletableFuture<Connection> close(Connection connection) {
         return FutureUtil.executeAsync(() -> {
-            connector.destroy();
+            connector.destroy(connection);
             return connection;
         });
     }

@@ -21,11 +21,14 @@ import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.exception.IllegalTransportException;
+import com.noctarius.tengi.core.impl.FutureUtil;
 import com.noctarius.tengi.core.impl.Validate;
+import com.noctarius.tengi.core.listener.ClosedListener;
 import com.noctarius.tengi.core.listener.ConnectedListener;
 import com.noctarius.tengi.spi.logging.Logger;
 import com.noctarius.tengi.spi.logging.LoggerManager;
 import com.noctarius.tengi.spi.serialization.Serializer;
+import com.noctarius.tengi.spi.statemachine.StateMachine;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.DefaultThreadFactory;
@@ -34,11 +37,16 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 class ClientImpl
-        implements Client {
+        implements Client, ClosedListener {
 
     private static final Logger LOGGER = LoggerManager.getLogger(ClientImpl.class);
+
+    private final StateMachine<ClientState> clientState = createStateMachine();
+
+    private final List<Connection> connections = new CopyOnWriteArrayList<>();
 
     private final EventLoopGroup clientGroup;
     private final Configuration configuration;
@@ -62,6 +70,10 @@ class ClientImpl
         Validate.notNull("host", host);
         Validate.notNull("connectedListener", connectedListener);
 
+        if (clientState.currentState() == ClientState.Stopped) {
+            throw new IllegalStateException("Client is shutdown");
+        }
+
         InetAddress address = InetAddress.getByName(host);
         return connect(address, connectedListener);
     }
@@ -71,18 +83,55 @@ class ClientImpl
         Validate.notNull("address", address);
         Validate.notNull("connectedListener", connectedListener);
 
+        if (clientState.currentState() == ClientState.Stopped) {
+            throw new IllegalStateException("Client is shutdown");
+        }
+
         LOGGER.info("tengi client is connecting, transport priority: %s", configuration.getTransports());
         ConnectorContext connectorContext = new ConnectorContext(configuration, serializer, clientGroup);
 
         CompletableFuture<Connection> connectFuture = connectorContext.connect(address);
         return connectFuture.thenApply((connection) -> {
+            registerConnection(connection);
             connectedListener.onConnection(connection);
             return connection;
         });
     }
 
+    @Override
+    public CompletableFuture<Client> stop() {
+        return FutureUtil.executeAsync(() -> {
+            if (clientState.transit(ClientState.Stopped)) {
+                if (!clientGroup.isTerminated()) {
+                    clientGroup.shutdownGracefully();
+                }
+
+                for (Connection connection : connections) {
+                    connection.close();
+                }
+            }
+            return ClientImpl.this;
+        });
+    }
+
+    @Override
+    public void onClose(Connection connection) {
+        connections.remove(connection);
+    }
+
+    private void registerConnection(Connection connection) {
+        connections.add(connection);
+        connection.addConnectionListener(this);
+    }
+
     private Serializer createSerializer(Configuration configuration) {
         return Serializer.create(configuration.getMarshallers());
+    }
+
+    private StateMachine<ClientState> createStateMachine() {
+        StateMachine.Builder<ClientState> builder = StateMachine.newBuilder();
+        builder.addTransition(ClientState.Prepared, ClientState.Stopped);
+        return builder.build(ClientState.Prepared, false);
     }
 
     private void checkTransports(List<Transport> transports) {
@@ -92,5 +141,4 @@ class ClientImpl
             }
         }
     }
-
 }

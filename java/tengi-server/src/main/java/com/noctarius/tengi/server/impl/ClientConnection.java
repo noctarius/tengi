@@ -16,12 +16,11 @@
  */
 package com.noctarius.tengi.server.impl;
 
-import com.noctarius.tengi.core.connection.Connection;
+import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.spi.connection.AbstractConnection;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
-import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.spi.serialization.Serializer;
 
 public class ClientConnection
@@ -42,13 +41,8 @@ public class ClientConnection
     }
 
     @Override
-    public void onExceptionally(Connection connection, Throwable throwable) {
-        disconnect();
-    }
-
-    @Override
-    public void exceptionally(Throwable throwable) {
-        super.exceptionally(throwable);
+    public void notifyException(Throwable throwable) {
+        super.notifyException(throwable);
     }
 
 }

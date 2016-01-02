@@ -19,11 +19,11 @@ package com.noctarius.tengi.core.listener;
 import com.noctarius.tengi.core.connection.Connection;
 
 /**
- * The <tt>DisconnectedListener</tt> defines handles that are able to
+ * The <tt>DisconnectedListener</tt> defines handlers that are able to
  * handle disconnect events of connections to clean up application state,
  * free resources or similar actions.
  */
-public interface DisconnectedListener {
+public interface DisconnectedListener extends Listener {
 
     /**
      * <p>This method is called whenever a connection was disconnected to

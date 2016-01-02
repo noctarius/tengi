@@ -42,7 +42,6 @@ class ConnectorContext {
     private final EventLoopGroup clientGroup;
 
     ConnectorContext(Configuration configuration, Serializer serializer, EventLoopGroup clientGroup) {
-
         this.configuration = configuration;
         this.serializer = serializer;
         this.clientGroup = clientGroup;

@@ -32,7 +32,6 @@ public class ServerConnection
                                Connector connector, Serializer serializer) {
 
         super(connectionContext, connectionId, connector, serializer);
-        addConnectionListener(this);
     }
 
     public ConnectionContext getConnectionContext() {
@@ -52,13 +51,8 @@ public class ServerConnection
     }
 
     @Override
-    public void onExceptionally(Connection connection, Throwable throwable) {
-        disconnect();
-    }
-
-    @Override
-    public void exceptionally(Throwable throwable) {
-        super.exceptionally(throwable);
+    public void notifyException(Throwable throwable) {
+        super.notifyException(throwable);
     }
 
 }

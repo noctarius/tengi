@@ -17,6 +17,7 @@
 package com.noctarius.tengi.core.connection;
 
 import com.noctarius.tengi.core.listener.ConnectionListener;
+import com.noctarius.tengi.core.listener.Listener;
 import com.noctarius.tengi.core.listener.MessageListener;
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
@@ -72,14 +73,14 @@ public interface Connection
     void removeMessageListener(Identifier registrationIdentifier);
 
     /**
-     * Adds a {@link com.noctarius.tengi.core.listener.ConnectionListener}
+     * Adds a {@link com.noctarius.tengi.core.listener.Listener}
      * to this connection and returns an {@link com.noctarius.tengi.core.model.Identifier}
      * to uniquely identify this registration.
      *
-     * @param connectionListener ConnectionListener instance to add
+     * @param listener Listener implementation instance to add
      * @return a unique identifier for this registration
      */
-    Identifier addConnectionListener(ConnectionListener connectionListener);
+    Identifier addConnectionListener(Listener listener);
 
     /**
      * <p>Removes a previously registered {@link com.noctarius.tengi.core.listener.ConnectionListener}

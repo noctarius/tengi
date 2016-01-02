@@ -9,6 +9,7 @@ com.noctarius.tengi.core.serialization.codec
 com.noctarius.tengi.core.serialization.debugger
 com.noctarius.tengi.core.serialization.marshaller
 com.noctarius.tengi.server
+com.noctarius.tengi.server.spi
 com.noctarius.tengi.spi.buffer
 com.noctarius.tengi.spi.connection
 com.noctarius.tengi.spi.connection.packets

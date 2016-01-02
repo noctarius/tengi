@@ -18,12 +18,15 @@ package com.noctarius.tengi.server.impl;
 
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.connection.Connection;
-import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.connection.HandshakeHandler;
+import com.noctarius.tengi.core.connection.Transport;
+import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.core.exception.NoSuchConnectionException;
 import com.noctarius.tengi.core.listener.ConnectedListener;
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
+import com.noctarius.tengi.server.spi.NegotiatableTransport;
+import com.noctarius.tengi.server.spi.Negotiator;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
 import com.noctarius.tengi.spi.connection.packets.PollingRequest;
 import com.noctarius.tengi.spi.serialization.Serializer;
@@ -114,4 +117,13 @@ public class ConnectionManager
         }
     }
 
+    public Negotiator[] findNegotiators(TransportLayer transportLayer, int port) {
+        return configuration.getTransports().stream() //
+                            .filter(transport -> transport.getTransportLayer() == transportLayer) //
+                            .filter(transport -> configuration.getTransportPort(transport) == port) //
+                            .filter(transport -> transport instanceof NegotiatableTransport) //
+                            .map(transport -> ((NegotiatableTransport) transport).getNegotiator()) //
+                            .filter(negotiator -> negotiator != null) //
+                            .toArray(Negotiator[]::new);
+    }
 }

@@ -16,12 +16,13 @@
  */
 package com.noctarius.tengi.server.impl.transport.http2;
 
-import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.connection.TransportLayer;
+import com.noctarius.tengi.server.spi.NegotiatableTransport;
+import com.noctarius.tengi.server.spi.Negotiator;
 import com.noctarius.tengi.spi.connection.impl.TransportConstants;
 
 public class Http2Transport
-        implements Transport {
+        implements NegotiatableTransport {
 
     @Override
     public String getName() {
@@ -43,4 +44,8 @@ public class Http2Transport
         return TransportLayer.TCP;
     }
 
+    @Override
+    public Negotiator getNegotiator() {
+        return new Http2ProtocolNegotiator();
+    }
 }

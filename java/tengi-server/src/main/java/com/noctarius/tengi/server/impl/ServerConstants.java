@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.spi;
+package com.noctarius.tengi.server.impl;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
+public enum ServerConstants {
+    ;
 
-public interface Negotiator {
+    public static final String NEGOTIATOR_ATTRIBUTE_DETECT_SSL = "::detect_ssl::";
 
-    NegotiationResult handleProtocol(NegotiationContext context, ChannelHandlerContext ctx, ByteBuf buffer);
+    public static final String NEGOTIATOR_ATTRIBUTE_DETECT_GZIP = "::detect_gzip::";
 
+    public static final String NEGOTIATOR_ATTRIBUTE_DETECT_SNAPPY = "::detect_snappy::";
 }

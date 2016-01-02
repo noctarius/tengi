@@ -16,12 +16,13 @@
  */
 package com.noctarius.tengi.server.impl.transport.http;
 
-import com.noctarius.tengi.core.connection.Transport;
-import com.noctarius.tengi.spi.connection.impl.TransportConstants;
 import com.noctarius.tengi.core.connection.TransportLayer;
+import com.noctarius.tengi.server.spi.NegotiatableTransport;
+import com.noctarius.tengi.server.spi.Negotiator;
+import com.noctarius.tengi.spi.connection.impl.TransportConstants;
 
 public class HttpTransport
-        implements Transport {
+        implements NegotiatableTransport {
 
     public HttpTransport() {
     }
@@ -46,4 +47,8 @@ public class HttpTransport
         return TransportLayer.TCP;
     }
 
+    @Override
+    public Negotiator getNegotiator() {
+        return new HttpProtocolNegotiator();
+    }
 }

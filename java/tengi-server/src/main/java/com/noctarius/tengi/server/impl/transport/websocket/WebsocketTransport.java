@@ -16,12 +16,12 @@
  */
 package com.noctarius.tengi.server.impl.transport.websocket;
 
-import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.connection.TransportLayer;
+import com.noctarius.tengi.server.impl.transport.http.HttpTransport;
 import com.noctarius.tengi.spi.connection.impl.TransportConstants;
 
 public class WebsocketTransport
-        implements Transport {
+        extends HttpTransport {
 
     @Override
     public String getName() {

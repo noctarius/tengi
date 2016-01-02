@@ -14,19 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl.transport.tcp;
+package com.noctarius.tengi.server.impl.transport.http;
 
 import com.noctarius.tengi.server.impl.ConnectionManager;
+import com.noctarius.tengi.server.impl.transport.negotiation.Http2Negotiator;
 import com.noctarius.tengi.server.spi.NegotiationContext;
 import com.noctarius.tengi.server.spi.NegotiationResult;
 import com.noctarius.tengi.server.spi.Negotiator;
 import com.noctarius.tengi.spi.serialization.Serializer;
-import com.noctarius.tengi.spi.serialization.impl.DefaultProtocolConstants;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 
-class TcpProtocolNegotiator
+class HttpProtocolNegotiator
         implements Negotiator {
 
     @Override
@@ -41,19 +41,18 @@ class TcpProtocolNegotiator
         int magic1 = buffer.getUnsignedByte(buffer.readerIndex() + 1);
         int magic2 = buffer.getUnsignedByte(buffer.readerIndex() + 2);
         int magic3 = buffer.getUnsignedByte(buffer.readerIndex() + 3);
-        int magic4 = buffer.getUnsignedByte(buffer.readerIndex() + 4);
 
-        if (magic0 == 'T' && magic1 == 'e' && magic2 == 'N' && magic3 == 'g' && magic4 == 'I') {
-            buffer.skipBytes(DefaultProtocolConstants.PROTOCOL_MAGIC_HEADER.length);
+        if ((magic0 == 'G' && magic1 == 'E' && magic2 == 'T')
+            || (magic0 == 'P' && magic1 == 'O' && magic2 == 'S' && magic3 == 'T')) {
 
+            int port = context.getPort();
             Serializer serializer = context.getSerializer();
             ConnectionManager connectionManager = context.getConnectionManager();
 
             ChannelPipeline pipeline = ctx.pipeline();
-            pipeline.addLast("tcp-connection-processor", new TcpConnectionProcessor(connectionManager, serializer));
+            pipeline.addLast("httpNegotiator", new Http2Negotiator(port, 1024 * 1024, connectionManager, serializer));
             return NegotiationResult.Successful;
         }
-
         return NegotiationResult.Continue;
     }
 }

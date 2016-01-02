@@ -16,5 +16,23 @@
  */
 package com.noctarius.tengi.server.spi;
 
+import com.noctarius.tengi.server.impl.ConnectionManager;
+import com.noctarius.tengi.spi.serialization.Serializer;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+
 public interface NegotiationContext {
+
+    ConnectionManager getConnectionManager();
+
+    Serializer getSerializer();
+
+    int getPort();
+
+    <T> T attribute(String name);
+
+    <T> void attribute(String name, T value);
+
+    void injectChannelHandler(ChannelHandlerContext ctx, String name, ChannelHandler handler);
+
 }

@@ -14,23 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl.transport.tcp;
+package com.noctarius.tengi.server.impl.transport.negotiation;
 
-import com.noctarius.tengi.server.impl.ConnectionManager;
+import com.noctarius.tengi.server.impl.ServerConstants;
 import com.noctarius.tengi.server.spi.NegotiationContext;
 import com.noctarius.tengi.server.spi.NegotiationResult;
 import com.noctarius.tengi.server.spi.Negotiator;
-import com.noctarius.tengi.spi.serialization.Serializer;
-import com.noctarius.tengi.spi.serialization.impl.DefaultProtocolConstants;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.compression.SnappyFrameDecoder;
+import io.netty.handler.codec.compression.SnappyFrameEncoder;
 
-class TcpProtocolNegotiator
+public class SnappyNegotiator
         implements Negotiator {
 
     @Override
     public NegotiationResult handleProtocol(NegotiationContext context, ChannelHandlerContext ctx, ByteBuf buffer) {
+        Boolean detectSnappy = context.attribute(ServerConstants.NEGOTIATOR_ATTRIBUTE_DETECT_SNAPPY);
+        if (detectSnappy == null || !detectSnappy) {
+            return NegotiationResult.Continue;
+        }
+
         if (buffer.readableBytes() < 5) {
             // Not enough data to negotiate the protocol's magic header
             return NegotiationResult.InsufficientBuffer;
@@ -41,17 +45,13 @@ class TcpProtocolNegotiator
         int magic1 = buffer.getUnsignedByte(buffer.readerIndex() + 1);
         int magic2 = buffer.getUnsignedByte(buffer.readerIndex() + 2);
         int magic3 = buffer.getUnsignedByte(buffer.readerIndex() + 3);
-        int magic4 = buffer.getUnsignedByte(buffer.readerIndex() + 4);
 
-        if (magic0 == 'T' && magic1 == 'e' && magic2 == 'N' && magic3 == 'g' && magic4 == 'I') {
-            buffer.skipBytes(DefaultProtocolConstants.PROTOCOL_MAGIC_HEADER.length);
+        if (magic0 == 0xFF && magic1 == 's' && magic2 == 'N' && magic3 == 'a') {
+            context.injectChannelHandler(ctx, "snappyinflater", new SnappyFrameEncoder());
+            context.injectChannelHandler(ctx, "snappydeflater", new SnappyFrameDecoder());
 
-            Serializer serializer = context.getSerializer();
-            ConnectionManager connectionManager = context.getConnectionManager();
-
-            ChannelPipeline pipeline = ctx.pipeline();
-            pipeline.addLast("tcp-connection-processor", new TcpConnectionProcessor(connectionManager, serializer));
-            return NegotiationResult.Successful;
+            context.attribute(ServerConstants.NEGOTIATOR_ATTRIBUTE_DETECT_SNAPPY, false);
+            return NegotiationResult.Restart;
         }
 
         return NegotiationResult.Continue;

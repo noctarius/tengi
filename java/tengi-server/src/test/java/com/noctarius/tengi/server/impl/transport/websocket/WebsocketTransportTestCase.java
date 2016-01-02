@@ -35,6 +35,7 @@ import org.junit.Test;
 
 import javax.websocket.ClientEndpoint;
 import javax.websocket.ContainerProvider;
+import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
@@ -44,6 +45,7 @@ import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 
@@ -90,7 +92,8 @@ public class WebsocketTransportTestCase
             return result;
         };
 
-        Object response = practice(runner, clientFactory(channelReader), false, ServerTransport.WEBSOCKET_TRANSPORT);
+        ClientFactory<WebsocketTestClient> clientFactory = clientFactory(channelReader, (s) -> future.complete(null));
+        Object response = practice(runner, clientFactory, false, ServerTransport.WEBSOCKET_TRANSPORT);
         assertEquals(message, response);
     }
 
@@ -154,7 +157,8 @@ public class WebsocketTransportTestCase
             return result;
         };
 
-        Packet response = practice(runner, clientFactory(channelReader), false, ServerTransport.WEBSOCKET_TRANSPORT);
+        ClientFactory<WebsocketTestClient> clientFactory = clientFactory(channelReader, (s) -> future.complete(null));
+        Packet response = practice(runner, clientFactory, false, ServerTransport.WEBSOCKET_TRANSPORT);
         assertEquals(4, (int) response.getValue("counter"));
     }
 
@@ -171,22 +175,27 @@ public class WebsocketTransportTestCase
         client.sendMessage(buffer);
     }
 
-    private static ClientFactory<WebsocketTestClient> clientFactory(ChannelReader<WebsocketTestClient, ByteBuf> channelReader) {
-        return (host, port, ssl, group) -> new WebsocketTestClient(host, port, ssl, channelReader);
+    private static ClientFactory<WebsocketTestClient> clientFactory(ChannelReader<WebsocketTestClient, ByteBuf> channelReader,
+                                                                    Consumer<Session> closeListener) {
+
+        return (host, port, ssl, group) -> new WebsocketTestClient(host, port, ssl, channelReader, closeListener);
     }
 
     @ClientEndpoint
     public static class WebsocketTestClient {
 
         private final Session session;
+        private final Consumer<Session> closeListener;
         private final ChannelReader<WebsocketTestClient, ByteBuf> channelReader;
 
-        private WebsocketTestClient(String host, int port, boolean ssl, ChannelReader<WebsocketTestClient, ByteBuf> channelReader)
+        private WebsocketTestClient(String host, int port, boolean ssl, ChannelReader<WebsocketTestClient, ByteBuf> channelReader,
+                                    Consumer<Session> closeListener)
                 throws Exception {
 
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             this.session = container.connectToServer(this, createURI(host, port, ssl));
             this.channelReader = channelReader;
+            this.closeListener = closeListener;
         }
 
         private URI createURI(String host, int port, boolean ssl) {
@@ -208,6 +217,11 @@ public class WebsocketTransportTestCase
                 nioBuffer = Unpooled.copiedBuffer(buffer).nioBuffer();
             }
             session.getAsyncRemote().sendBinary(nioBuffer);
+        }
+
+        @OnClose
+        private void onClose() {
+            closeListener.accept(session);
         }
 
         private void close()

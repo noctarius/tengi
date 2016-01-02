@@ -26,6 +26,7 @@ import com.noctarius.tengi.core.impl.VersionUtil;
 import com.noctarius.tengi.core.listener.ConnectedListener;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.EventManager;
+import com.noctarius.tengi.server.impl.transport.negotiation.NegotiationChannelHandler;
 import com.noctarius.tengi.server.impl.transport.negotiation.TcpBinaryNegotiator;
 import com.noctarius.tengi.server.impl.transport.negotiation.UdpBinaryNegotiator;
 import com.noctarius.tengi.spi.connection.packets.Handshake;
@@ -255,7 +256,8 @@ class ServerImpl
         protected void initChannel(SocketChannel channel)
                 throws Exception {
 
-            channel.pipeline().addLast(new TcpBinaryNegotiator(port, true, true, connectionManager, serializer));
+            //channel.pipeline().addLast(new TcpBinaryNegotiator(port, true, true, connectionManager, serializer));
+            channel.pipeline().addLast(new NegotiationChannelHandler(port, TransportLayer.TCP, connectionManager, serializer));
         }
     }
 

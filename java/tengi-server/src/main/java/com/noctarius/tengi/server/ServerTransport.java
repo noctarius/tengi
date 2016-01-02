@@ -22,6 +22,8 @@ import com.noctarius.tengi.server.impl.transport.http.HttpTransport;
 import com.noctarius.tengi.server.impl.transport.http2.Http2Transport;
 import com.noctarius.tengi.server.impl.transport.tcp.TcpTransport;
 import com.noctarius.tengi.server.impl.transport.websocket.WebsocketTransport;
+import com.noctarius.tengi.server.spi.NegotiatableTransport;
+import com.noctarius.tengi.server.spi.Negotiator;
 
 /**
  * <p>The <tt>ServerTransport</tt> enum defines built-in, server-side
@@ -29,7 +31,7 @@ import com.noctarius.tengi.server.impl.transport.websocket.WebsocketTransport;
  * implementations are still possible to be chosen.</p>
  */
 public enum ServerTransport
-        implements Transport {
+        implements NegotiatableTransport {
 
     /**
      * <p>This constant defines a HTTP based {@link com.noctarius.tengi.core.connection.Transport}
@@ -98,4 +100,8 @@ public enum ServerTransport
         return transport.getTransportLayer();
     }
 
+    @Override
+    public Negotiator getNegotiator() {
+        return transport instanceof NegotiatableTransport ? ((NegotiatableTransport) transport).getNegotiator() : null;
+    }
 }

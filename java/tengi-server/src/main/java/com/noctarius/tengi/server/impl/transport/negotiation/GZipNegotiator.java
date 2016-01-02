@@ -14,46 +14,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl.transport.tcp;
+package com.noctarius.tengi.server.impl.transport.negotiation;
 
-import com.noctarius.tengi.server.impl.ConnectionManager;
+import com.noctarius.tengi.server.impl.ServerConstants;
 import com.noctarius.tengi.server.spi.NegotiationContext;
 import com.noctarius.tengi.server.spi.NegotiationResult;
 import com.noctarius.tengi.server.spi.Negotiator;
-import com.noctarius.tengi.spi.serialization.Serializer;
-import com.noctarius.tengi.spi.serialization.impl.DefaultProtocolConstants;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.compression.ZlibCodecFactory;
+import io.netty.handler.codec.compression.ZlibWrapper;
 
-class TcpProtocolNegotiator
+public class GZipNegotiator
         implements Negotiator {
 
     @Override
     public NegotiationResult handleProtocol(NegotiationContext context, ChannelHandlerContext ctx, ByteBuf buffer) {
-        if (buffer.readableBytes() < 5) {
+        Boolean detectGzip = context.attribute(ServerConstants.NEGOTIATOR_ATTRIBUTE_DETECT_GZIP);
+        if (detectGzip == null || !detectGzip) {
+            return NegotiationResult.Continue;
+        }
+
+        if (buffer.readableBytes() < 2) {
             // Not enough data to negotiate the protocol's magic header
             return NegotiationResult.InsufficientBuffer;
         }
 
-        // Read the magic header
         int magic0 = buffer.getUnsignedByte(buffer.readerIndex());
         int magic1 = buffer.getUnsignedByte(buffer.readerIndex() + 1);
-        int magic2 = buffer.getUnsignedByte(buffer.readerIndex() + 2);
-        int magic3 = buffer.getUnsignedByte(buffer.readerIndex() + 3);
-        int magic4 = buffer.getUnsignedByte(buffer.readerIndex() + 4);
 
-        if (magic0 == 'T' && magic1 == 'e' && magic2 == 'N' && magic3 == 'g' && magic4 == 'I') {
-            buffer.skipBytes(DefaultProtocolConstants.PROTOCOL_MAGIC_HEADER.length);
+        if (magic0 == 0x1F && magic1 == 0x8B) {
+            context.injectChannelHandler(ctx, "gzipinflater", ZlibCodecFactory.newZlibEncoder(ZlibWrapper.GZIP));
+            context.injectChannelHandler(ctx, "gzipdeflater", ZlibCodecFactory.newZlibDecoder(ZlibWrapper.GZIP));
 
-            Serializer serializer = context.getSerializer();
-            ConnectionManager connectionManager = context.getConnectionManager();
-
-            ChannelPipeline pipeline = ctx.pipeline();
-            pipeline.addLast("tcp-connection-processor", new TcpConnectionProcessor(connectionManager, serializer));
-            return NegotiationResult.Successful;
+            context.attribute(ServerConstants.NEGOTIATOR_ATTRIBUTE_DETECT_GZIP, false);
+            return NegotiationResult.Restart;
         }
-
         return NegotiationResult.Continue;
     }
 }

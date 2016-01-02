@@ -34,6 +34,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -91,6 +92,7 @@ public class TcpTransportTestCase
             codec.writeBoolean("loggedIn", false);
             codec.writeObject("handshake", new Handshake());
             channel.writeAndFlush(buffer);
+            channel.closeFuture().addListener((ChannelFutureListener) (f) -> future.complete(null));
 
             Object result = future.get(120, TimeUnit.SECONDS);
             channel.close().sync();
@@ -158,6 +160,7 @@ public class TcpTransportTestCase
             codec.writeBoolean("loggedIn", false);
             codec.writeObject("handshake", new Handshake());
             channel.writeAndFlush(buffer);
+            channel.closeFuture().addListener((ChannelFutureListener) (f) -> future.complete(null));
 
             Packet result = future.get(120, TimeUnit.SECONDS);
             channel.close().sync();

@@ -16,5 +16,10 @@
  */
 package com.noctarius.tengi.server.spi;
 
-public class NegotiationResult {
+public enum NegotiationResult {
+    Failed,
+    Continue,
+    InsufficientBuffer,
+    Restart,
+    Successful
 }

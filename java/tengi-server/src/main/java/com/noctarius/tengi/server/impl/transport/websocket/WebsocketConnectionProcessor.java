@@ -17,7 +17,7 @@
 package com.noctarius.tengi.server.impl.transport.websocket;
 
 import com.noctarius.tengi.core.model.Identifier;
-import com.noctarius.tengi.server.ServerTransport;
+import com.noctarius.tengi.server.ServerTransports;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.transport.ServerConnectionProcessor;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
@@ -42,7 +42,7 @@ public class WebsocketConnectionProcessor
     public WebsocketConnectionProcessor(WebSocketServerHandshaker handshaker, //
                                         ConnectionManager connectionManager, Serializer serializer) {
 
-        super(connectionManager, serializer, ServerTransport.WEBSOCKET_TRANSPORT);
+        super(connectionManager, serializer, ServerTransports.WEBSOCKET_TRANSPORT);
         this.handshaker = handshaker;
     }
 

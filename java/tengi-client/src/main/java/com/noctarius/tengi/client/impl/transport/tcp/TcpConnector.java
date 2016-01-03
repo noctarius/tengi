@@ -16,6 +16,7 @@
  */
 package com.noctarius.tengi.client.impl.transport.tcp;
 
+import com.noctarius.tengi.client.TransportLayers;
 import com.noctarius.tengi.client.impl.ConnectCallback;
 import com.noctarius.tengi.client.impl.ServerConnection;
 import com.noctarius.tengi.client.impl.transport.AbstractClientConnector;
@@ -131,7 +132,7 @@ public class TcpConnector
 
     @Override
     public TransportLayer getTransportLayer() {
-        return TransportLayer.TCP;
+        return TransportLayers.TCP;
     }
 
     private TcpConnectionProcessor buildProcessor(Serializer serializer) {
@@ -170,16 +171,16 @@ public class TcpConnector
 
     private Bootstrap createBootstrap() {
         return new Bootstrap().channel(NioSocketChannel.class) //
-                .group(clientGroup).option(ChannelOption.TCP_NODELAY, true) //
-                .handler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    protected void initChannel(SocketChannel channel)
-                            throws Exception {
+                              .group(clientGroup).option(ChannelOption.TCP_NODELAY, true) //
+                              .handler(new ChannelInitializer<SocketChannel>() {
+                                  @Override
+                                  protected void initChannel(SocketChannel channel)
+                                          throws Exception {
 
-                        ChannelPipeline pipeline = channel.pipeline();
-                        pipeline.addLast(buildProcessor(serializer));
-                    }
-                });
+                                      ChannelPipeline pipeline = channel.pipeline();
+                                      pipeline.addLast(buildProcessor(serializer));
+                                  }
+                              });
     }
 
 }

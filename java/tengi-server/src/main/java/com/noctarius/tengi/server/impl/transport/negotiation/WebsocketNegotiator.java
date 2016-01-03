@@ -17,7 +17,7 @@
 package com.noctarius.tengi.server.impl.transport.negotiation;
 
 import com.noctarius.tengi.core.exception.ConnectionFailedException;
-import com.noctarius.tengi.server.ServerTransport;
+import com.noctarius.tengi.server.ServerTransports;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.transport.http.HttpConnectionProcessor;
 import com.noctarius.tengi.server.impl.transport.websocket.WebsocketConnectionProcessor;
@@ -56,13 +56,13 @@ public class WebsocketNegotiator
 
             // Activate websocket handshake
             if (WEBSOCKET_RELATIVE_PATH.equals(request.uri())) {
-                if (!connectionManager.acceptTransport(ServerTransport.WEBSOCKET_TRANSPORT, port)) {
+                if (!connectionManager.acceptTransport(ServerTransports.WEBSOCKET_TRANSPORT, port)) {
                     ctx.close();
                     throw new ConnectionFailedException("Transport not enabled");
                 }
                 switchToWebsocket(ctx, request);
             } else {
-                if (!connectionManager.acceptTransport(ServerTransport.HTTP_TRANSPORT, port)) {
+                if (!connectionManager.acceptTransport(ServerTransports.HTTP_TRANSPORT, port)) {
                     ctx.close();
                     throw new ConnectionFailedException("Transport not enabled");
                 }

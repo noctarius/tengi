@@ -21,7 +21,7 @@ import com.noctarius.tengi.core.connection.HandshakeHandler;
 import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
-import com.noctarius.tengi.server.ServerTransport;
+import com.noctarius.tengi.server.ServerTransports;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
@@ -54,7 +54,7 @@ public class Http2ConnectionProcessor
         adapter.encoder(encoder());
         adapter.serializer(serializer);
         adapter.connectionManager(connectionManager);
-        adapter.transport(ServerTransport.HTTP2_TRANSPORT);
+        adapter.transport(ServerTransports.HTTP2_TRANSPORT);
         this.connectionManager = connectionManager;
     }
 

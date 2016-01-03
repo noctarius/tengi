@@ -19,7 +19,7 @@ package com.noctarius.tengi.server.impl.transport.http2;
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.core.model.Packet;
-import com.noctarius.tengi.server.ServerTransport;
+import com.noctarius.tengi.server.ServerTransports;
 import com.noctarius.tengi.server.impl.transport.AbstractStreamingTransportTestCase;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
@@ -96,7 +96,7 @@ public class Http2TransportTestCase
             return result;
         };
 
-        Object response = practice(runner, clientFactory(channelReader), false, ServerTransport.HTTP2_TRANSPORT);
+        Object response = practice(runner, clientFactory(channelReader), false, ServerTransports.HTTP2_TRANSPORT);
         assertEquals(message, response);
     }
 
@@ -160,7 +160,7 @@ public class Http2TransportTestCase
             return result;
         };
 
-        Packet response = practice(runner, clientFactory(channelReader), false, ServerTransport.HTTP2_TRANSPORT);
+        Packet response = practice(runner, clientFactory(channelReader), false, ServerTransports.HTTP2_TRANSPORT);
         assertEquals(4, (int) response.getValue("counter"));
     }
 

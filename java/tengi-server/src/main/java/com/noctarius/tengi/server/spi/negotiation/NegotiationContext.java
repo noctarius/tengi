@@ -14,12 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.spi;
+package com.noctarius.tengi.server.spi.negotiation;
 
-public enum NegotiationResult {
-    Failed,
-    Continue,
-    InsufficientBuffer,
-    Restart,
-    Successful
+import com.noctarius.tengi.server.impl.ConnectionManager;
+import com.noctarius.tengi.spi.serialization.Serializer;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+
+public interface NegotiationContext {
+
+    ConnectionManager getConnectionManager();
+
+    Serializer getSerializer();
+
+    int getPort();
+
+    <T> T attribute(String name);
+
+    <T> void attribute(String name, T value);
+
+    void injectChannelHandler(ChannelHandlerContext ctx, String name, ChannelHandler handler);
+
 }

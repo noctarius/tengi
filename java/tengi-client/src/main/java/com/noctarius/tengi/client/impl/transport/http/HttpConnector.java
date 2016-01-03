@@ -16,6 +16,7 @@
  */
 package com.noctarius.tengi.client.impl.transport.http;
 
+import com.noctarius.tengi.client.TransportLayers;
 import com.noctarius.tengi.client.impl.ConnectCallback;
 import com.noctarius.tengi.client.impl.ServerConnection;
 import com.noctarius.tengi.client.impl.transport.AbstractClientConnector;
@@ -170,7 +171,7 @@ public class HttpConnector
 
     @Override
     public TransportLayer getTransportLayer() {
-        return TransportLayer.TCP;
+        return TransportLayers.TCP;
     }
 
     private HttpConnectionProcessor buildProcessor(Serializer serializer) {
@@ -245,19 +246,19 @@ public class HttpConnector
 
     private Bootstrap createBootstrap() {
         return new Bootstrap().channel(NioSocketChannel.class) //
-                .group(clientGroup).option(ChannelOption.TCP_NODELAY, true) //
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000) //
-                .handler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    protected void initChannel(SocketChannel channel)
-                            throws Exception {
+                              .group(clientGroup).option(ChannelOption.TCP_NODELAY, true) //
+                              .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000) //
+                              .handler(new ChannelInitializer<SocketChannel>() {
+                                  @Override
+                                  protected void initChannel(SocketChannel channel)
+                                          throws Exception {
 
-                        ChannelPipeline pipeline = channel.pipeline();
-                        pipeline.addLast("codec", new HttpClientCodec());
-                        pipeline.addLast(new HttpObjectAggregator(1048576));
-                        pipeline.addLast(buildProcessor(serializer));
-                    }
-                });
+                                      ChannelPipeline pipeline = channel.pipeline();
+                                      pipeline.addLast("codec", new HttpClientCodec());
+                                      pipeline.addLast(new HttpObjectAggregator(1048576));
+                                      pipeline.addLast(buildProcessor(serializer));
+                                  }
+                              });
     }
 
     static HttpRequest buildHttpRequest(ByteBuf buffer, String mimeType) {

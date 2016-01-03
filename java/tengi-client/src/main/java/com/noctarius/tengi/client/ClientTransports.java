@@ -47,7 +47,7 @@ import static com.noctarius.tengi.spi.connection.impl.TransportConstants.TRANSPO
  * {@link com.noctarius.tengi.client.impl.Connector} instance which provides the
  * implementation on how to connect and retrieve data.</p>
  */
-public enum ClientTransport
+public enum ClientTransports
         implements Transport, ConnectorFactory {
 
     /**
@@ -58,36 +58,36 @@ public enum ClientTransport
      * <p>This transport should be used as a fallback or last-resort transport because of the huge
      * overhead the HTTP protocol implies.</p>
      */
-    HTTP_TRANSPORT(HttpConnector::new, TRANSPORT_NAME_HTTP, false, DEFAULT_PORT_TCP, TransportLayer.TCP),
+    HTTP_TRANSPORT(HttpConnector::new, TRANSPORT_NAME_HTTP, false, DEFAULT_PORT_TCP, TransportLayers.TCP),
 
     /**
      * Reserved for later implementation
      */
-    HTTP2_TRANSPORT(null, TRANSPORT_NAME_HTTP2, true, DEFAULT_PORT_TCP, TransportLayer.TCP),
+    HTTP2_TRANSPORT(null, TRANSPORT_NAME_HTTP2, true, DEFAULT_PORT_TCP, TransportLayers.TCP),
 
     /**
      * This constant defines a Websocket based {@link com.noctarius.tengi.core.connection.Transport}
      * implementation. Using an optimized internal protocol, this transport is one of the suggested standard
      * transports to be chosen to connect first.
      */
-    WEBSOCKET_TRANSPORT(WebsocketConnector::new, TRANSPORT_NAME_WEBSOCKET, true, DEFAULT_PORT_TCP, TransportLayer.TCP),
+    WEBSOCKET_TRANSPORT(WebsocketConnector::new, TRANSPORT_NAME_WEBSOCKET, true, DEFAULT_PORT_TCP, TransportLayers.TCP),
 
     /**
      * Reserved for later implementation
      */
-    RDP_TRANSPORT(null, TRANSPORT_NAME_RDP, true, DEFAULT_PORT_UDP, TransportLayer.UDP),
+    RDP_TRANSPORT(null, TRANSPORT_NAME_RDP, true, DEFAULT_PORT_UDP, TransportLayers.UDP),
 
     /**
      * This constant defines a TCP plain socket based {@link com.noctarius.tengi.core.connection.Transport}
      * implementation. Using an optimized internal protocol, this transport is one of the suggested standard
      * transports to be chosen to connect first.
      */
-    TCP_TRANSPORT(TcpConnector::new, TRANSPORT_NAME_TCP, true, DEFAULT_PORT_TCP, TransportLayer.TCP),
+    TCP_TRANSPORT(TcpConnector::new, TRANSPORT_NAME_TCP, true, DEFAULT_PORT_TCP, TransportLayers.TCP),
 
     /**
      * Reserved for later implementation
      */
-    UDP_TRANSPORT(null, TRANSPORT_NAME_UDP, true, DEFAULT_PORT_UDP, TransportLayer.UDP);
+    UDP_TRANSPORT(null, TRANSPORT_NAME_UDP, true, DEFAULT_PORT_UDP, TransportLayers.UDP);
 
     private final ConnectorFactory connectorFactory;
     private final String name;
@@ -95,8 +95,8 @@ public enum ClientTransport
     private final int defaultPort;
     private final TransportLayer transportLayer;
 
-    ClientTransport(ConnectorFactory connectorFactory, String name, boolean streaming, //
-                    int defaultPort, TransportLayer transportLayer) {
+    ClientTransports(ConnectorFactory connectorFactory, String name, boolean streaming, //
+                     int defaultPort, TransportLayer transportLayer) {
 
         this.connectorFactory = connectorFactory;
         this.name = name;

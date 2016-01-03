@@ -14,34 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl.transport.websocket;
+package com.noctarius.tengi.server.spi.transport;
 
 import com.noctarius.tengi.core.connection.TransportLayer;
-import com.noctarius.tengi.server.TransportLayers;
-import com.noctarius.tengi.server.impl.transport.http.HttpTransport;
-import com.noctarius.tengi.spi.connection.impl.TransportConstants;
 
-public class WebsocketTransport
-        extends HttpTransport {
+public interface ServerTransportLayer
+        extends TransportLayer {
 
-    @Override
-    public String getName() {
-        return TransportConstants.TRANSPORT_NAME_WEBSOCKET;
-    }
-
-    @Override
-    public boolean isStreaming() {
-        return true;
-    }
-
-    @Override
-    public int getDefaultPort() {
-        return TransportConstants.DEFAULT_PORT_TCP;
-    }
-
-    @Override
-    public TransportLayer getTransportLayer() {
-        return TransportLayers.TCP;
-    }
+    ServerChannelFactory serverChannelFactory();
 
 }

@@ -19,7 +19,7 @@ package com.noctarius.tengi.server.impl.transport.tcp;
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.core.model.Packet;
-import com.noctarius.tengi.server.ServerTransport;
+import com.noctarius.tengi.server.ServerTransports;
 import com.noctarius.tengi.server.impl.transport.AbstractStreamingTransportTestCase;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
@@ -99,7 +99,7 @@ public class TcpTransportTestCase
             return result;
         };
 
-        Object response = practice(runner, clientFactory(initializer), false, ServerTransport.TCP_TRANSPORT);
+        Object response = practice(runner, clientFactory(initializer), false, ServerTransports.TCP_TRANSPORT);
         assertEquals(message, response);
     }
 
@@ -167,7 +167,7 @@ public class TcpTransportTestCase
             return result;
         };
 
-        Packet response = practice(runner, clientFactory(initializer), false, ServerTransport.TCP_TRANSPORT);
+        Packet response = practice(runner, clientFactory(initializer), false, ServerTransports.TCP_TRANSPORT);
         assertEquals(4, (int) response.getValue("counter"));
     }
 

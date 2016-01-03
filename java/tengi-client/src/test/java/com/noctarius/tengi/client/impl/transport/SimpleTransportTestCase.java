@@ -22,7 +22,7 @@ import com.noctarius.tengi.client.impl.config.ClientConfigurationBuilder;
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.Transport;
-import com.noctarius.tengi.server.ServerTransport;
+import com.noctarius.tengi.server.ServerTransports;
 import org.junit.Test;
 
 import java.util.concurrent.CompletableFuture;
@@ -30,9 +30,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.noctarius.tengi.client.ClientTransport.HTTP_TRANSPORT;
-import static com.noctarius.tengi.client.ClientTransport.TCP_TRANSPORT;
-import static com.noctarius.tengi.client.ClientTransport.WEBSOCKET_TRANSPORT;
+import static com.noctarius.tengi.client.ClientTransports.HTTP_TRANSPORT;
+import static com.noctarius.tengi.client.ClientTransports.TCP_TRANSPORT;
+import static com.noctarius.tengi.client.ClientTransports.WEBSOCKET_TRANSPORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -67,7 +67,7 @@ public class SimpleTransportTestCase
         Connection connection = null;
         try {
             CompletableFuture<Connection> f = new CompletableFuture<>();
-            connection = practice(client, f::complete, f::get, false, ServerTransport.HTTP_TRANSPORT);
+            connection = practice(client, f::complete, f::get, false, ServerTransports.HTTP_TRANSPORT);
             assertNotNull(connection);
 
             for (int i = 0; i < transports.length; i++) {

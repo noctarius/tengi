@@ -19,7 +19,7 @@ package com.noctarius.tengi.server.impl.transport.websocket;
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.core.model.Packet;
-import com.noctarius.tengi.server.ServerTransport;
+import com.noctarius.tengi.server.ServerTransports;
 import com.noctarius.tengi.server.impl.transport.AbstractStreamingTransportTestCase;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
@@ -93,7 +93,7 @@ public class WebsocketTransportTestCase
         };
 
         ClientFactory<WebsocketTestClient> clientFactory = clientFactory(channelReader, (s) -> future.complete(null));
-        Object response = practice(runner, clientFactory, false, ServerTransport.WEBSOCKET_TRANSPORT);
+        Object response = practice(runner, clientFactory, false, ServerTransports.WEBSOCKET_TRANSPORT);
         assertEquals(message, response);
     }
 
@@ -158,7 +158,7 @@ public class WebsocketTransportTestCase
         };
 
         ClientFactory<WebsocketTestClient> clientFactory = clientFactory(channelReader, (s) -> future.complete(null));
-        Packet response = practice(runner, clientFactory, false, ServerTransport.WEBSOCKET_TRANSPORT);
+        Packet response = practice(runner, clientFactory, false, ServerTransports.WEBSOCKET_TRANSPORT);
         assertEquals(4, (int) response.getValue("counter"));
     }
 

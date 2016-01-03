@@ -22,15 +22,15 @@ import com.noctarius.tengi.server.impl.transport.http.HttpTransport;
 import com.noctarius.tengi.server.impl.transport.http2.Http2Transport;
 import com.noctarius.tengi.server.impl.transport.tcp.TcpTransport;
 import com.noctarius.tengi.server.impl.transport.websocket.WebsocketTransport;
-import com.noctarius.tengi.server.spi.NegotiatableTransport;
-import com.noctarius.tengi.server.spi.Negotiator;
+import com.noctarius.tengi.server.spi.negotiation.NegotiatableTransport;
+import com.noctarius.tengi.server.spi.negotiation.Negotiator;
 
 /**
  * <p>The <tt>ServerTransport</tt> enum defines built-in, server-side
  * {@link com.noctarius.tengi.core.connection.Transport} implementations, however other
  * implementations are still possible to be chosen.</p>
  */
-public enum ServerTransport
+public enum ServerTransports
         implements NegotiatableTransport {
 
     /**
@@ -76,7 +76,7 @@ public enum ServerTransport
 
     private final Transport transport;
 
-    private ServerTransport(Transport transport) {
+    private ServerTransports(Transport transport) {
         this.transport = transport;
     }
 

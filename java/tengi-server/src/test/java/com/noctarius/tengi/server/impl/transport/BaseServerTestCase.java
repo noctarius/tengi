@@ -19,12 +19,11 @@ package com.noctarius.tengi.server.impl.transport;
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.config.ConfigurationBuilder;
 import com.noctarius.tengi.server.Server;
-import com.noctarius.tengi.server.ServerTransport;
+import com.noctarius.tengi.server.ServerTransports;
 import org.junit.Test;
 
 import java.net.BindException;
 import java.net.ServerSocket;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.fail;
@@ -37,7 +36,7 @@ public class BaseServerTestCase {
 
         ServerSocket socket = new ServerSocket(8080);
         try {
-            Configuration configuration = new ConfigurationBuilder().addTransport(ServerTransport.HTTP_TRANSPORT).build();
+            Configuration configuration = new ConfigurationBuilder().addTransport(ServerTransports.HTTP_TRANSPORT).build();
 
             Server server = Server.create(configuration);
 

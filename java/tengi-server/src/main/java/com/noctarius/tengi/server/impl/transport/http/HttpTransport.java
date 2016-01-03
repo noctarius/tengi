@@ -17,8 +17,9 @@
 package com.noctarius.tengi.server.impl.transport.http;
 
 import com.noctarius.tengi.core.connection.TransportLayer;
-import com.noctarius.tengi.server.spi.NegotiatableTransport;
-import com.noctarius.tengi.server.spi.Negotiator;
+import com.noctarius.tengi.server.TransportLayers;
+import com.noctarius.tengi.server.spi.negotiation.NegotiatableTransport;
+import com.noctarius.tengi.server.spi.negotiation.Negotiator;
 import com.noctarius.tengi.spi.connection.impl.TransportConstants;
 
 public class HttpTransport
@@ -44,7 +45,7 @@ public class HttpTransport
 
     @Override
     public TransportLayer getTransportLayer() {
-        return TransportLayer.TCP;
+        return TransportLayers.TCP;
     }
 
     @Override

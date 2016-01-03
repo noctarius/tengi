@@ -18,9 +18,9 @@ package com.noctarius.tengi.server.impl.transport.negotiation;
 
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.ServerConstants;
-import com.noctarius.tengi.server.spi.NegotiationContext;
-import com.noctarius.tengi.server.spi.NegotiationResult;
-import com.noctarius.tengi.server.spi.Negotiator;
+import com.noctarius.tengi.server.spi.negotiation.NegotiationContext;
+import com.noctarius.tengi.server.spi.negotiation.NegotiationResult;
+import com.noctarius.tengi.server.spi.negotiation.Negotiator;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.ssl.SslHandler;

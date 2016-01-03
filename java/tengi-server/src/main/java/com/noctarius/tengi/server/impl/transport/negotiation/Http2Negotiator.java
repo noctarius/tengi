@@ -17,7 +17,7 @@
 package com.noctarius.tengi.server.impl.transport.negotiation;
 
 import com.noctarius.tengi.core.exception.ConnectionFailedException;
-import com.noctarius.tengi.server.ServerTransport;
+import com.noctarius.tengi.server.ServerTransports;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.transport.http2.Http2ConnectionProcessor;
 import com.noctarius.tengi.spi.serialization.Serializer;
@@ -80,7 +80,7 @@ public class Http2Negotiator
                 switchToHttp(ctx);
                 break;
             case HTTP_2:
-                if (!connectionManager.acceptTransport(ServerTransport.HTTP2_TRANSPORT, port)) {
+                if (!connectionManager.acceptTransport(ServerTransports.HTTP2_TRANSPORT, port)) {
                     ctx.close();
                     throw new ConnectionFailedException("Transport not enabled");
                 }

@@ -17,7 +17,7 @@
 package com.noctarius.tengi.server.impl.transport.http;
 
 import com.noctarius.tengi.core.model.Identifier;
-import com.noctarius.tengi.server.ServerTransport;
+import com.noctarius.tengi.server.ServerTransports;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.transport.ServerConnectionProcessor;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
@@ -46,7 +46,7 @@ public class HttpConnectionProcessor
         extends ServerConnectionProcessor<FullHttpRequest> {
 
     public HttpConnectionProcessor(ConnectionManager connectionManager, Serializer serializer) {
-        super(connectionManager, serializer, ServerTransport.HTTP_TRANSPORT);
+        super(connectionManager, serializer, ServerTransports.HTTP_TRANSPORT);
     }
 
     @Override

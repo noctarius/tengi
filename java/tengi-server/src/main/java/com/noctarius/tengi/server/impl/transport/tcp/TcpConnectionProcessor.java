@@ -17,7 +17,7 @@
 package com.noctarius.tengi.server.impl.transport.tcp;
 
 import com.noctarius.tengi.core.model.Identifier;
-import com.noctarius.tengi.server.ServerTransport;
+import com.noctarius.tengi.server.ServerTransports;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.transport.ServerConnectionProcessor;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
@@ -34,7 +34,7 @@ public class TcpConnectionProcessor
         extends ServerConnectionProcessor<ByteBuf> {
 
     public TcpConnectionProcessor(ConnectionManager connectionManager, Serializer serializer) {
-        super(connectionManager, serializer, ServerTransport.TCP_TRANSPORT);
+        super(connectionManager, serializer, ServerTransports.TCP_TRANSPORT);
     }
 
     @Override

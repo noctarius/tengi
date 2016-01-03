@@ -14,34 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl.transport.websocket;
+package com.noctarius.tengi.client;
 
 import com.noctarius.tengi.core.connection.TransportLayer;
-import com.noctarius.tengi.server.TransportLayers;
-import com.noctarius.tengi.server.impl.transport.http.HttpTransport;
-import com.noctarius.tengi.spi.connection.impl.TransportConstants;
 
-public class WebsocketTransport
-        extends HttpTransport {
+public enum TransportLayers
+        implements TransportLayer {
 
-    @Override
-    public String getName() {
-        return TransportConstants.TRANSPORT_NAME_WEBSOCKET;
-    }
+    /**
+     * This value defines, that the {@link com.noctarius.tengi.core.connection.Transport}
+     * uses an internal <tt>TCP</tt> socket to make or accept connections.
+     */
+    TCP,
 
-    @Override
-    public boolean isStreaming() {
-        return true;
-    }
+    /**
+     * This value defines, that the {@link com.noctarius.tengi.core.connection.Transport}
+     * uses an internal <tt>UDP</tt> socket to make or accept connections.
+     */
+    UDP,
 
-    @Override
-    public int getDefaultPort() {
-        return TransportConstants.DEFAULT_PORT_TCP;
-    }
-
-    @Override
-    public TransportLayer getTransportLayer() {
-        return TransportLayers.TCP;
-    }
+    /**
+     * This value defines, that the {@link com.noctarius.tengi.core.connection.Transport}
+     * uses an internal <tt>SCTP</tt> socket to make or accept connections.
+     */
+    SCTP
 
 }

@@ -38,7 +38,7 @@ public class ApiTestCase {
                 .addMarshaller(ApiTestCase::isMarshallable, (short) 100, ApiTestCase::read, ApiTestCase::write)
 
                         // Configure available transports
-                .addTransport(ClientTransport.TCP_TRANSPORT)
+                .addTransport(ClientTransports.TCP_TRANSPORT)
 
                         // Build final configuration
                 .build();

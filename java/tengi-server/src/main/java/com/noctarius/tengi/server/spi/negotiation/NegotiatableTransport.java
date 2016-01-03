@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.spi;
+package com.noctarius.tengi.server.spi.negotiation;
 
 import com.noctarius.tengi.core.connection.Transport;
 

@@ -14,16 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.core.connection;
+package com.noctarius.tengi.server.spi.negotiation;
 
-/**
- * A <tt>TransportLayer defines the underlying socket type of a
- * {@link com.noctarius.tengi.core.connection.Transport}</tt> implementation.
- * Default transport layers support exists for <tt>TCP</tt>, <tt>UDP</tt> and
- * <tt>SCTP</tt>.
- */
-public interface TransportLayer {
-
-    String name();
-
+public enum NegotiationResult {
+    Failed,
+    Continue,
+    InsufficientBuffer,
+    Restart,
+    Successful
 }

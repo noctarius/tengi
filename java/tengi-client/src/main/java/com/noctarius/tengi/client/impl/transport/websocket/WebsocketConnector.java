@@ -16,6 +16,7 @@
  */
 package com.noctarius.tengi.client.impl.transport.websocket;
 
+import com.noctarius.tengi.client.TransportLayers;
 import com.noctarius.tengi.client.impl.ClientUtil;
 import com.noctarius.tengi.client.impl.ConnectCallback;
 import com.noctarius.tengi.client.impl.ServerConnection;
@@ -134,7 +135,7 @@ public class WebsocketConnector
 
     @Override
     public TransportLayer getTransportLayer() {
-        return TransportLayer.TCP;
+        return TransportLayers.TCP;
     }
 
     private WebSocketClientHandshaker createHandshaker() {

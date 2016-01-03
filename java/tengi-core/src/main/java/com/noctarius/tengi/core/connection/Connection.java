@@ -30,7 +30,7 @@ import java.util.concurrent.CompletableFuture;
  * <p>Every connection is identified using a unique Id
  * ({@link com.noctarius.tengi.core.model.Identifier}) which can be used to
  * identify same clients over multiple socket connections or
- * reconnects (e.g. polling styled transports).</p>
+ * reconnects (e.g. polling styled transport).</p>
  */
 public interface Connection
         extends AutoCloseable {

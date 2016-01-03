@@ -23,7 +23,7 @@ import com.ning.http.client.Response;
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.core.model.Packet;
-import com.noctarius.tengi.server.ServerTransport;
+import com.noctarius.tengi.server.ServerTransports;
 import com.noctarius.tengi.server.impl.transport.AbstractLongPollingTransportTestCase;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
@@ -93,7 +93,7 @@ public class HttpTransportTestCase
             writeRequest(client, serializer, connectionId, message, null);
 
             return future.get(120, TimeUnit.SECONDS);
-        }, false, ServerTransport.HTTP_TRANSPORT);
+        }, false, ServerTransports.HTTP_TRANSPORT);
 
         assertEquals(message, result);
     }
@@ -146,7 +146,7 @@ public class HttpTransportTestCase
             writeRequest(client, serializer, connectionId, message, null);
 
             return future.get(120, TimeUnit.SECONDS);
-        }, false, ServerTransport.HTTP_TRANSPORT);
+        }, false, ServerTransports.HTTP_TRANSPORT);
 
         assertEquals(4, (int) result.getValue("counter"));
     }

@@ -18,7 +18,6 @@ package com.noctarius.tengi.server;
 
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.connection.HandshakeHandler;
-import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.core.exception.IllegalTransportException;
 import com.noctarius.tengi.core.impl.FutureUtil;
 import com.noctarius.tengi.core.impl.Validate;
@@ -26,29 +25,22 @@ import com.noctarius.tengi.core.impl.VersionUtil;
 import com.noctarius.tengi.core.listener.ConnectedListener;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.EventManager;
-import com.noctarius.tengi.server.impl.transport.negotiation.NegotiationChannelHandler;
-import com.noctarius.tengi.server.impl.transport.negotiation.UdpBinaryNegotiator;
+import com.noctarius.tengi.server.spi.transport.ServerChannelFactory;
+import com.noctarius.tengi.server.spi.transport.ServerTransportLayer;
 import com.noctarius.tengi.spi.connection.packets.Handshake;
 import com.noctarius.tengi.spi.logging.Logger;
 import com.noctarius.tengi.spi.logging.LoggerManager;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import com.noctarius.tengi.spi.statemachine.StateMachine;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
-import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -131,9 +123,9 @@ class ServerImpl
     private void bindChannels()
             throws Throwable {
 
-        EnumMap<TransportLayer, int[]> transportLayers = collectTransportLayers(configuration);
-        for (Map.Entry<TransportLayer, int[]> entry : transportLayers.entrySet()) {
-            TransportLayer transportLayer = entry.getKey();
+        Map<ServerTransportLayer, int[]> transportLayers = collectTransportLayers(configuration);
+        for (Map.Entry<ServerTransportLayer, int[]> entry : transportLayers.entrySet()) {
+            ServerTransportLayer transportLayer = entry.getKey();
             int[] ports = entry.getValue();
             for (int port : ports) {
                 channels.add(createChannel(transportLayer, port));
@@ -161,13 +153,13 @@ class ServerImpl
         return handshakeHandler;
     }
 
-    private EnumMap<TransportLayer, int[]> collectTransportLayers(Configuration configuration) {
+    private Map<ServerTransportLayer, int[]> collectTransportLayers(Configuration configuration) {
         Set<Integer> tcpPorts = configuration.getTransports().stream() //
-                                             .filter((transport) -> transport.getTransportLayer() == TransportLayer.TCP) //
+                                             .filter((transport) -> transport.getTransportLayer() == TransportLayers.TCP) //
                                              .map(configuration::getTransportPort).collect(Collectors.toSet());
 
         Set<Integer> udpPorts = configuration.getTransports().stream() //
-                                             .filter((transport) -> transport.getTransportLayer() == TransportLayer.UDP) //
+                                             .filter((transport) -> transport.getTransportLayer() == TransportLayers.UDP) //
                                              .map(configuration::getTransportPort).collect(Collectors.toSet());
 
         boolean match = udpPorts.stream().anyMatch(tcpPorts::contains);
@@ -176,54 +168,18 @@ class ServerImpl
             throw new IllegalTransportException("TCP and UDP ports can't match up");
         }
 
-        EnumMap<TransportLayer, int[]> portMapping = new EnumMap<>(TransportLayer.class);
-        portMapping.put(TransportLayer.TCP, tcpPorts.stream().mapToInt((v) -> v).toArray());
-        portMapping.put(TransportLayer.UDP, udpPorts.stream().mapToInt((v) -> v).toArray());
+        Map<ServerTransportLayer, int[]> portMapping = new HashMap<>();
+        portMapping.put(TransportLayers.TCP, tcpPorts.stream().mapToInt((v) -> v).toArray());
+        portMapping.put(TransportLayers.UDP, udpPorts.stream().mapToInt((v) -> v).toArray());
 
         return portMapping;
     }
 
-    private Channel createChannel(TransportLayer transportLayer, int port)
+    private Channel createChannel(ServerTransportLayer transportLayer, int port)
             throws Throwable {
 
-        switch (transportLayer) {
-            case TCP:
-                return createTcpChannel(port);
-
-            case UDP:
-                return createUdpChannel(port);
-
-            default:
-                throw new IllegalTransportException("Transport not yet supported");
-        }
-    }
-
-    private Channel createUdpChannel(int port)
-            throws Throwable {
-
-        Bootstrap bootstrap = new Bootstrap();
-        bootstrap.option(ChannelOption.SO_BROADCAST, false).group(workerGroup) //
-                 .handler(new UdpProtocolNegotiator(connectionManager, serializer, port));
-
-        ChannelFuture future = bootstrap.bind(port).sync();
-        if (future.cause() != null) {
-            throw future.cause();
-        }
-        return future.channel();
-    }
-
-    private Channel createTcpChannel(int port)
-            throws Throwable {
-
-        ServerBootstrap bootstrap = new ServerBootstrap();
-        bootstrap.option(ChannelOption.SO_BACKLOG, 1024).group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
-                 .childHandler(new TcpProtocolNegotiator(connectionManager, serializer, port));
-
-        ChannelFuture future = bootstrap.bind(port).sync();
-        if (future.cause() != null) {
-            throw future.cause();
-        }
-        return future.channel();
+        ServerChannelFactory channelFactory = transportLayer.serverChannelFactory();
+        return channelFactory.newServerChannel(transportLayer, port, bossGroup, workerGroup, connectionManager, serializer);
     }
 
     private Serializer createSerializer(Configuration configuration) {
@@ -237,47 +193,4 @@ class ServerImpl
         builder.addTransition(ServerState.Shutdown, ServerState.Stopped);
         return builder.build(ServerState.Prepared, false);
     }
-
-    private static class TcpProtocolNegotiator
-            extends ChannelInitializer<SocketChannel> {
-
-        private final ConnectionManager connectionManager;
-        private final Serializer serializer;
-        private final int port;
-
-        private TcpProtocolNegotiator(ConnectionManager connectionManager, Serializer serializer, int port) {
-            this.connectionManager = connectionManager;
-            this.serializer = serializer;
-            this.port = port;
-        }
-
-        @Override
-        protected void initChannel(SocketChannel channel)
-                throws Exception {
-
-            channel.pipeline().addLast(new NegotiationChannelHandler(port, TransportLayer.TCP, connectionManager, serializer));
-        }
-    }
-
-    private static class UdpProtocolNegotiator
-            extends ChannelInitializer<SocketChannel> {
-
-        private final ConnectionManager connectionManager;
-        private final Serializer serializer;
-        private final int port;
-
-        private UdpProtocolNegotiator(ConnectionManager connectionManager, Serializer serializer, int port) {
-            this.connectionManager = connectionManager;
-            this.serializer = serializer;
-            this.port = port;
-        }
-
-        @Override
-        protected void initChannel(SocketChannel channel)
-                throws Exception {
-
-            channel.pipeline().addLast(new UdpBinaryNegotiator(port, connectionManager, serializer));
-        }
-    }
-
 }

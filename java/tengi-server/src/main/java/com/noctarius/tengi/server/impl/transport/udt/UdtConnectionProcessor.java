@@ -17,7 +17,7 @@
 package com.noctarius.tengi.server.impl.transport.udt;
 
 import com.noctarius.tengi.core.model.Identifier;
-import com.noctarius.tengi.server.ServerTransport;
+import com.noctarius.tengi.server.ServerTransports;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.transport.ServerConnectionProcessor;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
@@ -34,7 +34,7 @@ public class UdtConnectionProcessor
         extends ServerConnectionProcessor<ByteBuf> {
 
     public UdtConnectionProcessor(ConnectionManager connectionManager, Serializer serializer) {
-        super(connectionManager, serializer, ServerTransport.UDT_TRANSPORT);
+        super(connectionManager, serializer, ServerTransports.UDT_TRANSPORT);
     }
 
     @Override

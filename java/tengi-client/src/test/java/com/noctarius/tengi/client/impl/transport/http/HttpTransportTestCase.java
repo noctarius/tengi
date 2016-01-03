@@ -17,7 +17,7 @@
 package com.noctarius.tengi.client.impl.transport.http;
 
 import com.noctarius.tengi.client.Client;
-import com.noctarius.tengi.client.ClientTransport;
+import com.noctarius.tengi.client.ClientTransports;
 import com.noctarius.tengi.client.impl.transport.AbstractClientTransportTestCase;
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.config.ConfigurationBuilder;
@@ -27,7 +27,7 @@ import com.noctarius.tengi.core.listener.ConnectedListener;
 import com.noctarius.tengi.core.listener.MessageListener;
 import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.core.model.Packet;
-import com.noctarius.tengi.server.ServerTransport;
+import com.noctarius.tengi.server.ServerTransports;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -44,13 +44,13 @@ public class HttpTransportTestCase
     public void test_simple_http_connection()
             throws Exception {
 
-        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransport.HTTP_TRANSPORT).build();
+        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransports.HTTP_TRANSPORT).build();
         Client client = Client.create(configuration);
 
         Connection connection = null;
         try {
             CompletableFuture<Connection> f = new CompletableFuture<>();
-            connection = practice(client, f::complete, f::get, false, ServerTransport.HTTP_TRANSPORT);
+            connection = practice(client, f::complete, f::get, false, ServerTransports.HTTP_TRANSPORT);
             assertNotNull(connection);
         } finally {
             if (connection != null) {
@@ -63,13 +63,13 @@ public class HttpTransportTestCase
     public void test_disconnect_http_connection_not_enabled()
             throws Exception {
 
-        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransport.HTTP_TRANSPORT).build();
+        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransports.HTTP_TRANSPORT).build();
         Client client = Client.create(configuration);
 
         Connection connection = null;
         try {
             CompletableFuture<Connection> f = new CompletableFuture<>();
-            connection = practice(client, f::complete, f::get, false, ServerTransport.TCP_TRANSPORT);
+            connection = practice(client, f::complete, f::get, false, ServerTransports.TCP_TRANSPORT);
             assertNotNull(connection);
         } finally {
             if (connection != null) {
@@ -82,7 +82,7 @@ public class HttpTransportTestCase
     public void test_port_not_open()
             throws Exception {
 
-        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransport.HTTP_TRANSPORT).build();
+        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransports.HTTP_TRANSPORT).build();
         Client client = Client.create(configuration);
 
         try {
@@ -101,7 +101,7 @@ public class HttpTransportTestCase
     public void test_simple_http_simple_round_trip()
             throws Exception {
 
-        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransport.HTTP_TRANSPORT).build();
+        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransports.HTTP_TRANSPORT).build();
         Client client = Client.create(configuration);
 
         CompletableFuture<Message> messageFuture = new CompletableFuture<>();
@@ -123,7 +123,7 @@ public class HttpTransportTestCase
             }
         };
 
-        Message result = practice(client, listener, messageFuture::get, false, ServerTransport.HTTP_TRANSPORT);
+        Message result = practice(client, listener, messageFuture::get, false, ServerTransports.HTTP_TRANSPORT);
         assertNotNull(result);
 
         Packet p = result.getBody();
@@ -135,7 +135,7 @@ public class HttpTransportTestCase
     public void test_simple_http_multi_round_trip()
             throws Exception {
 
-        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransport.HTTP_TRANSPORT).build();
+        Configuration configuration = new ConfigurationBuilder().addTransport(ClientTransports.HTTP_TRANSPORT).build();
         Client client = Client.create(configuration);
 
         CompletableFuture<Message> messageFuture = new CompletableFuture<>();
@@ -168,7 +168,7 @@ public class HttpTransportTestCase
             }
         };
 
-        Message result = practice(client, listener, messageFuture::get, false, ServerTransport.HTTP_TRANSPORT);
+        Message result = practice(client, listener, messageFuture::get, false, ServerTransports.HTTP_TRANSPORT);
         assertNotNull(result);
 
         Packet p = result.getBody();

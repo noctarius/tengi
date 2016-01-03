@@ -14,13 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.spi;
+package com.noctarius.tengi.server.spi.transport;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
+import com.noctarius.tengi.core.connection.TransportLayer;
+import com.noctarius.tengi.server.impl.ConnectionManager;
+import com.noctarius.tengi.spi.serialization.Serializer;
+import io.netty.channel.Channel;
+import io.netty.channel.EventLoopGroup;
 
-public interface Negotiator {
+public interface ServerChannelFactory {
 
-    NegotiationResult handleProtocol(NegotiationContext context, ChannelHandlerContext ctx, ByteBuf buffer);
+    Channel newServerChannel(TransportLayer transportLayer, int port, EventLoopGroup bossGroup, EventLoopGroup workerGroup,
+                             ConnectionManager connectionManager, Serializer serializer)
+            throws Throwable;
 
 }

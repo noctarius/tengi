@@ -63,7 +63,7 @@ public void createEchoClient() {
   // Create configuration using the builder
   Configuration configuration = new ConfigurationBuilder()
     // Configure available transports
-    .addTransport(ClientTransport.TCP_TRANSPORT, ClientTransport.HTTP_TRANSPORT)
+    .addTransport(ClientTransports.TCP_TRANSPORT, ClientTransports.HTTP_TRANSPORT)
 
     // Build final configuration
     .build();
@@ -98,8 +98,8 @@ public void createEchoServer() {
   // Create configuration using the builder
   Configuration configuration = new ConfigurationBuilder()
     // Configure available transports
-    .addTransport(ServerTransport.TCP_TRANSPORT, ServerTransport.HTTP2_TRANSPORT,
-                  ServerTransport.HTTP_TRANSPORT)
+    .addTransport(ServerTransports.TCP_TRANSPORT, ServerTransports.HTTP2_TRANSPORT,
+                  ServerTransports.HTTP_TRANSPORT)
 
     // Build final configuration
     .build();

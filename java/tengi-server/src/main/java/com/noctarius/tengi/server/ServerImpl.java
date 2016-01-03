@@ -27,7 +27,6 @@ import com.noctarius.tengi.core.listener.ConnectedListener;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.EventManager;
 import com.noctarius.tengi.server.impl.transport.negotiation.NegotiationChannelHandler;
-import com.noctarius.tengi.server.impl.transport.negotiation.TcpBinaryNegotiator;
 import com.noctarius.tengi.server.impl.transport.negotiation.UdpBinaryNegotiator;
 import com.noctarius.tengi.spi.connection.packets.Handshake;
 import com.noctarius.tengi.spi.logging.Logger;
@@ -164,12 +163,12 @@ class ServerImpl
 
     private EnumMap<TransportLayer, int[]> collectTransportLayers(Configuration configuration) {
         Set<Integer> tcpPorts = configuration.getTransports().stream() //
-                .filter((transport) -> transport.getTransportLayer() == TransportLayer.TCP) //
-                .map(configuration::getTransportPort).collect(Collectors.toSet());
+                                             .filter((transport) -> transport.getTransportLayer() == TransportLayer.TCP) //
+                                             .map(configuration::getTransportPort).collect(Collectors.toSet());
 
         Set<Integer> udpPorts = configuration.getTransports().stream() //
-                .filter((transport) -> transport.getTransportLayer() == TransportLayer.UDP) //
-                .map(configuration::getTransportPort).collect(Collectors.toSet());
+                                             .filter((transport) -> transport.getTransportLayer() == TransportLayer.UDP) //
+                                             .map(configuration::getTransportPort).collect(Collectors.toSet());
 
         boolean match = udpPorts.stream().anyMatch(tcpPorts::contains);
 
@@ -204,7 +203,7 @@ class ServerImpl
 
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.option(ChannelOption.SO_BROADCAST, false).group(workerGroup) //
-                .handler(new UdpProtocolNegotiator(connectionManager, serializer, port));
+                 .handler(new UdpProtocolNegotiator(connectionManager, serializer, port));
 
         ChannelFuture future = bootstrap.bind(port).sync();
         if (future.cause() != null) {
@@ -256,7 +255,6 @@ class ServerImpl
         protected void initChannel(SocketChannel channel)
                 throws Exception {
 
-            //channel.pipeline().addLast(new TcpBinaryNegotiator(port, true, true, connectionManager, serializer));
             channel.pipeline().addLast(new NegotiationChannelHandler(port, TransportLayer.TCP, connectionManager, serializer));
         }
     }

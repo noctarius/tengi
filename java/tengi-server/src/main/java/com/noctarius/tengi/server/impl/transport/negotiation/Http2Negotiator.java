@@ -53,7 +53,6 @@ public class Http2Negotiator
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out)
             throws Exception {
 
-        System.out.println(in);
         if (initPipeline(ctx)) {
             // When we reached here we can remove this handler as its now clear
             // what protocol we want to use
@@ -100,7 +99,6 @@ public class Http2Negotiator
     private void switchToHttp2(ChannelHandlerContext ctx) {
         ChannelPipeline pipeline = ctx.pipeline();
         pipeline.addLast("http2-connection-processor", new Http2ConnectionProcessor(connectionManager, serializer));
-        //pipeline.addLast("connection-processor", new ConnectionProcessor(connectionManager, serializer));
         pipeline.remove(this);
     }
 

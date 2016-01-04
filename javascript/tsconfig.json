@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "sourceRoot": "src",
+    "outDir": "target",
+    "target": "ES5",
+    "charset": "UTF-8",
+    "preserveConstEnums": true,
+    "sourceMap": true
+  },
+  "files": [
+    "com/noctarius/tengi/spi/buffer/MemoryBuffer.ts"
+  ]
+}

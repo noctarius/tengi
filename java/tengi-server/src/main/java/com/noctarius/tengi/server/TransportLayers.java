@@ -18,6 +18,7 @@ package com.noctarius.tengi.server;
 
 import com.noctarius.tengi.server.impl.transport.TcpServerChannelFactory;
 import com.noctarius.tengi.server.impl.transport.UdpServerChannelFactory;
+import com.noctarius.tengi.server.impl.transport.UdtServerChannelFactory;
 import com.noctarius.tengi.server.spi.transport.ServerChannelFactory;
 import com.noctarius.tengi.server.spi.transport.ServerTransportLayer;
 
@@ -35,6 +36,12 @@ public enum TransportLayers
      * uses an internal <tt>UDP</tt> socket to make or accept connections.
      */
     UDP(new UdpServerChannelFactory()),
+
+    /**
+     * This value defines, that the {@link com.noctarius.tengi.core.connection.Transport}
+     * uses an internal <tt>UDT</tt> socket to make or accept connections.
+     */
+    UDT(new UdtServerChannelFactory()),
 
     /**
      * This value defines, that the {@link com.noctarius.tengi.core.connection.Transport}

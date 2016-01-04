@@ -18,22 +18,60 @@ package com.noctarius.tengi.server.impl.transport;
 
 import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.server.impl.ConnectionManager;
+import com.noctarius.tengi.server.impl.transport.udt.UdtConnectionProcessor;
+import com.noctarius.tengi.server.spi.transport.ServerChannel;
 import com.noctarius.tengi.server.spi.transport.ServerChannelFactory;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.udt.UdtChannel;
+import io.netty.channel.udt.nio.NioUdtProvider;
+
+import java.util.concurrent.Executor;
 
 public class UdtServerChannelFactory
         implements ServerChannelFactory {
 
     @Override
-    public Channel newServerChannel(TransportLayer transportLayer, int port, EventLoopGroup bossGroup, EventLoopGroup workerGroup,
-                                    ConnectionManager connectionManager, Serializer serializer)
+    public ServerChannel newServerChannel(TransportLayer transportLayer, int port, Executor executor,
+                                          ConnectionManager connectionManager, Serializer serializer)
             throws Throwable {
 
+        NioEventLoopGroup eventLoopGroup = new NioEventLoopGroup(8, executor, NioUdtProvider.BYTE_PROVIDER);
         ServerBootstrap bootstrap = new ServerBootstrap();
+        bootstrap.option(ChannelOption.SO_BACKLOG, 1024) //
+                 .group(eventLoopGroup, eventLoopGroup) //
+                 .channelFactory(NioUdtProvider.BYTE_ACCEPTOR) //
+                 .childHandler(new UdtChannelInitializer(connectionManager, serializer));
 
-        return null;
+        ChannelFuture future = bootstrap.bind(port).sync();
+        if (future.cause() != null) {
+            throw future.cause();
+        }
+        return new SimpleServerChannel(future.channel(), eventLoopGroup, eventLoopGroup, port, transportLayer);
+    }
+
+    private static class UdtChannelInitializer
+            extends ChannelInitializer<UdtChannel> {
+
+        private final ConnectionManager connectionManager;
+        private final Serializer serializer;
+
+        private UdtChannelInitializer(ConnectionManager connectionManager, Serializer serializer) {
+            this.connectionManager = connectionManager;
+            this.serializer = serializer;
+        }
+
+        @Override
+        protected void initChannel(UdtChannel channel)
+                throws Exception {
+
+            ChannelPipeline pipeline = channel.pipeline();
+            pipeline.addLast("udt-connection-processor", new UdtConnectionProcessor(connectionManager, serializer));
+        }
     }
 }

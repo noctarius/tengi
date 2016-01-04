@@ -17,15 +17,18 @@
 package com.noctarius.tengi.server.spi.transport;
 
 import com.noctarius.tengi.core.connection.TransportLayer;
-import com.noctarius.tengi.server.impl.ConnectionManager;
-import com.noctarius.tengi.spi.serialization.Serializer;
+import io.netty.channel.Channel;
+import io.netty.channel.EventLoopGroup;
 
-import java.util.concurrent.Executor;
+public interface ServerChannel {
 
-public interface ServerChannelFactory {
+    Channel channel();
 
-    ServerChannel newServerChannel(TransportLayer transportLayer, int port, Executor executor,
-                                   ConnectionManager connectionManager, Serializer serializer)
-            throws Throwable;
+    EventLoopGroup bossGroup();
 
+    EventLoopGroup workerGroup();
+
+    int port();
+
+    TransportLayer transportLayer();
 }

@@ -25,6 +25,7 @@ import com.noctarius.tengi.core.impl.VersionUtil;
 import com.noctarius.tengi.core.listener.ConnectedListener;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.EventManager;
+import com.noctarius.tengi.server.spi.transport.ServerChannel;
 import com.noctarius.tengi.server.spi.transport.ServerChannelFactory;
 import com.noctarius.tengi.server.spi.transport.ServerTransportLayer;
 import com.noctarius.tengi.spi.connection.packets.Handshake;
@@ -46,6 +47,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 class ServerImpl
@@ -55,12 +58,13 @@ class ServerImpl
 
     private final StateMachine<ServerState> serverState = createStateMachine();
 
+    private final Map<SocketCoordinate, ServerChannel> coordinates = new HashMap<>();
+
     private final ConnectionManager connectionManager;
 
     private final EventManager eventManager;
 
-    private final EventLoopGroup bossGroup;
-    private final EventLoopGroup workerGroup;
+    private final ExecutorService executor;
 
     private final Configuration configuration;
     private final Serializer serializer;
@@ -76,8 +80,7 @@ class ServerImpl
                 VersionUtil.VERSION, VersionUtil.BUILD_DATE);
 
         this.configuration = configuration;
-        this.bossGroup = createEventLoopGroup(5, "boss");
-        this.workerGroup = createEventLoopGroup(5, "worker");
+        this.executor = Executors.newFixedThreadPool(16);
         this.serializer = createSerializer(configuration);
         HandshakeHandler handshakeHandler = createHandshakeHandler(configuration);
         this.connectionManager = new ConnectionManager(configuration, createSslContext(), serializer, handshakeHandler);
@@ -108,8 +111,7 @@ class ServerImpl
                     channel.close().sync();
                 }
 
-                bossGroup.shutdownGracefully();
-                workerGroup.shutdownGracefully();
+                executor.shutdown();
 
                 connectionManager.stop();
                 eventManager.stop();
@@ -178,8 +180,17 @@ class ServerImpl
     private Channel createChannel(ServerTransportLayer transportLayer, int port)
             throws Throwable {
 
+        ServerChannel serverChannel = createServerChannel(transportLayer, port);
+
+        coordinates.put(new SocketCoordinate(port, transportLayer), serverChannel);
+        return serverChannel.channel();
+    }
+
+    private ServerChannel createServerChannel(ServerTransportLayer transportLayer, int port)
+            throws Throwable {
+
         ServerChannelFactory channelFactory = transportLayer.serverChannelFactory();
-        return channelFactory.newServerChannel(transportLayer, port, bossGroup, workerGroup, connectionManager, serializer);
+        return channelFactory.newServerChannel(transportLayer, port, executor, connectionManager, serializer);
     }
 
     private Serializer createSerializer(Configuration configuration) {

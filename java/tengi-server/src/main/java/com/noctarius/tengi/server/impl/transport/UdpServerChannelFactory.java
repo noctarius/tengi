@@ -19,33 +19,36 @@ package com.noctarius.tengi.server.impl.transport;
 import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.transport.negotiation.UdpBinaryNegotiator;
+import com.noctarius.tengi.server.spi.transport.ServerChannel;
 import com.noctarius.tengi.server.spi.transport.ServerChannelFactory;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
+
+import java.util.concurrent.Executor;
 
 public class UdpServerChannelFactory
         implements ServerChannelFactory {
 
     @Override
-    public Channel newServerChannel(TransportLayer transportLayer, int port, EventLoopGroup bossGroup, EventLoopGroup workerGroup,
-                                    ConnectionManager connectionManager, Serializer serializer)
+    public ServerChannel newServerChannel(TransportLayer transportLayer, int port, Executor executor,
+                                          ConnectionManager connectionManager, Serializer serializer)
             throws Throwable {
 
+        NioEventLoopGroup eventLoopGroup = new NioEventLoopGroup(8, executor);
         Bootstrap bootstrap = new Bootstrap();
-        bootstrap.option(ChannelOption.SO_BROADCAST, false).group(workerGroup) //
+        bootstrap.option(ChannelOption.SO_BROADCAST, false).group(eventLoopGroup) //
                  .handler(new UdpProtocolNegotiator(connectionManager, serializer, port));
 
         ChannelFuture future = bootstrap.bind(port).sync();
         if (future.cause() != null) {
             throw future.cause();
         }
-        return future.channel();
+        return new SimpleServerChannel(future.channel(), eventLoopGroup, eventLoopGroup, port, transportLayer);
     }
 
     private static class UdpProtocolNegotiator

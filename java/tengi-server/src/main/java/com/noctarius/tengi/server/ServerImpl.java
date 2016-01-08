@@ -18,7 +18,7 @@ package com.noctarius.tengi.server;
 
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.connection.HandshakeHandler;
-import com.noctarius.tengi.core.exception.IllegalTransportException;
+import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.impl.FutureUtil;
 import com.noctarius.tengi.core.impl.Validate;
 import com.noctarius.tengi.core.impl.VersionUtil;
@@ -35,13 +35,12 @@ import com.noctarius.tengi.spi.serialization.Serializer;
 import com.noctarius.tengi.spi.statemachine.StateMachine;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
-import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +48,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 class ServerImpl
@@ -58,7 +58,7 @@ class ServerImpl
 
     private final StateMachine<ServerState> serverState = createStateMachine();
 
-    private final Map<SocketCoordinate, ServerChannel> coordinates = new HashMap<>();
+    private final Map<Endpoint, ServerChannel> coordinates = new HashMap<>();
 
     private final ConnectionManager connectionManager;
 
@@ -111,6 +111,7 @@ class ServerImpl
                     channel.close().sync();
                 }
 
+                coordinates.values().forEach(this::stopEventLoopGroups);
                 executor.shutdown();
 
                 connectionManager.stop();
@@ -122,22 +123,26 @@ class ServerImpl
         });
     }
 
-    private void bindChannels()
-            throws Throwable {
+    private void stopEventLoopGroups(ServerChannel serverChannel) {
+        EventLoopGroup bossGroup = serverChannel.bossGroup();
+        EventLoopGroup workerGroup = serverChannel.workerGroup();
 
-        Map<ServerTransportLayer, int[]> transportLayers = collectTransportLayers(configuration);
-        for (Map.Entry<ServerTransportLayer, int[]> entry : transportLayers.entrySet()) {
-            ServerTransportLayer transportLayer = entry.getKey();
-            int[] ports = entry.getValue();
-            for (int port : ports) {
-                channels.add(createChannel(transportLayer, port));
-            }
+        bossGroup.shutdownGracefully();
+        if (bossGroup != workerGroup) {
+            workerGroup.shutdownGracefully();
         }
     }
 
-    private EventLoopGroup createEventLoopGroup(int threadCount, String name) {
-        LOGGER.debug("Creating event threadpool '%s' with %s threads", name, threadCount);
-        return new NioEventLoopGroup(threadCount, new DefaultThreadFactory("channel-" + name + "-"));
+    private void bindChannels()
+            throws Throwable {
+
+        Map<Endpoint, Set<Transport>> transportLayers = collectTransportLayers(configuration);
+        for (Map.Entry<Endpoint, Set<Transport>> entry : transportLayers.entrySet()) {
+            Endpoint endpoint = entry.getKey();
+            Set<Transport> transports = entry.getValue();
+            ServerTransportLayer transportLayer = (ServerTransportLayer) endpoint.getTransportLayer();
+            channels.add(createChannel(transportLayer, endpoint.getPort(), transports));
+        }
     }
 
     private SslContext createSslContext()
@@ -155,38 +160,31 @@ class ServerImpl
         return handshakeHandler;
     }
 
-    private Map<ServerTransportLayer, int[]> collectTransportLayers(Configuration configuration) {
-        Set<Integer> tcpPorts = configuration.getTransports().stream() //
-                                             .filter((transport) -> transport.getTransportLayer() == TransportLayers.TCP) //
-                                             .map(configuration::getTransportPort).collect(Collectors.toSet());
+    private Map<Endpoint, Set<Transport>> collectTransportLayers(Configuration configuration) {
+        Function<Transport, Endpoint> coordinater = (transport) -> {
+            int port = configuration.getTransportPort(transport);
+            return new Endpoint(port, transport.getTransportLayer());
+        };
 
-        Set<Integer> udpPorts = configuration.getTransports().stream() //
-                                             .filter((transport) -> transport.getTransportLayer() == TransportLayers.UDP) //
-                                             .map(configuration::getTransportPort).collect(Collectors.toSet());
+        Map<Endpoint, Set<Transport>> transports = configuration.getTransports().stream().filter(t -> t
+                .getTransportLayer() instanceof ServerTransportLayer).collect(
+                Collectors.groupingBy(coordinater, IdentityHashMap::new, Collectors.mapping(t -> t, Collectors.toSet())));
 
-        boolean match = udpPorts.stream().anyMatch(tcpPorts::contains);
+        // TODO: Check multiple socket types, same port number
 
-        if (match) {
-            throw new IllegalTransportException("TCP and UDP ports can't match up");
-        }
-
-        Map<ServerTransportLayer, int[]> portMapping = new HashMap<>();
-        portMapping.put(TransportLayers.TCP, tcpPorts.stream().mapToInt((v) -> v).toArray());
-        portMapping.put(TransportLayers.UDP, udpPorts.stream().mapToInt((v) -> v).toArray());
-
-        return portMapping;
+        return transports;
     }
 
-    private Channel createChannel(ServerTransportLayer transportLayer, int port)
+    private Channel createChannel(ServerTransportLayer transportLayer, int port, Set<Transport> transports)
             throws Throwable {
 
-        ServerChannel serverChannel = createServerChannel(transportLayer, port);
+        ServerChannel serverChannel = createServerChannel(transportLayer, port, transports);
 
-        coordinates.put(new SocketCoordinate(port, transportLayer), serverChannel);
+        coordinates.put(new Endpoint(port, transportLayer), serverChannel);
         return serverChannel.channel();
     }
 
-    private ServerChannel createServerChannel(ServerTransportLayer transportLayer, int port)
+    private ServerChannel createServerChannel(ServerTransportLayer transportLayer, int port, Set<Transport> transports)
             throws Throwable {
 
         ServerChannelFactory channelFactory = transportLayer.serverChannelFactory();

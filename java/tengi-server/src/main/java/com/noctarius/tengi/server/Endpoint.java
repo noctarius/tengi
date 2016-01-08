@@ -18,11 +18,11 @@ package com.noctarius.tengi.server;
 
 import com.noctarius.tengi.core.connection.TransportLayer;
 
-class SocketCoordinate {
+class Endpoint {
     private final int port;
     private final TransportLayer transportLayer;
 
-    SocketCoordinate(int port, TransportLayer transportLayer) {
+    Endpoint(int port, TransportLayer transportLayer) {
         this.port = port;
         this.transportLayer = transportLayer;
     }
@@ -40,11 +40,11 @@ class SocketCoordinate {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof SocketCoordinate)) {
+        if (!(o instanceof Endpoint)) {
             return false;
         }
 
-        SocketCoordinate that = (SocketCoordinate) o;
+        Endpoint that = (Endpoint) o;
 
         if (port != that.port) {
             return false;

@@ -25,18 +25,28 @@ public enum TransportLayers
      * This value defines, that the {@link com.noctarius.tengi.core.connection.Transport}
      * uses an internal <tt>TCP</tt> socket to make or accept connections.
      */
-    TCP,
+    TCP(true),
 
     /**
      * This value defines, that the {@link com.noctarius.tengi.core.connection.Transport}
      * uses an internal <tt>UDP</tt> socket to make or accept connections.
      */
-    UDP,
+    UDP(true),
 
     /**
      * This value defines, that the {@link com.noctarius.tengi.core.connection.Transport}
      * uses an internal <tt>SCTP</tt> socket to make or accept connections.
      */
-    SCTP
+    SCTP(false);
 
+    private final boolean sslCapable;
+
+    TransportLayers(boolean sslCapable) {
+        this.sslCapable = sslCapable;
+    }
+
+    @Override
+    public boolean sslCapable() {
+        return sslCapable;
+    }
 }

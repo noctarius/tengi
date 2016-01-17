@@ -10,6 +10,8 @@ Christoph Engelbert <https://github.com/noctarius[@noctarius2k]>
 
 image:https://badges.gitter.im/Join%20Chat.svg[link="https://gitter.im/noctarius/tengi?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
 image:https://noctarius.ci.cloudbees.com/job/tengi/badge/icon[link="https://noctarius.ci.cloudbees.com/job/tengi"]
+image:https://coveralls.io/repos/noctarius/tengi/badge.svg?branch=master&service=github[link="https://coveralls.io/github/noctarius/tengi?branch=master"]
+image:https://img.shields.io/badge/license-Apache%20License%202-brightgreen.svg[link="http://www.apache.org/licenses/LICENSE-2.0"]
 
 tengi is designed as a cross-language communication platform. Using several distinct transport layers, tengi always finds the most efficient way to communicate between the client and server. +
 Available transports range from a plain _TCP_ transmission over _RDP_ (a reliable UDP implementation), standard _UDP_ or _HTTP Long-Polling_ as fallback.

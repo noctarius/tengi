@@ -385,6 +385,15 @@
           <scmBranch>gh-pages</scmBranch>
         </configuration>
       </plugin>
+
+      <plugin>
+        <groupId>org.eluder.coveralls</groupId>
+        <artifactId>coveralls-maven-plugin</artifactId>
+        <version>4.1.0</version>
+        <configuration>
+          <repoToken>e2DF8UJC4R8fuNX1Ds6AOTAWkxikz4FSR</repoToken>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 

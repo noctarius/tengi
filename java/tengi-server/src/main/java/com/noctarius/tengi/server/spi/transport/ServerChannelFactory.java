@@ -16,16 +16,14 @@
  */
 package com.noctarius.tengi.server.spi.transport;
 
-import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.spi.serialization.Serializer;
 
 import java.util.concurrent.Executor;
 
-public interface ServerChannelFactory {
+public interface ServerChannelFactory<S> {
 
-    ServerChannel newServerChannel(TransportLayer transportLayer, int port, Executor executor,
-                                   ConnectionManager connectionManager, Serializer serializer)
+    ServerChannel<S> newServerChannel(Endpoint endpoint, Executor executor, ConnectionManager connectionManager,
+                                      Serializer serializer)
             throws Throwable;
-
 }

@@ -17,16 +17,16 @@
 package com.noctarius.tengi.server.spi.transport;
 
 import com.noctarius.tengi.core.connection.TransportLayer;
-import io.netty.channel.Channel;
-import io.netty.channel.EventLoopGroup;
 
-public interface ServerChannel {
+public interface ServerChannel<S> {
 
-    Channel channel();
+    S socket();
 
-    EventLoopGroup bossGroup();
+    void start()
+            throws Exception;
 
-    EventLoopGroup workerGroup();
+    void shutdown()
+            throws Exception;
 
     int port();
 

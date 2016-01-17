@@ -61,17 +61,11 @@ class Http2ConnectionContext
         MemoryBuffer buffer = preparePacket(MemoryBufferFactory.create(bb));
         buffer.writeBuffer(memoryBuffer);
 
-        return FutureUtil.executeAsync(() -> {
-            Http2Headers headers = new DefaultHttp2Headers().status(HttpResponseStatus.OK.codeAsText());
-            encoder.writeHeaders(ctx, streamId, headers, 0, false, ctx.newPromise());
-            encoder.writeData(ctx, streamId, bb, 0, false, ctx.newPromise());
-            ctx.flush();
-            return message;
-        });
+        return FutureUtil.executeAsync(() -> writeToStream(bb, message));
     }
 
     @Override
-    public CompletableFuture<Connection> writeSocket(Http2ConnectionEncoder socket, Connection connection,
+    public CompletableFuture<Connection> writeSocket(Http2ConnectionEncoder encoder, Connection connection,
                                                      MemoryBuffer memoryBuffer)
             throws Exception {
 
@@ -79,13 +73,7 @@ class Http2ConnectionContext
         MemoryBuffer buffer = preparePacket(MemoryBufferFactory.create(bb));
         buffer.writeBuffer(memoryBuffer);
 
-        return FutureUtil.executeAsync(() -> {
-            Http2Headers headers = new DefaultHttp2Headers().status(HttpResponseStatus.OK.codeAsText());
-            encoder.writeHeaders(ctx, streamId, headers, 0, false, ctx.newPromise());
-            encoder.writeData(ctx, streamId, bb, 0, false, ctx.newPromise());
-            ctx.flush();
-            return connection;
-        });
+        return FutureUtil.executeAsync(() -> writeToStream(bb, connection));
     }
 
     @Override
@@ -97,4 +85,11 @@ class Http2ConnectionContext
         });
     }
 
+    private <R> R writeToStream(ByteBuf buffer, R returnObject) {
+        Http2Headers headers = new DefaultHttp2Headers().status(HttpResponseStatus.OK.codeAsText());
+        encoder.writeHeaders(ctx, streamId, headers, 0, false, ctx.newPromise());
+        encoder.writeData(ctx, streamId, buffer, 0, false, ctx.newPromise());
+        ctx.flush();
+        return returnObject;
+    }
 }

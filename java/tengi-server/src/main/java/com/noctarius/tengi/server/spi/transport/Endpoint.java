@@ -14,15 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server;
+package com.noctarius.tengi.server.spi.transport;
 
-import com.noctarius.tengi.core.connection.TransportLayer;
-
-class Endpoint {
+public final class Endpoint {
     private final int port;
-    private final TransportLayer transportLayer;
+    private final ServerTransportLayer transportLayer;
 
-    Endpoint(int port, TransportLayer transportLayer) {
+    public Endpoint(int port, ServerTransportLayer transportLayer) {
         this.port = port;
         this.transportLayer = transportLayer;
     }
@@ -31,7 +29,7 @@ class Endpoint {
         return port;
     }
 
-    public TransportLayer getTransportLayer() {
+    public ServerTransportLayer getTransportLayer() {
         return transportLayer;
     }
 

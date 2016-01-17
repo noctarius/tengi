@@ -18,10 +18,8 @@ package com.noctarius.tengi.server.spi.negotiation;
 
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.spi.serialization.Serializer;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
 
-public interface NegotiationContext {
+public interface NegotiationContext<CX, CH> {
 
     ConnectionManager getConnectionManager();
 
@@ -33,6 +31,6 @@ public interface NegotiationContext {
 
     <T> void attribute(String name, T value);
 
-    void injectChannelHandler(ChannelHandlerContext ctx, String name, ChannelHandler handler);
+    void injectChannelHandler(CX channelContext, CH channelHandler);
 
 }

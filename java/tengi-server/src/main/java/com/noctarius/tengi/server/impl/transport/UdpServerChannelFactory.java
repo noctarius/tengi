@@ -19,10 +19,12 @@ package com.noctarius.tengi.server.impl.transport;
 import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.transport.negotiation.UdpBinaryNegotiator;
+import com.noctarius.tengi.server.spi.transport.Endpoint;
 import com.noctarius.tengi.server.spi.transport.ServerChannel;
 import com.noctarius.tengi.server.spi.transport.ServerChannelFactory;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -32,12 +34,15 @@ import io.netty.channel.socket.SocketChannel;
 import java.util.concurrent.Executor;
 
 public class UdpServerChannelFactory
-        implements ServerChannelFactory {
+        implements ServerChannelFactory<Channel> {
 
     @Override
-    public ServerChannel newServerChannel(TransportLayer transportLayer, int port, Executor executor,
-                                          ConnectionManager connectionManager, Serializer serializer)
+    public ServerChannel newServerChannel(Endpoint endpoint, Executor executor, ConnectionManager connectionManager,
+                                          Serializer serializer)
             throws Throwable {
+
+        int port = endpoint.getPort();
+        TransportLayer transportLayer = endpoint.getTransportLayer();
 
         NioEventLoopGroup eventLoopGroup = new NioEventLoopGroup(8, executor);
         Bootstrap bootstrap = new Bootstrap();
@@ -48,7 +53,7 @@ public class UdpServerChannelFactory
         if (future.cause() != null) {
             throw future.cause();
         }
-        return new SimpleServerChannel(future.channel(), eventLoopGroup, eventLoopGroup, port, transportLayer);
+        return new NettyServerChannel(future.channel(), eventLoopGroup, eventLoopGroup, port, transportLayer);
     }
 
     private static class UdpProtocolNegotiator

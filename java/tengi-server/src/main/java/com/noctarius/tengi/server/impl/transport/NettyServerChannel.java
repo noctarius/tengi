@@ -21,8 +21,8 @@ import com.noctarius.tengi.server.spi.transport.ServerChannel;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
 
-class SimpleServerChannel
-        implements ServerChannel {
+class NettyServerChannel
+        implements ServerChannel<Channel> {
 
     private final Channel channel;
     private final EventLoopGroup bossGroup;
@@ -30,8 +30,8 @@ class SimpleServerChannel
     private final int port;
     private final TransportLayer transportLayer;
 
-    SimpleServerChannel(Channel channel, EventLoopGroup bossGroup, EventLoopGroup workerGroup, int port,
-                        TransportLayer transportLayer) {
+    NettyServerChannel(Channel channel, EventLoopGroup bossGroup, EventLoopGroup workerGroup, int port,
+                       TransportLayer transportLayer) {
 
         this.channel = channel;
         this.bossGroup = bossGroup;
@@ -41,18 +41,21 @@ class SimpleServerChannel
     }
 
     @Override
-    public Channel channel() {
+    public Channel socket() {
         return channel;
     }
 
     @Override
-    public EventLoopGroup bossGroup() {
-        return bossGroup;
+    public void start() {
     }
 
     @Override
-    public EventLoopGroup workerGroup() {
-        return workerGroup;
+    public void shutdown()
+            throws Exception {
+
+        channel.close().sync().get();
+        bossGroup.shutdownGracefully();
+        workerGroup.shutdownGracefully();
     }
 
     @Override
@@ -63,5 +66,13 @@ class SimpleServerChannel
     @Override
     public TransportLayer transportLayer() {
         return transportLayer;
+    }
+
+    public EventLoopGroup bossGroup() {
+        return bossGroup;
+    }
+
+    public EventLoopGroup workerGroup() {
+        return workerGroup;
     }
 }

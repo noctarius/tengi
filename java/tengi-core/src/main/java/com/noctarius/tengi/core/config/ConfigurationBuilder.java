@@ -16,8 +16,8 @@
  */
 package com.noctarius.tengi.core.config;
 
-import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.connection.HandshakeHandler;
+import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.impl.Validate;
 import com.noctarius.tengi.core.serialization.marshaller.Marshaller;
 import com.noctarius.tengi.core.serialization.marshaller.MarshallerFilter;
@@ -49,6 +49,8 @@ public class ConfigurationBuilder {
     protected final List<Transport> transports = new ArrayList<>();
     protected final Map<Transport, Integer> transportPorts = new HashMap<>();
     protected boolean sslEnabled = false;
+    protected boolean gzipEnabled = false;
+    protected boolean snappyEnabled = false;
     protected HandshakeHandler handshakeHandler = null;
 
     /**
@@ -154,6 +156,34 @@ public class ConfigurationBuilder {
     }
 
     /**
+     * Defines if the {@link com.noctarius.tengi.core.connection.Transport}s should use GZIP compression.
+     * This only applies to transports that support GZIP compression connection. Please refer to
+     * any <tt>Transport</tt> documentation to find out if GZIP compression is supported or not.
+     * Calling this method multiple times will override any previously set value.
+     *
+     * @param gzipEnabled true to enable GZIP compression, false to disable it
+     * @return this instance of the <tt>ConfigurationBuilder</tt> for fluent programing style
+     */
+    public ConfigurationBuilder gzip(boolean gzipEnabled) {
+        this.gzipEnabled = gzipEnabled;
+        return this;
+    }
+
+    /**
+     * Defines if the {@link com.noctarius.tengi.core.connection.Transport}s should use Snappy compression.
+     * This only applies to transports that support Snappy compression connection. Please refer to
+     * any <tt>Transport</tt> documentation to find out if Snappy compression is supported or not.
+     * Calling this method multiple times will override any previously set value.
+     *
+     * @param snappyEnabled true to enable Snappy compression, false to disable it
+     * @return this instance of the <tt>ConfigurationBuilder</tt> for fluent programing style
+     */
+    public ConfigurationBuilder snappy(boolean snappyEnabled) {
+        this.snappyEnabled = snappyEnabled;
+        return this;
+    }
+
+    /**
      * Defines the {@link com.noctarius.tengi.core.connection.HandshakeHandler} instance
      * to verify, accept or deny new connection handshakes. On client-side additional information can be
      * extracted from the handshake response retrieved from the server.
@@ -174,7 +204,8 @@ public class ConfigurationBuilder {
      * @return an immutable <tt>Configuration</tt> instance bound to the prior configured settings
      */
     public Configuration build() {
-        return new ConfigurationImpl(marshallers, transports, transportPorts, sslEnabled, handshakeHandler);
+        return new ConfigurationImpl( //
+                marshallers, transports, transportPorts, sslEnabled, gzipEnabled, snappyEnabled, handshakeHandler);
     }
 
     protected static class ConfigurationImpl
@@ -184,15 +215,20 @@ public class ConfigurationBuilder {
         private final List<Transport> transports;
         private final Map<Transport, Integer> transportPorts;
         private final boolean sslEnabled;
+        private boolean gzipEnabled = false;
+        private boolean snappyEnabled = false;
         private final HandshakeHandler handshakeHandler;
 
         protected ConfigurationImpl(Set<MarshallerConfiguration> marshallers, List<Transport> transports,
-                                 Map<Transport, Integer> transportPorts, boolean sslEnabled, HandshakeHandler handshakeHandler) {
+                                    Map<Transport, Integer> transportPorts, boolean sslEnabled, boolean gzipEnabled,
+                                    boolean snappyEnabled, HandshakeHandler handshakeHandler) {
 
             this.marshallers = Collections.unmodifiableSet(new HashSet<>(marshallers));
             this.transports = Collections.unmodifiableList(new ArrayList<>(transports));
             this.transportPorts = Collections.unmodifiableMap(new HashMap<>(transportPorts));
             this.sslEnabled = sslEnabled;
+            this.gzipEnabled = gzipEnabled;
+            this.snappyEnabled = snappyEnabled;
             this.handshakeHandler = handshakeHandler;
         }
 
@@ -223,6 +259,16 @@ public class ConfigurationBuilder {
         @Override
         public boolean isSslEnabled() {
             return sslEnabled;
+        }
+
+        @Override
+        public boolean isGzipEnabled() {
+            return gzipEnabled;
+        }
+
+        @Override
+        public boolean isSnappyEnabled() {
+            return snappyEnabled;
         }
 
         @Override

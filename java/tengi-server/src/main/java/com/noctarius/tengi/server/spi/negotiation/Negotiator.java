@@ -16,11 +16,8 @@
  */
 package com.noctarius.tengi.server.spi.negotiation;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
+public interface Negotiator<CX, B> {
 
-public interface Negotiator {
-
-    NegotiationResult handleProtocol(NegotiationContext context, ChannelHandlerContext ctx, ByteBuf buffer);
+    NegotiationResult handleProtocol(NegotiationContext context, CX channelContext, B buffer);
 
 }

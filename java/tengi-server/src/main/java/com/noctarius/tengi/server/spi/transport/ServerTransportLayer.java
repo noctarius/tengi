@@ -18,9 +18,9 @@ package com.noctarius.tengi.server.spi.transport;
 
 import com.noctarius.tengi.core.connection.TransportLayer;
 
-public interface ServerTransportLayer
+public interface ServerTransportLayer<S>
         extends TransportLayer {
 
-    ServerChannelFactory serverChannelFactory();
+    ServerChannelFactory<S> serverChannelFactory();
 
 }

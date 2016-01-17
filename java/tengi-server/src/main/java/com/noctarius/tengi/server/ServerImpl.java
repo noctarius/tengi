@@ -25,6 +25,7 @@ import com.noctarius.tengi.core.impl.VersionUtil;
 import com.noctarius.tengi.core.listener.ConnectedListener;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.EventManager;
+import com.noctarius.tengi.server.spi.transport.Endpoint;
 import com.noctarius.tengi.server.spi.transport.ServerChannel;
 import com.noctarius.tengi.server.spi.transport.ServerChannelFactory;
 import com.noctarius.tengi.server.spi.transport.ServerTransportLayer;
@@ -33,19 +34,15 @@ import com.noctarius.tengi.spi.logging.Logger;
 import com.noctarius.tengi.spi.logging.LoggerManager;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import com.noctarius.tengi.spi.statemachine.StateMachine;
-import io.netty.channel.Channel;
-import io.netty.channel.EventLoopGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 
 import java.util.HashMap;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
@@ -58,7 +55,7 @@ class ServerImpl
 
     private final StateMachine<ServerState> serverState = createStateMachine();
 
-    private final Map<Endpoint, ServerChannel> coordinates = new HashMap<>();
+    private final Map<Endpoint, ServerChannel> channelEngpoints = new HashMap<>();
 
     private final ConnectionManager connectionManager;
 
@@ -68,8 +65,6 @@ class ServerImpl
 
     private final Configuration configuration;
     private final Serializer serializer;
-
-    private final List<Channel> channels = new CopyOnWriteArrayList<>();
 
     ServerImpl(Configuration configuration)
             throws Exception {
@@ -107,11 +102,10 @@ class ServerImpl
     public CompletableFuture<Server> stop() {
         return FutureUtil.executeAsync(() -> {
             if (serverState.transit(ServerState.Shutdown)) {
-                for (Channel channel : channels) {
-                    channel.close().sync();
+                for (ServerChannel channel : channelEngpoints.values()) {
+                    channel.shutdown();
                 }
 
-                coordinates.values().forEach(this::stopEventLoopGroups);
                 executor.shutdown();
 
                 connectionManager.stop();
@@ -123,16 +117,6 @@ class ServerImpl
         });
     }
 
-    private void stopEventLoopGroups(ServerChannel serverChannel) {
-        EventLoopGroup bossGroup = serverChannel.bossGroup();
-        EventLoopGroup workerGroup = serverChannel.workerGroup();
-
-        bossGroup.shutdownGracefully();
-        if (bossGroup != workerGroup) {
-            workerGroup.shutdownGracefully();
-        }
-    }
-
     private void bindChannels()
             throws Throwable {
 
@@ -140,11 +124,12 @@ class ServerImpl
         for (Map.Entry<Endpoint, Set<Transport>> entry : transportLayers.entrySet()) {
             Endpoint endpoint = entry.getKey();
             Set<Transport> transports = entry.getValue();
-            ServerTransportLayer transportLayer = (ServerTransportLayer) endpoint.getTransportLayer();
-            channels.add(createChannel(transportLayer, endpoint.getPort(), transports));
+            ServerChannel channel = createServerChannel(endpoint, transports);
+            channel.start();
         }
     }
 
+    // TODO: Remove netty dependency
     private SslContext createSslContext()
             throws Exception {
 
@@ -163,7 +148,7 @@ class ServerImpl
     private Map<Endpoint, Set<Transport>> collectTransportLayers(Configuration configuration) {
         Function<Transport, Endpoint> coordinater = (transport) -> {
             int port = configuration.getTransportPort(transport);
-            return new Endpoint(port, transport.getTransportLayer());
+            return new Endpoint(port, (ServerTransportLayer) transport.getTransportLayer());
         };
 
         Map<Endpoint, Set<Transport>> transports = configuration.getTransports().stream().filter(t -> t
@@ -175,20 +160,13 @@ class ServerImpl
         return transports;
     }
 
-    private Channel createChannel(ServerTransportLayer transportLayer, int port, Set<Transport> transports)
+    private ServerChannel createServerChannel(Endpoint endpoint, Set<Transport> transports)
             throws Throwable {
 
-        ServerChannel serverChannel = createServerChannel(transportLayer, port, transports);
-
-        coordinates.put(new Endpoint(port, transportLayer), serverChannel);
-        return serverChannel.channel();
-    }
-
-    private ServerChannel createServerChannel(ServerTransportLayer transportLayer, int port, Set<Transport> transports)
-            throws Throwable {
-
-        ServerChannelFactory channelFactory = transportLayer.serverChannelFactory();
-        return channelFactory.newServerChannel(transportLayer, port, executor, connectionManager, serializer);
+        ServerChannelFactory channelFactory = endpoint.getTransportLayer().serverChannelFactory();
+        ServerChannel channel = channelFactory.newServerChannel(endpoint, executor, connectionManager, serializer);
+        channelEngpoints.put(endpoint, channel);
+        return channel;
     }
 
     private Serializer createSerializer(Configuration configuration) {

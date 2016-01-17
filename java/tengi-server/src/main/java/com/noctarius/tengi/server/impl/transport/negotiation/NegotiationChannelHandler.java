@@ -31,6 +31,7 @@ import io.netty.channel.ChannelPipeline;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@ChannelHandler.Sharable
 public class NegotiationChannelHandler
         extends ChannelInboundHandlerAdapter {
 
@@ -69,8 +70,11 @@ public class NegotiationChannelHandler
             case Successful:
                 ctx.pipeline().remove(this);
                 ctx.fireChannelRead(object);
+                return;
 
             case Restart:
+                ctx.fireChannelRead(object);
+
             case InsufficientBuffer:
                 return;
         }
@@ -100,7 +104,7 @@ public class NegotiationChannelHandler
     }
 
     private class Context
-            implements NegotiationContext {
+            implements NegotiationContext<ChannelHandlerContext, ChannelHandler> {
 
         private final Map<String, Object> attributes = new ConcurrentHashMap<>();
 
@@ -130,17 +134,12 @@ public class NegotiationChannelHandler
         }
 
         @Override
-        public void injectChannelHandler(ChannelHandlerContext ctx, String name, ChannelHandler handler) {
+        public void injectChannelHandler(ChannelHandlerContext ctx, ChannelHandler handler) {
             ChannelPipeline pipeline = ctx.pipeline();
 
-            ChannelHandlerContext lastContext = pipeline.lastContext();
-            ChannelHandler lastHandler = lastContext.handler();
-            String lastName = lastContext.name();
-
-            //pipeline.addLast(name, handler);
-            //pipeline.remove(lastHandler);
-            //pipeline.addLast(lastName, lastHandler);
-            pipeline.addBefore(lastName, name, handler);
+            pipeline.addLast(handler);
+            pipeline.remove(ctx.handler());
+            pipeline.addLast(ctx.handler());
         }
     }
 

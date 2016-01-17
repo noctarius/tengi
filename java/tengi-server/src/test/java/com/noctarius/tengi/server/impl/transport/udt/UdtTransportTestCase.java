@@ -30,29 +30,16 @@ import com.noctarius.tengi.spi.serialization.Serializer;
 import com.noctarius.tengi.spi.serialization.codec.AutoClosableEncoder;
 import com.noctarius.tengi.spi.serialization.codec.impl.DefaultCodec;
 import com.noctarius.tengi.spi.serialization.impl.DefaultProtocol;
-import com.noctarius.tengi.spi.serialization.impl.DefaultProtocolConstants;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import org.eclipse.jetty.http.HttpFields;
-import org.eclipse.jetty.http.HttpHeader;
-import org.eclipse.jetty.http.HttpURI;
-import org.eclipse.jetty.http.HttpVersion;
-import org.eclipse.jetty.http.MetaData;
-import org.eclipse.jetty.http2.api.Session;
-import org.eclipse.jetty.http2.api.Stream;
-import org.eclipse.jetty.http2.client.HTTP2Client;
-import org.eclipse.jetty.http2.frames.DataFrame;
-import org.eclipse.jetty.http2.frames.HeadersFrame;
-import org.eclipse.jetty.util.FuturePromise;
 import org.junit.Test;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.Assert.assertEquals;
 
@@ -60,7 +47,7 @@ public class UdtTransportTestCase
         extends AbstractStreamingTransportTestCase {
 
     @Test(timeout = 120000)
-    public void test_http2_transport()
+    public void test_udt_transport()
             throws Exception {
 
         Serializer serializer = Serializer.create(new DefaultProtocol(Collections.emptyList()));
@@ -70,7 +57,7 @@ public class UdtTransportTestCase
         packet.setValue("username", "Stan");
         Message message = Message.create(packet);
 
-        ChannelReader<Http2TestClient, ByteBuf> channelReader = (client, buffer) -> {
+        ChannelReader<UdtTestClient, ByteBuf> channelReader = (client, buffer) -> {
             MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
             DefaultCodec codec = new DefaultCodec(serializer.getProtocol(), memoryBuffer);
 
@@ -85,7 +72,7 @@ public class UdtTransportTestCase
             future.complete(object);
         };
 
-        Runner<Object, Http2TestClient> runner = (client) -> {
+        Runner<Object, UdtTestClient> runner = (client) -> {
             ByteBuf buffer = Unpooled.buffer();
             MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
             DefaultCodec codec = new DefaultCodec(serializer.getProtocol(), memoryBuffer);
@@ -99,19 +86,21 @@ public class UdtTransportTestCase
             return result;
         };
 
-        Object response = practice(runner, clientFactory(channelReader), false, ServerTransports.HTTP2_TRANSPORT);
+        Object response = practice(runner, clientFactory(channelReader), false, ServerTransports.UDT_TRANSPORT);
         assertEquals(message, response);
+
+        Thread.sleep(5000);
     }
 
     @Test(timeout = 120000)
-    public void test_http2_transport_ping_pong()
+    public void test_udt_transport_ping_pong()
             throws Exception {
 
         Serializer serializer = Serializer.create(new DefaultProtocol(Collections.emptyList()));
 
         CompletableFuture<Packet> future = new CompletableFuture<>();
 
-        ChannelReader<Http2TestClient, ByteBuf> channelReader = (client, buffer) -> {
+        ChannelReader<UdtTestClient, ByteBuf> channelReader = (client, buffer) -> {
             MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
             DefaultCodec codec = new DefaultCodec(serializer.getProtocol(), memoryBuffer);
 
@@ -149,7 +138,7 @@ public class UdtTransportTestCase
             }
         };
 
-        Runner<Packet, Http2TestClient> runner = (client) -> {
+        Runner<Packet, UdtTestClient> runner = (client) -> {
             ByteBuf buffer = Unpooled.buffer();
             MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
             DefaultCodec codec = new DefaultCodec(serializer.getProtocol(), memoryBuffer);
@@ -163,11 +152,11 @@ public class UdtTransportTestCase
             return result;
         };
 
-        Packet response = practice(runner, clientFactory(channelReader), false, ServerTransports.HTTP2_TRANSPORT);
+        Packet response = practice(runner, clientFactory(channelReader), false, ServerTransports.UDT_TRANSPORT);
         assertEquals(4, (int) response.getValue("counter"));
     }
 
-    private static void writeChannel(Serializer serializer, Http2TestClient client, Identifier connectionId, Object value)
+    private static void writeChannel(Serializer serializer, UdtTestClient client, Identifier connectionId, Object value)
             throws Exception {
 
         ByteBuf buffer = Unpooled.directBuffer();
@@ -180,76 +169,66 @@ public class UdtTransportTestCase
         client.sendMessage(buffer);
     }
 
-    private static ClientFactory<Http2TestClient> clientFactory(ChannelReader<Http2TestClient, ByteBuf> channelReader) {
-        SocketUDT socket = new SocketUDT(TypeUDT.STREAM);
-        socket.connect(InetAddress.getByName("localhost:9090"));
-
-        return (host, port, ssl, group) -> new Http2TestClient(host, port, ssl, channelReader);
+    private static ClientFactory<UdtTestClient> clientFactory(ChannelReader<UdtTestClient, ByteBuf> channelReader) {
+        return (host, port, ssl, group) -> new UdtTestClient(host, port, ssl, channelReader);
     }
 
-    public static class Http2TestClient {
+    public static class UdtTestClient {
 
-        private final HTTP2Client client = new HTTP2Client();
-        private final Session session;
-        private final ChannelReader<Http2TestClient, ByteBuf> channelReader;
-        private final HttpURI httpURI;
+        private final SocketUDT socket;
+        private final ChannelReader<UdtTestClient, ByteBuf> channelReader;
+        private final AtomicBoolean stop = new AtomicBoolean(false);
 
-        private Http2TestClient(String host, int port, boolean ssl, ChannelReader<Http2TestClient, ByteBuf> channelReader)
+        private UdtTestClient(String host, int port, boolean ssl, ChannelReader<UdtTestClient, ByteBuf> channelReader)
                 throws Exception {
 
             this.channelReader = channelReader;
-            this.httpURI = new HttpURI(createURI(host, port, ssl));
+            this.socket = new SocketUDT(TypeUDT.STREAM);
+            this.socket.setBlocking(false);
+            this.socket.connect(new InetSocketAddress(host, port));
 
-            FuturePromise<Session> promise = new FuturePromise<>();
-            client.start();
-            client.connect(new InetSocketAddress(host, port), new Session.Listener.Adapter(), promise);
-            this.session = promise.get();
-        }
+            while (!this.socket.isConnected()) {
+                Thread.yield();
+            }
 
-        private URI createURI(String host, int port, boolean ssl) {
-            String url = (ssl ? "https" : "http") + "://" + host + ":" + port + "/channel";
-            return URI.create(url);
+            new Thread(new Worker()).start();
         }
 
         private void sendMessage(ByteBuf buffer)
                 throws Exception {
 
-            ByteBuffer nioBuffer = buffer.nioBuffer();
-            if (buffer.isDirect()) {
-                nioBuffer = Unpooled.copiedBuffer(buffer).nioBuffer();
-            }
+            ByteBuffer nioBuffer = Unpooled.directBuffer(buffer.writerIndex()).writeBytes(buffer).nioBuffer();
 
-            HttpFields requestFields = new HttpFields();
-            requestFields.put(HttpHeader.CONTENT_TYPE, DefaultProtocolConstants.PROTOCOL_MIME_TYPE);
-
-            MetaData.Request request = new MetaData.Request("PUT", httpURI, HttpVersion.HTTP_2, requestFields);
-            HeadersFrame headersFrame = new HeadersFrame(0, request, null, false);
-
-            Stream.Listener listener = new Stream.Listener.Adapter() {
-                @Override
-                public void onData(Stream stream, DataFrame frame, org.eclipse.jetty.util.Callback callback) {
-                    ByteBuf buf = Unpooled.wrappedBuffer(frame.getData());
-                    try {
-                        channelReader.channelRead(Http2TestClient.this, buf);
-                        callback.succeeded();
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    }
-                }
-            };
-
-            FuturePromise<Stream> promise = new FuturePromise<>();
-            session.newStream(headersFrame, promise, listener);
-
-            Stream stream = promise.get();
-            DataFrame requestContent = new DataFrame(stream.getId(), nioBuffer, true);
-            stream.data(requestContent, org.eclipse.jetty.util.Callback.Adapter.INSTANCE);
+            socket.send(nioBuffer);
         }
 
         private void close()
                 throws Exception {
 
-            client.stop();
+            stop.set(true);
+            socket.close();
+        }
+
+        private final class Worker
+                implements Runnable {
+
+            @Override
+            public void run() {
+                ByteBuffer buffer = ByteBuffer.allocateDirect(1024);
+
+                while (!stop.get()) {
+                    try {
+                        if (socket.isConnected() && socket.receive(buffer) > 0) {
+                            buffer.flip();
+                            ByteBuf buf = Unpooled.copiedBuffer(buffer);
+                            channelReader.channelRead(UdtTestClient.this, buf);
+                            buffer.clear();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
     }
 

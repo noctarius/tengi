@@ -18,8 +18,6 @@ package com.noctarius.tengi.server.impl.transport.udt;
 
 import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.server.impl.ConnectionManager;
-import com.noctarius.tengi.server.impl.transport.NettyServerChannel;
-import com.noctarius.tengi.server.impl.transport.udt.UdtConnectionProcessor;
 import com.noctarius.tengi.server.spi.transport.Endpoint;
 import com.noctarius.tengi.server.spi.transport.ServerChannel;
 import com.noctarius.tengi.server.spi.transport.ServerChannelFactory;
@@ -49,6 +47,8 @@ public class UdtServerChannelFactory
         NioEventLoopGroup eventLoopGroup = new NioEventLoopGroup(8, executor, NioUdtProvider.BYTE_PROVIDER);
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.option(ChannelOption.SO_BACKLOG, 1024) //
+                 .option(ChannelOption.SO_LINGER, 0) //
+                 .childOption(ChannelOption.SO_LINGER, 0) //
                  .group(eventLoopGroup, eventLoopGroup) //
                  .channelFactory(NioUdtProvider.BYTE_ACCEPTOR) //
                  .childHandler(new UdtChannelInitializer(connectionManager, serializer));
@@ -57,7 +57,7 @@ public class UdtServerChannelFactory
         if (future.cause() != null) {
             throw future.cause();
         }
-        return new NettyServerChannel(future.channel(), eventLoopGroup, eventLoopGroup, port, transportLayer);
+        return new UdtServerChannel(future.channel(), eventLoopGroup, eventLoopGroup, port, transportLayer);
     }
 
     private static class UdtChannelInitializer

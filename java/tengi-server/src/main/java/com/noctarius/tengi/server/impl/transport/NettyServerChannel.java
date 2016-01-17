@@ -24,14 +24,14 @@ import io.netty.channel.EventLoopGroup;
 public class NettyServerChannel
         implements ServerChannel<Channel> {
 
-    private final Channel channel;
-    private final EventLoopGroup bossGroup;
-    private final EventLoopGroup workerGroup;
-    private final int port;
-    private final TransportLayer transportLayer;
+    protected final Channel channel;
+    protected final EventLoopGroup bossGroup;
+    protected final EventLoopGroup workerGroup;
+    protected final int port;
+    protected final TransportLayer transportLayer;
 
     public NettyServerChannel(Channel channel, EventLoopGroup bossGroup, EventLoopGroup workerGroup, int port,
-                       TransportLayer transportLayer) {
+                              TransportLayer transportLayer) {
 
         this.channel = channel;
         this.bossGroup = bossGroup;
@@ -54,8 +54,8 @@ public class NettyServerChannel
             throws Exception {
 
         channel.close().sync().get();
-        bossGroup.shutdownGracefully();
-        workerGroup.shutdownGracefully();
+        bossGroup.shutdownGracefully().sync().get();
+        workerGroup.shutdownGracefully().sync().get();
     }
 
     @Override

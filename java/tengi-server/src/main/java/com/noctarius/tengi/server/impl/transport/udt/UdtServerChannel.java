@@ -16,5 +16,37 @@
  */
 package com.noctarius.tengi.server.impl.transport.udt;
 
-public class UdtServerChannel {
+import com.barchart.udt.SocketUDT;
+import com.noctarius.tengi.core.connection.TransportLayer;
+import com.noctarius.tengi.server.impl.transport.NettyServerChannel;
+import io.netty.channel.Channel;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.udt.nio.NioUdtProvider;
+
+class UdtServerChannel
+        extends NettyServerChannel {
+
+    UdtServerChannel(Channel channel, EventLoopGroup bossGroup, EventLoopGroup workerGroup, int port,
+                     TransportLayer transportLayer) {
+
+        super(channel, bossGroup, workerGroup, port, transportLayer);
+    }
+
+    @Override
+    public void shutdown()
+            throws Exception {
+
+        SocketUDT socket = NioUdtProvider.channelUDT(channel).socketUDT();
+        channel.close().sync().get();
+
+        while (true) {
+            if (socket.isClosed()) {
+                break;
+            }
+            Thread.yield();
+        }
+
+        bossGroup.shutdownGracefully().sync().get();
+        workerGroup.shutdownGracefully().sync().get();
+    }
 }

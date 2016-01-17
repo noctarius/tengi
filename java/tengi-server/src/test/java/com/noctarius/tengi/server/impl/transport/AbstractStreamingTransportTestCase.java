@@ -22,16 +22,13 @@ import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.server.Server;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 
 public abstract class AbstractStreamingTransportTestCase {
 
-    protected static <T, C> T practice(Runner<T, C> runner,
-                                       ClientFactory<C> clientFactory, boolean ssl, Transport... serverTransports)
+    protected static <T, C> T practice(Runner<T, C> runner, ClientFactory<C> clientFactory, boolean ssl,
+                                       Transport... serverTransports)
             throws Exception {
 
         Configuration configuration = new ConfigurationBuilder().addTransport(serverTransports).ssl(ssl).build();
@@ -40,8 +37,10 @@ public abstract class AbstractStreamingTransportTestCase {
 
         EventLoopGroup group = new NioEventLoopGroup();
 
+        int port = configuration.getTransportPort(serverTransports[0]);
+
         try {
-            C client = clientFactory.createClient("localhost", 8080, ssl, group);
+            C client = clientFactory.createClient("localhost", port, ssl, group);
             T result = runner.run(client);
 
             return result;

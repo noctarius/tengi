@@ -21,7 +21,7 @@ public final class TransportConstants {
     private TransportConstants() {
     }
 
-    public static final String TRANSPORT_NAME_TCP = "tengi::transport::tcp";
+    public static final String TRANSPORT_NAME_TCP = "tengi::transport::tengi";
     public static final String TRANSPORT_NAME_HTTP = "tengi::transport::http/1.1";
     public static final String TRANSPORT_NAME_HTTP2 = "tengi::transport::http/2.0";
     public static final String TRANSPORT_NAME_WEBSOCKET = "tengi::transport::websocket/binary";

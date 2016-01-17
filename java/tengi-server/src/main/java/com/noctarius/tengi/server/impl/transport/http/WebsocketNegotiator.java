@@ -14,13 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl.transport.negotiation;
+package com.noctarius.tengi.server.impl.transport.http;
 
 import com.noctarius.tengi.core.exception.ConnectionFailedException;
 import com.noctarius.tengi.server.ServerTransports;
 import com.noctarius.tengi.server.impl.ConnectionManager;
-import com.noctarius.tengi.server.impl.transport.http.HttpConnectionProcessor;
-import com.noctarius.tengi.server.impl.transport.websocket.WebsocketConnectionProcessor;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -34,14 +32,14 @@ import io.netty.util.ReferenceCountUtil;
 
 import static com.noctarius.tengi.spi.connection.impl.TransportConstants.WEBSOCKET_RELATIVE_PATH;
 
-public class WebsocketNegotiator
+class WebsocketNegotiator
         extends ChannelInboundHandlerAdapter {
 
     private final int port;
     private final ConnectionManager connectionManager;
     private final Serializer serializer;
 
-    public WebsocketNegotiator(int port, ConnectionManager connectionManager, Serializer serializer) {
+    WebsocketNegotiator(int port, ConnectionManager connectionManager, Serializer serializer) {
         this.port = port;
         this.connectionManager = connectionManager;
         this.serializer = serializer;

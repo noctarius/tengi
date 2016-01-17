@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl.transport;
+package com.noctarius.tengi.server.impl.transport.udp;
 
 import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.server.impl.ConnectionManager;
+import com.noctarius.tengi.server.impl.transport.NettyServerChannel;
 import com.noctarius.tengi.server.impl.transport.negotiation.UdpBinaryNegotiator;
 import com.noctarius.tengi.server.spi.transport.Endpoint;
 import com.noctarius.tengi.server.spi.transport.ServerChannel;

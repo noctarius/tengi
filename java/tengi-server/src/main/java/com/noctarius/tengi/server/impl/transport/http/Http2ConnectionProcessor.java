@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl.transport.http2;
+package com.noctarius.tengi.server.impl.transport.http;
 
 import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.HandshakeHandler;
@@ -43,12 +43,12 @@ import io.netty.handler.codec.http2.Http2Headers;
 import static com.noctarius.tengi.server.impl.ServerUtil.CONNECTION_ID;
 import static com.noctarius.tengi.server.impl.ServerUtil.connectionAttribute;
 
-public class Http2ConnectionProcessor
+class Http2ConnectionProcessor
         extends Http2ConnectionHandler {
 
     private final ConnectionManager connectionManager;
 
-    public Http2ConnectionProcessor(ConnectionManager connectionManager, Serializer serializer) {
+    Http2ConnectionProcessor(ConnectionManager connectionManager, Serializer serializer) {
         super(new DefaultHttp2Connection(true), new InternalFrameAdapter());
         InternalFrameAdapter adapter = ((InternalFrameAdapter) decoder().listener());
         adapter.encoder(encoder());

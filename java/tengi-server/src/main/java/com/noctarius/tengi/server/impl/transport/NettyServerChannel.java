@@ -21,7 +21,7 @@ import com.noctarius.tengi.server.spi.transport.ServerChannel;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
 
-class NettyServerChannel
+public class NettyServerChannel
         implements ServerChannel<Channel> {
 
     private final Channel channel;
@@ -30,7 +30,7 @@ class NettyServerChannel
     private final int port;
     private final TransportLayer transportLayer;
 
-    NettyServerChannel(Channel channel, EventLoopGroup bossGroup, EventLoopGroup workerGroup, int port,
+    public NettyServerChannel(Channel channel, EventLoopGroup bossGroup, EventLoopGroup workerGroup, int port,
                        TransportLayer transportLayer) {
 
         this.channel = channel;

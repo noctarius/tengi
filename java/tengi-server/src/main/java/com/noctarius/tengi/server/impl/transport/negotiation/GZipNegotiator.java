@@ -27,6 +27,11 @@ import io.netty.handler.codec.compression.ZlibWrapper;
 public class GZipNegotiator
         implements NettyNegotiator {
 
+    public static final GZipNegotiator INSTANCE = new GZipNegotiator();
+
+    private GZipNegotiator() {
+    }
+
     @Override
     public NegotiationResult handleProtocol(NegotiationContext context, ChannelHandlerContext ctx, ByteBuf buffer) {
         if (buffer.readableBytes() < 2) {

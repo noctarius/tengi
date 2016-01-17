@@ -16,9 +16,9 @@
  */
 package com.noctarius.tengi.server;
 
-import com.noctarius.tengi.server.impl.transport.TcpServerChannelFactory;
-import com.noctarius.tengi.server.impl.transport.UdpServerChannelFactory;
-import com.noctarius.tengi.server.impl.transport.UdtServerChannelFactory;
+import com.noctarius.tengi.server.impl.transport.tcp.TcpServerChannelFactory;
+import com.noctarius.tengi.server.impl.transport.udp.UdpServerChannelFactory;
+import com.noctarius.tengi.server.impl.transport.udt.UdtServerChannelFactory;
 import com.noctarius.tengi.server.spi.transport.ServerChannelFactory;
 import com.noctarius.tengi.server.spi.transport.ServerTransportLayer;
 

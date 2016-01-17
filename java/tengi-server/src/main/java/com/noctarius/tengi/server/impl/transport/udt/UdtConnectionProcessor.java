@@ -16,38 +16,15 @@
  */
 package com.noctarius.tengi.server.impl.transport.udt;
 
-import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.server.ServerTransports;
 import com.noctarius.tengi.server.impl.ConnectionManager;
-import com.noctarius.tengi.server.impl.transport.ServerConnectionProcessor;
-import com.noctarius.tengi.spi.buffer.MemoryBuffer;
-import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
-import com.noctarius.tengi.spi.connection.ConnectionContext;
+import com.noctarius.tengi.server.impl.transport.base.AbstractBaseConnectionProcessor;
 import com.noctarius.tengi.spi.serialization.Serializer;
-import com.noctarius.tengi.spi.serialization.codec.AutoClosableDecoder;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
 
-@ChannelHandler.Sharable
-public class UdtConnectionProcessor
-        extends ServerConnectionProcessor<ByteBuf> {
+class UdtConnectionProcessor
+        extends AbstractBaseConnectionProcessor {
 
-    public UdtConnectionProcessor(ConnectionManager connectionManager, Serializer serializer) {
+    UdtConnectionProcessor(ConnectionManager connectionManager, Serializer serializer) {
         super(connectionManager, serializer, ServerTransports.UDT_TRANSPORT);
     }
-
-    @Override
-    protected AutoClosableDecoder decode(ChannelHandlerContext ctx, ByteBuf buffer)
-            throws Exception {
-
-        MemoryBuffer memoryBuffer = MemoryBufferFactory.create(buffer);
-        return getSerializer().retrieveDecoder(memoryBuffer);
-    }
-
-    @Override
-    protected ConnectionContext createConnectionContext(ChannelHandlerContext ctx, Identifier connectionId) {
-        return new UdtConnectionContext(ctx.channel(), connectionId, getSerializer(), getTransport());
-    }
-
 }

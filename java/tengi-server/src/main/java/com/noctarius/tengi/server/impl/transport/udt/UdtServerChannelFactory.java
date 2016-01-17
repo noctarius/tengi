@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl.transport;
+package com.noctarius.tengi.server.impl.transport.udt;
 
 import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.server.impl.ConnectionManager;
-import com.noctarius.tengi.server.impl.transport.negotiation.NegotiationChannelHandler;
+import com.noctarius.tengi.server.impl.transport.NettyServerChannel;
+import com.noctarius.tengi.server.impl.transport.udt.UdtConnectionProcessor;
 import com.noctarius.tengi.server.spi.transport.Endpoint;
 import com.noctarius.tengi.server.spi.transport.ServerChannel;
 import com.noctarius.tengi.server.spi.transport.ServerChannelFactory;
@@ -29,12 +30,12 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.udt.UdtChannel;
+import io.netty.channel.udt.nio.NioUdtProvider;
 
 import java.util.concurrent.Executor;
 
-public class TcpServerChannelFactory
+public class UdtServerChannelFactory
         implements ServerChannelFactory {
 
     @Override
@@ -45,12 +46,12 @@ public class TcpServerChannelFactory
         int port = endpoint.getPort();
         TransportLayer transportLayer = endpoint.getTransportLayer();
 
-        NioEventLoopGroup eventLoopGroup = new NioEventLoopGroup(8, executor);
+        NioEventLoopGroup eventLoopGroup = new NioEventLoopGroup(8, executor, NioUdtProvider.BYTE_PROVIDER);
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.option(ChannelOption.SO_BACKLOG, 1024) //
                  .group(eventLoopGroup, eventLoopGroup) //
-                 .channel(NioServerSocketChannel.class) //
-                 .childHandler(new TcpChannelInitializer(connectionManager, serializer, transportLayer, port));
+                 .channelFactory(NioUdtProvider.BYTE_ACCEPTOR) //
+                 .childHandler(new UdtChannelInitializer(connectionManager, serializer));
 
         ChannelFuture future = bootstrap.bind(port).sync();
         if (future.cause() != null) {
@@ -59,29 +60,23 @@ public class TcpServerChannelFactory
         return new NettyServerChannel(future.channel(), eventLoopGroup, eventLoopGroup, port, transportLayer);
     }
 
-    private static class TcpChannelInitializer
-            extends ChannelInitializer<SocketChannel> {
+    private static class UdtChannelInitializer
+            extends ChannelInitializer<UdtChannel> {
 
         private final ConnectionManager connectionManager;
-        private final TransportLayer transportLayer;
         private final Serializer serializer;
-        private final int port;
 
-        private TcpChannelInitializer(ConnectionManager connectionManager, Serializer serializer, TransportLayer transportLayer,
-                                      int port) {
-
+        private UdtChannelInitializer(ConnectionManager connectionManager, Serializer serializer) {
             this.connectionManager = connectionManager;
-            this.transportLayer = transportLayer;
             this.serializer = serializer;
-            this.port = port;
         }
 
         @Override
-        protected void initChannel(SocketChannel channel)
+        protected void initChannel(UdtChannel channel)
                 throws Exception {
 
             ChannelPipeline pipeline = channel.pipeline();
-            pipeline.addLast(new NegotiationChannelHandler(port, transportLayer, connectionManager, serializer));
+            pipeline.addLast("udt-connection-processor", new UdtConnectionProcessor(connectionManager, serializer));
         }
     }
 }

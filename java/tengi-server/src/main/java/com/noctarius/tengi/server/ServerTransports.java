@@ -19,11 +19,11 @@ package com.noctarius.tengi.server;
 import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.server.impl.transport.http.HttpTransport;
-import com.noctarius.tengi.server.impl.transport.http2.Http2Transport;
+import com.noctarius.tengi.server.impl.transport.http.Http2Transport;
 import com.noctarius.tengi.server.impl.transport.tcp.TcpTransport;
 import com.noctarius.tengi.server.impl.transport.udt.UdtTransport;
-import com.noctarius.tengi.server.impl.transport.websocket.WebsocketTransport;
-import com.noctarius.tengi.server.spi.negotiation.NegotiatableTransport;
+import com.noctarius.tengi.server.impl.transport.http.WebsocketTransport;
+import com.noctarius.tengi.server.spi.negotiation.NegotiableTransport;
 import com.noctarius.tengi.server.spi.negotiation.Negotiator;
 
 /**
@@ -32,7 +32,7 @@ import com.noctarius.tengi.server.spi.negotiation.Negotiator;
  * implementations are still possible to be chosen.</p>
  */
 public enum ServerTransports
-        implements NegotiatableTransport {
+        implements NegotiableTransport {
 
     /**
      * <p>This constant defines a HTTP based {@link com.noctarius.tengi.core.connection.Transport}
@@ -109,6 +109,6 @@ public enum ServerTransports
 
     @Override
     public Negotiator getNegotiator() {
-        return transport instanceof NegotiatableTransport ? ((NegotiatableTransport) transport).getNegotiator() : null;
+        return transport instanceof NegotiableTransport ? ((NegotiableTransport) transport).getNegotiator() : null;
     }
 }

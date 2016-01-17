@@ -14,17 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl.transport.tcp;
+package com.noctarius.tengi.server.impl.transport.udt;
 
-import com.noctarius.tengi.server.ServerTransports;
 import com.noctarius.tengi.server.impl.ConnectionManager;
-import com.noctarius.tengi.server.impl.transport.base.AbstractBaseConnectionProcessor;
+import com.noctarius.tengi.server.impl.transport.ServerConnectionProcessor;
+import com.noctarius.tengi.server.impl.transport.base.AbstractBaseProtocolNegotiator;
 import com.noctarius.tengi.spi.serialization.Serializer;
+import io.netty.buffer.ByteBuf;
 
-class TcpConnectionProcessor
-        extends AbstractBaseConnectionProcessor {
+class UdtProtocolNegotiator
+        extends AbstractBaseProtocolNegotiator {
 
-    TcpConnectionProcessor(ConnectionManager connectionManager, Serializer serializer) {
-        super(connectionManager, serializer, ServerTransports.TCP_TRANSPORT);
+    static final UdtProtocolNegotiator INSTANCE = new UdtProtocolNegotiator();
+
+    private UdtProtocolNegotiator() {
+    }
+
+    @Override
+    protected ServerConnectionProcessor<ByteBuf> getConnectionProcessor(ConnectionManager connectionManager,
+                                                                        Serializer serializer) {
+
+        return new UdtConnectionProcessor(connectionManager, serializer);
     }
 }

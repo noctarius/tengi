@@ -42,10 +42,10 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.CharsetUtil;
 
 @ChannelHandler.Sharable
-public class HttpConnectionProcessor
+class HttpConnectionProcessor
         extends ServerConnectionProcessor<FullHttpRequest> {
 
-    public HttpConnectionProcessor(ConnectionManager connectionManager, Serializer serializer) {
+    HttpConnectionProcessor(ConnectionManager connectionManager, Serializer serializer) {
         super(connectionManager, serializer, ServerTransports.HTTP_TRANSPORT);
     }
 
@@ -88,16 +88,16 @@ public class HttpConnectionProcessor
     static void sendHttpResponse(ChannelHandlerContext ctx, FullHttpRequest request, FullHttpResponse response) {
         // Generate an error page if response getStatus code is not OK (200).
         if (response.status().code() != 200) {
-            ByteBuf buf = Unpooled.copiedBuffer(response.status().toString(), CharsetUtil.UTF_8);
-            response.content().writeBytes(buf);
-            buf.release();
+            ByteBuf buffer = Unpooled.copiedBuffer(response.status().toString(), CharsetUtil.UTF_8);
+            response.content().writeBytes(buffer);
+            buffer.release();
             HttpHeaderUtil.setContentLength(response, response.content().readableBytes());
         }
 
         // Send the response and close the connection if necessary.
-        ChannelFuture f = ctx.writeAndFlush(response);
+        ChannelFuture future = ctx.writeAndFlush(response);
         if (!HttpHeaderUtil.isKeepAlive(request) || response.status().code() != 200) {
-            f.addListener(ChannelFutureListener.CLOSE);
+            future.addListener(ChannelFutureListener.CLOSE);
         }
     }
 

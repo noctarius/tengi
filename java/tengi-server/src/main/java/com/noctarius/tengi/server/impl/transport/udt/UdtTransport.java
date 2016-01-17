@@ -16,13 +16,14 @@
  */
 package com.noctarius.tengi.server.impl.transport.udt;
 
-import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.server.TransportLayers;
+import com.noctarius.tengi.server.spi.negotiation.NegotiableTransport;
+import com.noctarius.tengi.server.spi.negotiation.Negotiator;
 import com.noctarius.tengi.spi.connection.impl.TransportConstants;
 
 public class UdtTransport
-        implements Transport {
+        implements NegotiableTransport {
 
     @Override
     public String getName() {
@@ -44,4 +45,8 @@ public class UdtTransport
         return TransportLayers.UDT;
     }
 
+    @Override
+    public Negotiator getNegotiator() {
+        return UdtProtocolNegotiator.INSTANCE;
+    }
 }

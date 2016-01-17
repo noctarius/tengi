@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl.transport.http2;
+package com.noctarius.tengi.server.impl.transport.http;
 
 import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.Transport;
@@ -44,8 +44,8 @@ class Http2ConnectionContext
     private final ChannelHandlerContext ctx;
     private final int streamId;
 
-    public Http2ConnectionContext(Identifier connectionId, Serializer serializer, Transport transport,
-                                  Http2ConnectionEncoder encoder, int streamId, ChannelHandlerContext ctx) {
+    Http2ConnectionContext(Identifier connectionId, Serializer serializer, Transport transport, Http2ConnectionEncoder encoder,
+                           int streamId, ChannelHandlerContext ctx) {
 
         super(connectionId, serializer, transport);
         this.encoder = encoder;

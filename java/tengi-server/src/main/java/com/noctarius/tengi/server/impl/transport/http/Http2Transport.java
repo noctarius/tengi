@@ -14,19 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl.transport.websocket;
+package com.noctarius.tengi.server.impl.transport.http;
 
 import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.server.TransportLayers;
-import com.noctarius.tengi.server.impl.transport.http.HttpTransport;
+import com.noctarius.tengi.server.impl.transport.NettyNegotiator;
+import com.noctarius.tengi.server.spi.negotiation.NegotiableTransport;
+import com.noctarius.tengi.server.spi.negotiation.Negotiator;
 import com.noctarius.tengi.spi.connection.impl.TransportConstants;
 
-public class WebsocketTransport
-        extends HttpTransport {
+public class Http2Transport
+        implements NegotiableTransport {
+
+    private static final NettyNegotiator NEGOTIATOR = new Http2ProtocolNegotiator();
 
     @Override
     public String getName() {
-        return TransportConstants.TRANSPORT_NAME_WEBSOCKET;
+        return TransportConstants.TRANSPORT_NAME_HTTP2;
     }
 
     @Override
@@ -44,4 +48,8 @@ public class WebsocketTransport
         return TransportLayers.TCP;
     }
 
+    @Override
+    public Negotiator getNegotiator() {
+        return NEGOTIATOR;
+    }
 }

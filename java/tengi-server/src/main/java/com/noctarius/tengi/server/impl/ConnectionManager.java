@@ -28,7 +28,7 @@ import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.server.impl.transport.negotiation.GZipNegotiator;
 import com.noctarius.tengi.server.impl.transport.negotiation.SSLNegotiator;
 import com.noctarius.tengi.server.impl.transport.negotiation.SnappyNegotiator;
-import com.noctarius.tengi.server.spi.negotiation.NegotiatableTransport;
+import com.noctarius.tengi.server.spi.negotiation.NegotiableTransport;
 import com.noctarius.tengi.server.spi.negotiation.Negotiator;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
 import com.noctarius.tengi.spi.connection.packets.PollingRequest;
@@ -65,7 +65,7 @@ public class ConnectionManager
         this.serializer = serializer;
         this.handshakeHandler = handshakeHandler;
 
-        this.negotiatableTransports = buildNegotiatableTransports(configuration);
+        this.negotiatableTransports = buildNegotiableTransports(configuration);
     }
 
     @Override
@@ -128,48 +128,46 @@ public class ConnectionManager
     }
 
     public Negotiator[] findNegotiators(TransportLayer transportLayer, int port) {
-        NegotiatableTransport[] transports = Stream.of(negotiatableTransports)//
-                                                   .filter(transport -> transport.getTransportLayer() == transportLayer) //
-                                                   .filter(transport -> configuration.getTransportPort(transport) == port) //
-                                                   .filter(transport -> transport instanceof NegotiatableTransport) //
-                                                   .map(transport -> (NegotiatableTransport) transport)
-                                                   .filter(transport -> transport.getNegotiator() != null)
-                                                   .toArray(NegotiatableTransport[]::new);
+        NegotiableTransport[] transports = Stream.of(negotiatableTransports)//
+                                                 .filter(transport -> transport.getTransportLayer() == transportLayer) //
+                                                 .filter(transport -> configuration.getTransportPort(transport) == port) //
+                                                 .filter(transport -> transport instanceof NegotiableTransport) //
+                                                 .map(transport -> (NegotiableTransport) transport)
+                                                 .filter(transport -> transport.getNegotiator() != null)
+                                                 .toArray(NegotiableTransport[]::new);
 
         Stream<Negotiator> protocolNegotiators = Stream.of(transports).map(this::extractNegotiator);
         Stream<Negotiator> additionalNegotiators = additionalNegotiators(transports);
         return Stream.concat(protocolNegotiators, additionalNegotiators).toArray(Negotiator[]::new);
     }
 
-    private Negotiator extractNegotiator(NegotiatableTransport transport) {
+    private Negotiator extractNegotiator(NegotiableTransport transport) {
         return transport.getNegotiator();
     }
 
-    private Stream additionalNegotiators(NegotiatableTransport[] transports) {
+    private Stream additionalNegotiators(NegotiableTransport[] transports) {
+        boolean snappyEnabled = configuration.isSnappyEnabled();
+        boolean gzipEnabled = configuration.isGzipEnabled();
         boolean sslNecessary = configuration.isSslEnabled() && //
                 Stream.of(transports).anyMatch(transport -> transport.getTransportLayer().sslCapable());
 
-        boolean gzipEnabled = configuration.isGzipEnabled();
-
-        boolean snappyEnabled = configuration.isSnappyEnabled();
-
         Stream.Builder<Negotiator> builder = Stream.builder();
         if (sslNecessary) {
-            builder.add(new SSLNegotiator());
+            builder.add(SSLNegotiator.INSTANCE);
         }
         if (gzipEnabled) {
-            builder.add(new GZipNegotiator());
+            builder.add(GZipNegotiator.INSTANCE);
         }
         if (snappyEnabled) {
-            builder.add(new SnappyNegotiator());
+            builder.add(SnappyNegotiator.INSTANCE);
         }
 
         return builder.build();
     }
 
-    private Transport[] buildNegotiatableTransports(Configuration configuration) {
+    private Transport[] buildNegotiableTransports(Configuration configuration) {
         List<Transport> transports = configuration.getTransports().stream() //
-                                                  .filter(transport -> transport instanceof NegotiatableTransport) //
+                                                  .filter(transport -> transport instanceof NegotiableTransport) //
                                                   .filter(negotiator -> negotiator != null) //
                                                   .collect(Collectors.toList());
 

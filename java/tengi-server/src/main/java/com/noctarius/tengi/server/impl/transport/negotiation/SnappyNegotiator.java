@@ -27,6 +27,11 @@ import io.netty.handler.codec.compression.SnappyFrameEncoder;
 public class SnappyNegotiator
         implements NettyNegotiator {
 
+    public static final SnappyNegotiator INSTANCE = new SnappyNegotiator();
+
+    private SnappyNegotiator() {
+    }
+
     @Override
     public NegotiationResult handleProtocol(NegotiationContext context, ChannelHandlerContext ctx, ByteBuf buffer) {
         if (buffer.readableBytes() < 5) {

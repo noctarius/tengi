@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl.transport.tcp;
+package com.noctarius.tengi.server.impl.transport.http;
 
 import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.Transport;
@@ -27,15 +27,16 @@ import com.noctarius.tengi.spi.connection.ConnectionContext;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
+import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 
 import java.util.concurrent.CompletableFuture;
 
-class TcpConnectionContext
+class WebsocketConnectionContext
         extends ConnectionContext<Channel> {
 
     private final Channel channel;
 
-    TcpConnectionContext(Channel channel, Identifier connectionId, Serializer serializer, Transport transport) {
+    WebsocketConnectionContext(Channel channel, Identifier connectionId, Serializer serializer, Transport transport) {
         super(connectionId, serializer, transport);
         this.channel = channel;
     }
@@ -49,20 +50,20 @@ class TcpConnectionContext
         buffer.writeBuffer(memoryBuffer);
 
         return FutureUtil.executeAsync(() -> {
-            channel.writeAndFlush(response, channel.voidPromise());
+            channel.writeAndFlush(new BinaryWebSocketFrame(response), channel.voidPromise());
             return message;
         });
     }
 
     @Override
-    public CompletableFuture<Connection> writeSocket(Channel channel, Connection connection, MemoryBuffer memoryBuffer)
+    public CompletableFuture<Connection> writeSocket(Channel socket, Connection connection, MemoryBuffer memoryBuffer)
             throws Exception {
 
         ByteBuf response = channel.alloc().directBuffer();
         MemoryBuffer buffer = preparePacket(MemoryBufferFactory.create(response));
         buffer.writeBuffer(memoryBuffer);
         return FutureUtil.executeAsync(() -> {
-            channel.writeAndFlush(response, channel.voidPromise());
+            channel.writeAndFlush(new BinaryWebSocketFrame(response), channel.voidPromise());
             return connection;
         });
     }
@@ -74,4 +75,5 @@ class TcpConnectionContext
             return connection;
         });
     }
+
 }

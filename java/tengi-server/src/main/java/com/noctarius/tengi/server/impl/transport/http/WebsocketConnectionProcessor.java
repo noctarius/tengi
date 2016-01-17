@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl.transport.websocket;
+package com.noctarius.tengi.server.impl.transport.http;
 
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.server.ServerTransports;

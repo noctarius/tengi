@@ -18,15 +18,15 @@ package com.noctarius.tengi.server.impl.transport.http;
 
 import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.server.TransportLayers;
-import com.noctarius.tengi.server.spi.negotiation.NegotiatableTransport;
+import com.noctarius.tengi.server.impl.transport.NettyNegotiator;
+import com.noctarius.tengi.server.spi.negotiation.NegotiableTransport;
 import com.noctarius.tengi.server.spi.negotiation.Negotiator;
 import com.noctarius.tengi.spi.connection.impl.TransportConstants;
 
 public class HttpTransport
-        implements NegotiatableTransport {
+        implements NegotiableTransport {
 
-    public HttpTransport() {
-    }
+    private static final NettyNegotiator NEGOTIATOR = new HttpProtocolNegotiator();
 
     @Override
     public String getName() {
@@ -50,6 +50,6 @@ public class HttpTransport
 
     @Override
     public Negotiator getNegotiator() {
-        return new HttpProtocolNegotiator();
+        return NEGOTIATOR;
     }
 }

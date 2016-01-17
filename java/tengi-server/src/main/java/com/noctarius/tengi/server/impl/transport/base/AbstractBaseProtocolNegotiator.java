@@ -14,18 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl.transport.http2;
+package com.noctarius.tengi.server.impl.transport.base;
 
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.transport.NettyNegotiator;
+import com.noctarius.tengi.server.impl.transport.ServerConnectionProcessor;
 import com.noctarius.tengi.server.spi.negotiation.NegotiationContext;
 import com.noctarius.tengi.server.spi.negotiation.NegotiationResult;
 import com.noctarius.tengi.spi.serialization.Serializer;
+import com.noctarius.tengi.spi.serialization.impl.DefaultProtocolConstants;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 
-class Http2ProtocolNegotiator
+public abstract class AbstractBaseProtocolNegotiator
         implements NettyNegotiator {
 
     @Override
@@ -40,15 +42,22 @@ class Http2ProtocolNegotiator
         int magic1 = buffer.getUnsignedByte(buffer.readerIndex() + 1);
         int magic2 = buffer.getUnsignedByte(buffer.readerIndex() + 2);
         int magic3 = buffer.getUnsignedByte(buffer.readerIndex() + 3);
+        int magic4 = buffer.getUnsignedByte(buffer.readerIndex() + 4);
 
-        if (magic0 == 'P' && magic1 == 'R' && magic2 == 'I' && magic3 == ' ') {
+        if (magic0 == 'T' && magic1 == 'e' && magic2 == 'N' && magic3 == 'g' && magic4 == 'I') {
+            buffer.skipBytes(DefaultProtocolConstants.PROTOCOL_MAGIC_HEADER.length);
+
             Serializer serializer = context.getSerializer();
             ConnectionManager connectionManager = context.getConnectionManager();
 
             ChannelPipeline pipeline = ctx.pipeline();
-            pipeline.addLast("http2-connection-processor", new Http2ConnectionProcessor(connectionManager, serializer));
+            pipeline.addLast("tcp-connection-processor", getConnectionProcessor(connectionManager, serializer));
             return NegotiationResult.Successful;
         }
+
         return NegotiationResult.Continue;
     }
+
+    protected abstract ServerConnectionProcessor<ByteBuf> getConnectionProcessor(ConnectionManager connectionManager,
+                                                                                 Serializer serializer);
 }

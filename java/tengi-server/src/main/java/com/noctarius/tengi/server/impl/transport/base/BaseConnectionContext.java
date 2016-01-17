@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl.transport.udt;
+package com.noctarius.tengi.server.impl.transport.base;
 
 import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.Transport;
@@ -30,12 +30,12 @@ import io.netty.channel.Channel;
 
 import java.util.concurrent.CompletableFuture;
 
-class UdtConnectionContext
+class BaseConnectionContext
         extends ConnectionContext<Channel> {
 
     private final Channel channel;
 
-    UdtConnectionContext(Channel channel, Identifier connectionId, Serializer serializer, Transport transport) {
+    BaseConnectionContext(Channel channel, Identifier connectionId, Serializer serializer, Transport transport) {
         super(connectionId, serializer, transport);
         this.channel = channel;
     }
@@ -49,7 +49,7 @@ class UdtConnectionContext
         buffer.writeBuffer(memoryBuffer);
 
         return FutureUtil.executeAsync(() -> {
-            channel.writeAndFlush(response);
+            channel.writeAndFlush(response, channel.voidPromise());
             return message;
         });
     }
@@ -62,7 +62,7 @@ class UdtConnectionContext
         MemoryBuffer buffer = preparePacket(MemoryBufferFactory.create(response));
         buffer.writeBuffer(memoryBuffer);
         return FutureUtil.executeAsync(() -> {
-            channel.writeAndFlush(response);
+            channel.writeAndFlush(response, channel.voidPromise());
             return connection;
         });
     }

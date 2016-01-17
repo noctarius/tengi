@@ -27,6 +27,11 @@ import io.netty.handler.ssl.SslHandler;
 public class SSLNegotiator
         implements NettyNegotiator {
 
+    public static final SSLNegotiator INSTANCE = new SSLNegotiator();
+
+    private SSLNegotiator() {
+    }
+
     @Override
     public NegotiationResult handleProtocol(NegotiationContext context, ChannelHandlerContext ctx, ByteBuf buffer) {
         if (buffer.readableBytes() < 5) {

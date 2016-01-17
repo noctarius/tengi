@@ -25,7 +25,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 
-class HttpProtocolNegotiator
+class Http2ProtocolNegotiator
         implements NettyNegotiator {
 
     @Override
@@ -41,15 +41,12 @@ class HttpProtocolNegotiator
         int magic2 = buffer.getUnsignedByte(buffer.readerIndex() + 2);
         int magic3 = buffer.getUnsignedByte(buffer.readerIndex() + 3);
 
-        if ((magic0 == 'G' && magic1 == 'E' && magic2 == 'T') || //
-                (magic0 == 'P' && magic1 == 'O' && magic2 == 'S' && magic3 == 'T')) {
-
-            int port = context.getPort();
+        if (magic0 == 'P' && magic1 == 'R' && magic2 == 'I' && magic3 == ' ') {
             Serializer serializer = context.getSerializer();
             ConnectionManager connectionManager = context.getConnectionManager();
 
             ChannelPipeline pipeline = ctx.pipeline();
-            pipeline.addLast("httpNegotiator", new Http2Negotiator(port, 1024 * 1024, connectionManager, serializer));
+            pipeline.addLast("http2-connection-processor", new Http2ConnectionProcessor(connectionManager, serializer));
             return NegotiationResult.Successful;
         }
         return NegotiationResult.Continue;

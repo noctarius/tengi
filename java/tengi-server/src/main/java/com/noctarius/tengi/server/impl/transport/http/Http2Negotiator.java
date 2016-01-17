@@ -14,12 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl.transport.negotiation;
+package com.noctarius.tengi.server.impl.transport.http;
 
 import com.noctarius.tengi.core.exception.ConnectionFailedException;
 import com.noctarius.tengi.server.ServerTransports;
 import com.noctarius.tengi.server.impl.ConnectionManager;
-import com.noctarius.tengi.server.impl.transport.http2.Http2ConnectionProcessor;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -34,7 +33,7 @@ import java.util.List;
 
 import static io.netty.handler.codec.http2.Http2CodecUtil.TLS_UPGRADE_PROTOCOL_NAME;
 
-public class Http2Negotiator
+class Http2Negotiator
         extends ByteToMessageDecoder {
 
     private final int port;
@@ -42,7 +41,7 @@ public class Http2Negotiator
     private final ConnectionManager connectionManager;
     private final Serializer serializer;
 
-    public Http2Negotiator(int port, int maxHttpContentLength, ConnectionManager connectionManager, Serializer serializer) {
+    Http2Negotiator(int port, int maxHttpContentLength, ConnectionManager connectionManager, Serializer serializer) {
         this.port = port;
         this.maxHttpContentLength = maxHttpContentLength;
         this.connectionManager = connectionManager;

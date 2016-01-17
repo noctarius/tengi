@@ -18,7 +18,7 @@ package com.noctarius.tengi.server.spi.negotiation;
 
 import com.noctarius.tengi.core.connection.Transport;
 
-public interface NegotiatableTransport
+public interface NegotiableTransport
         extends Transport {
 
     Negotiator getNegotiator();

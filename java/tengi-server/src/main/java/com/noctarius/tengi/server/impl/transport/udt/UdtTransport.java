@@ -18,6 +18,7 @@ package com.noctarius.tengi.server.impl.transport.udt;
 
 import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.connection.TransportLayer;
+import com.noctarius.tengi.server.TransportLayers;
 import com.noctarius.tengi.spi.connection.impl.TransportConstants;
 
 public class UdtTransport
@@ -40,7 +41,7 @@ public class UdtTransport
 
     @Override
     public TransportLayer getTransportLayer() {
-        return null;//TransportLayer.Custom;
+        return TransportLayers.UDT;
     }
 
 }

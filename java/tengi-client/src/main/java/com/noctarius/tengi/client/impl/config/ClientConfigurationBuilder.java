@@ -39,8 +39,8 @@ public class ClientConfigurationBuilder
 
     @Override
     public Configuration build() {
-        return new ClientConfigurationImpl(marshallers, transports, transportPorts, sslEnabled, handshakeHandler,
-                transportHandler);
+        return new ClientConfigurationImpl(marshallers, transports, transportPorts, sslEnabled, gzipEnabled, snappyEnabled,
+                handshakeHandler, transportHandler);
     }
 
     protected static class ClientConfigurationImpl
@@ -50,10 +50,11 @@ public class ClientConfigurationBuilder
         private final TransportHandler transportHandler;
 
         protected ClientConfigurationImpl(Set<MarshallerConfiguration> marshallers, List<Transport> transports,
-                                          Map<Transport, Integer> transportPorts, boolean sslEnabled,
-                                          HandshakeHandler handshakeHandler, TransportHandler transportHandler) {
+                                          Map<Transport, Integer> transportPorts, boolean sslEnabled, boolean gzipEnabled,
+                                          boolean snappyEnabled, HandshakeHandler handshakeHandler,
+                                          TransportHandler transportHandler) {
 
-            super(marshallers, transports, transportPorts, sslEnabled, handshakeHandler);
+            super(marshallers, transports, transportPorts, sslEnabled, gzipEnabled, snappyEnabled, handshakeHandler);
             this.transportHandler = transportHandler;
         }
 

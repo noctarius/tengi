@@ -17,24 +17,18 @@
 package com.noctarius.tengi.server.impl.transport.negotiation;
 
 import com.noctarius.tengi.server.impl.ConnectionManager;
-import com.noctarius.tengi.server.impl.ServerConstants;
+import com.noctarius.tengi.server.impl.transport.NettyNegotiator;
 import com.noctarius.tengi.server.spi.negotiation.NegotiationContext;
 import com.noctarius.tengi.server.spi.negotiation.NegotiationResult;
-import com.noctarius.tengi.server.spi.negotiation.Negotiator;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.ssl.SslHandler;
 
 public class SSLNegotiator
-        implements Negotiator {
+        implements NettyNegotiator {
 
     @Override
     public NegotiationResult handleProtocol(NegotiationContext context, ChannelHandlerContext ctx, ByteBuf buffer) {
-        Boolean detectSsl = context.attribute(ServerConstants.NEGOTIATOR_ATTRIBUTE_DETECT_SSL);
-        if (detectSsl == null || !detectSsl) {
-            return NegotiationResult.Continue;
-        }
-
         if (buffer.readableBytes() < 5) {
             // Not enough data to negotiate the protocol's magic header
             return NegotiationResult.InsufficientBuffer;
@@ -43,9 +37,8 @@ public class SSLNegotiator
         if (SslHandler.isEncrypted(buffer)) {
             ConnectionManager connectionManager = context.getConnectionManager();
 
-            context.injectChannelHandler(ctx, "ssl", connectionManager.getSslContext().newHandler(ctx.alloc()));
+            context.injectChannelHandler(ctx, connectionManager.getSslContext().newHandler(ctx.alloc()));
 
-            context.attribute(ServerConstants.NEGOTIATOR_ATTRIBUTE_DETECT_SSL, false);
             return NegotiationResult.Restart;
         }
         return NegotiationResult.Continue;

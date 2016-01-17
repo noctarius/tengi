@@ -14,20 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl.transport.http;
+package com.noctarius.tengi.server.impl.transport;
 
-import com.ning.http.client.AsyncHttpClient;
+import com.noctarius.tengi.server.spi.negotiation.Negotiator;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
 
-public class HttpTransportTestCase
-        extends AbstractHttpTransportTestCase {
-
-    @Override
-    protected AsyncHttpClient newHttpClient() {
-        return new AsyncHttpClient();
-    }
-
-    @Override
-    protected boolean ssl() {
-        return false;
-    }
+public interface NettyNegotiator
+        extends Negotiator<ChannelHandlerContext, ByteBuf> {
 }

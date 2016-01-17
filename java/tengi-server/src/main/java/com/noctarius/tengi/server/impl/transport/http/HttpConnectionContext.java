@@ -18,8 +18,8 @@ package com.noctarius.tengi.server.impl.transport.http;
 
 import com.noctarius.tengi.core.connection.Connection;
 import com.noctarius.tengi.core.connection.Transport;
-import com.noctarius.tengi.core.impl.FutureUtil;
 import com.noctarius.tengi.core.impl.ExceptionUtil;
+import com.noctarius.tengi.core.impl.FutureUtil;
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
@@ -139,14 +139,7 @@ class HttpConnectionContext
         response.headers().set(HttpHeaderNames.CONTENT_LENGTH, buffer.writerIndex());
         response.headers().set(HttpHeaderNames.CONNECTION, "close");
         ChannelFuture channelFuture = channel.writeAndFlush(response);
-        channelFuture.addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future)
-                    throws Exception {
-
-                future.channel().close().sync();
-            }
-        });
+        channelFuture.addListener(ChannelFutureListener.CLOSE);
     }
 
     private Collection<QueueEntry> drainMessageQueue() {

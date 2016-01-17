@@ -79,6 +79,24 @@ public interface Configuration {
     boolean isSslEnabled();
 
     /**
+     * Returns if the transports should use GZIP compression or not. Transports that don't support compression
+     * might silently ignore this configuration. Please refer to any transport documentation to find out if a
+     * transport supports compression using GZIP.
+     *
+     * @return true if GZIP compression should be enabled, otherwise false
+     */
+    boolean isGzipEnabled();
+
+    /**
+     * Returns if the transports should use Snappy compression or not. Transports that don't support compression
+     * might silently ignore this configuration. Please refer to any transport documentation to find out if a
+     * transport supports compression using Snappy.
+     *
+     * @return true if Snappy compression should be enabled, otherwise false
+     */
+    boolean isSnappyEnabled();
+
+    /**
      * Returns the configured {@link com.noctarius.tengi.core.connection.HandshakeHandler} instance
      * to verify, accept or deny new connection handshakes. On client-side additional information can be
      * extracted from the handshake response retrieved from the server.

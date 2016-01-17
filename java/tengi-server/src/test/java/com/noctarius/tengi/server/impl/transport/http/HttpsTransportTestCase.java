@@ -14,14 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl;
+package com.noctarius.tengi.server.impl.transport.http;
 
-public enum ServerConstants {
-    ;
+import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.AsyncHttpClientConfig;
 
-    public static final String NEGOTIATOR_ATTRIBUTE_DETECT_SSL = "::detect_ssl::";
+public class HttpsTransportTestCase
+        extends AbstractHttpTransportTestCase {
 
-    public static final String NEGOTIATOR_ATTRIBUTE_DETECT_GZIP = "::detect_gzip::";
+    @Override
+    protected AsyncHttpClient newHttpClient() {
+        AsyncHttpClientConfig config = new AsyncHttpClientConfig.Builder().setAcceptAnyCertificate(true).build();
+        return new AsyncHttpClient(config);
+    }
 
-    public static final String NEGOTIATOR_ATTRIBUTE_DETECT_SNAPPY = "::detect_snappy::";
+    @Override
+    protected boolean ssl() {
+        return true;
+    }
 }

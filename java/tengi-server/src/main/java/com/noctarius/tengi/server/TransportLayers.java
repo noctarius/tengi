@@ -18,6 +18,7 @@ package com.noctarius.tengi.server;
 
 import com.noctarius.tengi.server.impl.transport.TcpServerChannelFactory;
 import com.noctarius.tengi.server.impl.transport.UdpServerChannelFactory;
+import com.noctarius.tengi.server.impl.transport.UdtServerChannelFactory;
 import com.noctarius.tengi.server.spi.transport.ServerChannelFactory;
 import com.noctarius.tengi.server.spi.transport.ServerTransportLayer;
 
@@ -28,13 +29,19 @@ public enum TransportLayers
      * This value defines, that the {@link com.noctarius.tengi.core.connection.Transport}
      * uses an internal <tt>TCP</tt> socket to make or accept connections.
      */
-    TCP(new TcpServerChannelFactory()),
+    TCP(new TcpServerChannelFactory(), true),
 
     /**
      * This value defines, that the {@link com.noctarius.tengi.core.connection.Transport}
      * uses an internal <tt>UDP</tt> socket to make or accept connections.
      */
-    UDP(new UdpServerChannelFactory()),
+    UDP(new UdpServerChannelFactory(), false),
+
+    /**
+     * This value defines, that the {@link com.noctarius.tengi.core.connection.Transport}
+     * uses an internal <tt>UDT</tt> socket to make or accept connections.
+     */
+    UDT(new UdtServerChannelFactory(), false),
 
     /**
      * This value defines, that the {@link com.noctarius.tengi.core.connection.Transport}
@@ -44,13 +51,20 @@ public enum TransportLayers
     ;
 
     private final ServerChannelFactory channelFactory;
+    private final boolean sslCapable;
 
-    private TransportLayers(ServerChannelFactory channelFactory) {
+    TransportLayers(ServerChannelFactory channelFactory, boolean sslCapable) {
         this.channelFactory = channelFactory;
+        this.sslCapable = sslCapable;
     }
 
     @Override
     public ServerChannelFactory serverChannelFactory() {
         return channelFactory;
+    }
+
+    @Override
+    public boolean sslCapable() {
+        return sslCapable;
     }
 }

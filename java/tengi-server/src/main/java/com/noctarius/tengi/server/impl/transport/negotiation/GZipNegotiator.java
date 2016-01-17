@@ -16,25 +16,19 @@
  */
 package com.noctarius.tengi.server.impl.transport.negotiation;
 
-import com.noctarius.tengi.server.impl.ServerConstants;
+import com.noctarius.tengi.server.impl.transport.NettyNegotiator;
 import com.noctarius.tengi.server.spi.negotiation.NegotiationContext;
 import com.noctarius.tengi.server.spi.negotiation.NegotiationResult;
-import com.noctarius.tengi.server.spi.negotiation.Negotiator;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.compression.ZlibCodecFactory;
 import io.netty.handler.codec.compression.ZlibWrapper;
 
 public class GZipNegotiator
-        implements Negotiator {
+        implements NettyNegotiator {
 
     @Override
     public NegotiationResult handleProtocol(NegotiationContext context, ChannelHandlerContext ctx, ByteBuf buffer) {
-        Boolean detectGzip = context.attribute(ServerConstants.NEGOTIATOR_ATTRIBUTE_DETECT_GZIP);
-        if (detectGzip == null || !detectGzip) {
-            return NegotiationResult.Continue;
-        }
-
         if (buffer.readableBytes() < 2) {
             // Not enough data to negotiate the protocol's magic header
             return NegotiationResult.InsufficientBuffer;
@@ -44,10 +38,9 @@ public class GZipNegotiator
         int magic1 = buffer.getUnsignedByte(buffer.readerIndex() + 1);
 
         if (magic0 == 0x1F && magic1 == 0x8B) {
-            context.injectChannelHandler(ctx, "gzipinflater", ZlibCodecFactory.newZlibEncoder(ZlibWrapper.GZIP));
-            context.injectChannelHandler(ctx, "gzipdeflater", ZlibCodecFactory.newZlibDecoder(ZlibWrapper.GZIP));
+            context.injectChannelHandler(ctx, ZlibCodecFactory.newZlibEncoder(ZlibWrapper.GZIP));
+            context.injectChannelHandler(ctx, ZlibCodecFactory.newZlibDecoder(ZlibWrapper.GZIP));
 
-            context.attribute(ServerConstants.NEGOTIATOR_ATTRIBUTE_DETECT_GZIP, false);
             return NegotiationResult.Restart;
         }
         return NegotiationResult.Continue;

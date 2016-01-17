@@ -16,25 +16,19 @@
  */
 package com.noctarius.tengi.server.impl.transport.negotiation;
 
-import com.noctarius.tengi.server.impl.ServerConstants;
+import com.noctarius.tengi.server.impl.transport.NettyNegotiator;
 import com.noctarius.tengi.server.spi.negotiation.NegotiationContext;
 import com.noctarius.tengi.server.spi.negotiation.NegotiationResult;
-import com.noctarius.tengi.server.spi.negotiation.Negotiator;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.compression.SnappyFrameDecoder;
 import io.netty.handler.codec.compression.SnappyFrameEncoder;
 
 public class SnappyNegotiator
-        implements Negotiator {
+        implements NettyNegotiator {
 
     @Override
     public NegotiationResult handleProtocol(NegotiationContext context, ChannelHandlerContext ctx, ByteBuf buffer) {
-        Boolean detectSnappy = context.attribute(ServerConstants.NEGOTIATOR_ATTRIBUTE_DETECT_SNAPPY);
-        if (detectSnappy == null || !detectSnappy) {
-            return NegotiationResult.Continue;
-        }
-
         if (buffer.readableBytes() < 5) {
             // Not enough data to negotiate the protocol's magic header
             return NegotiationResult.InsufficientBuffer;
@@ -47,10 +41,9 @@ public class SnappyNegotiator
         int magic3 = buffer.getUnsignedByte(buffer.readerIndex() + 3);
 
         if (magic0 == 0xFF && magic1 == 's' && magic2 == 'N' && magic3 == 'a') {
-            context.injectChannelHandler(ctx, "snappyinflater", new SnappyFrameEncoder());
-            context.injectChannelHandler(ctx, "snappydeflater", new SnappyFrameDecoder());
+            context.injectChannelHandler(ctx, new SnappyFrameEncoder());
+            context.injectChannelHandler(ctx, new SnappyFrameDecoder());
 
-            context.attribute(ServerConstants.NEGOTIATOR_ATTRIBUTE_DETECT_SNAPPY, false);
             return NegotiationResult.Restart;
         }
 

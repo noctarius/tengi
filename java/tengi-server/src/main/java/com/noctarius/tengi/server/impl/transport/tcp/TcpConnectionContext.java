@@ -17,13 +17,13 @@
 package com.noctarius.tengi.server.impl.transport.tcp;
 
 import com.noctarius.tengi.core.connection.Connection;
+import com.noctarius.tengi.core.connection.Transport;
+import com.noctarius.tengi.core.impl.FutureUtil;
 import com.noctarius.tengi.core.model.Identifier;
 import com.noctarius.tengi.core.model.Message;
-import com.noctarius.tengi.core.impl.FutureUtil;
 import com.noctarius.tengi.spi.buffer.MemoryBuffer;
 import com.noctarius.tengi.spi.buffer.impl.MemoryBufferFactory;
 import com.noctarius.tengi.spi.connection.ConnectionContext;
-import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -49,7 +49,7 @@ class TcpConnectionContext
         buffer.writeBuffer(memoryBuffer);
 
         return FutureUtil.executeAsync(() -> {
-            channel.writeAndFlush(response);
+            channel.writeAndFlush(response, channel.voidPromise());
             return message;
         });
     }
@@ -62,7 +62,7 @@ class TcpConnectionContext
         MemoryBuffer buffer = preparePacket(MemoryBufferFactory.create(response));
         buffer.writeBuffer(memoryBuffer);
         return FutureUtil.executeAsync(() -> {
-            channel.writeAndFlush(response);
+            channel.writeAndFlush(response, channel.voidPromise());
             return connection;
         });
     }

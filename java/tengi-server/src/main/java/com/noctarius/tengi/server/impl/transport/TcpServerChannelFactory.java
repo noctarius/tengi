@@ -19,29 +19,36 @@ package com.noctarius.tengi.server.impl.transport;
 import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.transport.negotiation.NegotiationChannelHandler;
+import com.noctarius.tengi.server.spi.transport.Endpoint;
+import com.noctarius.tengi.server.spi.transport.ServerChannel;
 import com.noctarius.tengi.server.spi.transport.ServerChannelFactory;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+
+import java.util.concurrent.Executor;
 
 public class TcpServerChannelFactory
         implements ServerChannelFactory {
 
     @Override
-    public Channel newServerChannel(TransportLayer transportLayer, int port, EventLoopGroup bossGroup, EventLoopGroup workerGroup,
-                                    ConnectionManager connectionManager, Serializer serializer)
+    public ServerChannel newServerChannel(Endpoint endpoint, Executor executor, ConnectionManager connectionManager,
+                                          Serializer serializer)
             throws Throwable {
 
+        int port = endpoint.getPort();
+        TransportLayer transportLayer = endpoint.getTransportLayer();
+
+        NioEventLoopGroup eventLoopGroup = new NioEventLoopGroup(8, executor);
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.option(ChannelOption.SO_BACKLOG, 1024) //
-                 .group(bossGroup, workerGroup) //
+                 .group(eventLoopGroup, eventLoopGroup) //
                  .channel(NioServerSocketChannel.class) //
                  .childHandler(new TcpChannelInitializer(connectionManager, serializer, transportLayer, port));
 
@@ -49,7 +56,7 @@ public class TcpServerChannelFactory
         if (future.cause() != null) {
             throw future.cause();
         }
-        return future.channel();
+        return new NettyServerChannel(future.channel(), eventLoopGroup, eventLoopGroup, port, transportLayer);
     }
 
     private static class TcpChannelInitializer

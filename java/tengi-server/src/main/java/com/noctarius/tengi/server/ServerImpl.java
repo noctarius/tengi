@@ -18,13 +18,15 @@ package com.noctarius.tengi.server;
 
 import com.noctarius.tengi.core.config.Configuration;
 import com.noctarius.tengi.core.connection.HandshakeHandler;
-import com.noctarius.tengi.core.exception.IllegalTransportException;
+import com.noctarius.tengi.core.connection.Transport;
 import com.noctarius.tengi.core.impl.FutureUtil;
 import com.noctarius.tengi.core.impl.Validate;
 import com.noctarius.tengi.core.impl.VersionUtil;
 import com.noctarius.tengi.core.listener.ConnectedListener;
 import com.noctarius.tengi.server.impl.ConnectionManager;
 import com.noctarius.tengi.server.impl.EventManager;
+import com.noctarius.tengi.server.spi.transport.Endpoint;
+import com.noctarius.tengi.server.spi.transport.ServerChannel;
 import com.noctarius.tengi.server.spi.transport.ServerChannelFactory;
 import com.noctarius.tengi.server.spi.transport.ServerTransportLayer;
 import com.noctarius.tengi.spi.connection.packets.Handshake;
@@ -32,20 +34,18 @@ import com.noctarius.tengi.spi.logging.Logger;
 import com.noctarius.tengi.spi.logging.LoggerManager;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import com.noctarius.tengi.spi.statemachine.StateMachine;
-import io.netty.channel.Channel;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
-import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.util.HashMap;
-import java.util.List;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 class ServerImpl
@@ -55,17 +55,16 @@ class ServerImpl
 
     private final StateMachine<ServerState> serverState = createStateMachine();
 
+    private final Map<Endpoint, ServerChannel> channelEngpoints = new HashMap<>();
+
     private final ConnectionManager connectionManager;
 
     private final EventManager eventManager;
 
-    private final EventLoopGroup bossGroup;
-    private final EventLoopGroup workerGroup;
+    private final ExecutorService executor;
 
     private final Configuration configuration;
     private final Serializer serializer;
-
-    private final List<Channel> channels = new CopyOnWriteArrayList<>();
 
     ServerImpl(Configuration configuration)
             throws Exception {
@@ -76,8 +75,7 @@ class ServerImpl
                 VersionUtil.VERSION, VersionUtil.BUILD_DATE);
 
         this.configuration = configuration;
-        this.bossGroup = createEventLoopGroup(5, "boss");
-        this.workerGroup = createEventLoopGroup(5, "worker");
+        this.executor = Executors.newFixedThreadPool(16);
         this.serializer = createSerializer(configuration);
         HandshakeHandler handshakeHandler = createHandshakeHandler(configuration);
         this.connectionManager = new ConnectionManager(configuration, createSslContext(), serializer, handshakeHandler);
@@ -104,12 +102,11 @@ class ServerImpl
     public CompletableFuture<Server> stop() {
         return FutureUtil.executeAsync(() -> {
             if (serverState.transit(ServerState.Shutdown)) {
-                for (Channel channel : channels) {
-                    channel.close().sync();
+                for (ServerChannel channel : channelEngpoints.values()) {
+                    channel.shutdown();
                 }
 
-                bossGroup.shutdownGracefully();
-                workerGroup.shutdownGracefully();
+                executor.shutdown();
 
                 connectionManager.stop();
                 eventManager.stop();
@@ -123,21 +120,16 @@ class ServerImpl
     private void bindChannels()
             throws Throwable {
 
-        Map<ServerTransportLayer, int[]> transportLayers = collectTransportLayers(configuration);
-        for (Map.Entry<ServerTransportLayer, int[]> entry : transportLayers.entrySet()) {
-            ServerTransportLayer transportLayer = entry.getKey();
-            int[] ports = entry.getValue();
-            for (int port : ports) {
-                channels.add(createChannel(transportLayer, port));
-            }
+        Map<Endpoint, Set<Transport>> transportLayers = collectTransportLayers(configuration);
+        for (Map.Entry<Endpoint, Set<Transport>> entry : transportLayers.entrySet()) {
+            Endpoint endpoint = entry.getKey();
+            Set<Transport> transports = entry.getValue();
+            ServerChannel channel = createServerChannel(endpoint, transports);
+            channel.start();
         }
     }
 
-    private EventLoopGroup createEventLoopGroup(int threadCount, String name) {
-        LOGGER.debug("Creating event threadpool '%s' with %s threads", name, threadCount);
-        return new NioEventLoopGroup(threadCount, new DefaultThreadFactory("channel-" + name + "-"));
-    }
-
+    // TODO: Remove netty dependency
     private SslContext createSslContext()
             throws Exception {
 
@@ -153,33 +145,28 @@ class ServerImpl
         return handshakeHandler;
     }
 
-    private Map<ServerTransportLayer, int[]> collectTransportLayers(Configuration configuration) {
-        Set<Integer> tcpPorts = configuration.getTransports().stream() //
-                                             .filter((transport) -> transport.getTransportLayer() == TransportLayers.TCP) //
-                                             .map(configuration::getTransportPort).collect(Collectors.toSet());
+    private Map<Endpoint, Set<Transport>> collectTransportLayers(Configuration configuration) {
+        Function<Transport, Endpoint> coordinater = (transport) -> {
+            int port = configuration.getTransportPort(transport);
+            return new Endpoint(port, (ServerTransportLayer) transport.getTransportLayer());
+        };
 
-        Set<Integer> udpPorts = configuration.getTransports().stream() //
-                                             .filter((transport) -> transport.getTransportLayer() == TransportLayers.UDP) //
-                                             .map(configuration::getTransportPort).collect(Collectors.toSet());
+        Map<Endpoint, Set<Transport>> transports = configuration.getTransports().stream().filter(t -> t
+                .getTransportLayer() instanceof ServerTransportLayer).collect(
+                Collectors.groupingBy(coordinater, IdentityHashMap::new, Collectors.mapping(t -> t, Collectors.toSet())));
 
-        boolean match = udpPorts.stream().anyMatch(tcpPorts::contains);
+        // TODO: Check multiple socket types, same port number
 
-        if (match) {
-            throw new IllegalTransportException("TCP and UDP ports can't match up");
-        }
-
-        Map<ServerTransportLayer, int[]> portMapping = new HashMap<>();
-        portMapping.put(TransportLayers.TCP, tcpPorts.stream().mapToInt((v) -> v).toArray());
-        portMapping.put(TransportLayers.UDP, udpPorts.stream().mapToInt((v) -> v).toArray());
-
-        return portMapping;
+        return transports;
     }
 
-    private Channel createChannel(ServerTransportLayer transportLayer, int port)
+    private ServerChannel createServerChannel(Endpoint endpoint, Set<Transport> transports)
             throws Throwable {
 
-        ServerChannelFactory channelFactory = transportLayer.serverChannelFactory();
-        return channelFactory.newServerChannel(transportLayer, port, bossGroup, workerGroup, connectionManager, serializer);
+        ServerChannelFactory channelFactory = endpoint.getTransportLayer().serverChannelFactory();
+        ServerChannel channel = channelFactory.newServerChannel(endpoint, executor, connectionManager, serializer);
+        channelEngpoints.put(endpoint, channel);
+        return channel;
     }
 
     private Serializer createSerializer(Configuration configuration) {

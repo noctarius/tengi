@@ -14,20 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.noctarius.tengi.server.impl.transport.http;
+package com.noctarius.tengi.server.spi.transport;
 
-import com.ning.http.client.AsyncHttpClient;
+import com.noctarius.tengi.core.connection.TransportLayer;
 
-public class HttpTransportTestCase
-        extends AbstractHttpTransportTestCase {
+public interface ServerChannel<S> {
 
-    @Override
-    protected AsyncHttpClient newHttpClient() {
-        return new AsyncHttpClient();
-    }
+    S socket();
 
-    @Override
-    protected boolean ssl() {
-        return false;
-    }
+    void start()
+            throws Exception;
+
+    void shutdown()
+            throws Exception;
+
+    int port();
+
+    TransportLayer transportLayer();
 }

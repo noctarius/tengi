@@ -21,6 +21,7 @@ import com.noctarius.tengi.core.connection.TransportLayer;
 import com.noctarius.tengi.server.impl.transport.http.HttpTransport;
 import com.noctarius.tengi.server.impl.transport.http2.Http2Transport;
 import com.noctarius.tengi.server.impl.transport.tcp.TcpTransport;
+import com.noctarius.tengi.server.impl.transport.udt.UdtTransport;
 import com.noctarius.tengi.server.impl.transport.websocket.WebsocketTransport;
 import com.noctarius.tengi.server.spi.negotiation.NegotiatableTransport;
 import com.noctarius.tengi.server.spi.negotiation.Negotiator;
@@ -55,7 +56,13 @@ public enum ServerTransports
      */
     WEBSOCKET_TRANSPORT(new WebsocketTransport()),
 
-    UDT_TRANSPORT(null),
+    /**
+     * This constant defines a UDT based {@link com.noctarius.tengi.core.connection.Transport}
+     * implementation. UDT is a reliable UDP implementation which simulates a full duplex socket
+     * channel with guaranteed delivery (and redelivery) and is insensitive to unreliable networks
+     * like WIFI, mobile networks and similar installations.
+     */
+    UDT_TRANSPORT(new UdtTransport()),
 
     /**
      * Reserved for later implementation

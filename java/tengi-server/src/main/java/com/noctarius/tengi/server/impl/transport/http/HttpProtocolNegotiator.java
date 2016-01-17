@@ -17,17 +17,17 @@
 package com.noctarius.tengi.server.impl.transport.http;
 
 import com.noctarius.tengi.server.impl.ConnectionManager;
+import com.noctarius.tengi.server.impl.transport.NettyNegotiator;
 import com.noctarius.tengi.server.impl.transport.negotiation.Http2Negotiator;
 import com.noctarius.tengi.server.spi.negotiation.NegotiationContext;
 import com.noctarius.tengi.server.spi.negotiation.NegotiationResult;
-import com.noctarius.tengi.server.spi.negotiation.Negotiator;
 import com.noctarius.tengi.spi.serialization.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 
 class HttpProtocolNegotiator
-        implements Negotiator {
+        implements NettyNegotiator {
 
     @Override
     public NegotiationResult handleProtocol(NegotiationContext context, ChannelHandlerContext ctx, ByteBuf buffer) {
@@ -42,8 +42,8 @@ class HttpProtocolNegotiator
         int magic2 = buffer.getUnsignedByte(buffer.readerIndex() + 2);
         int magic3 = buffer.getUnsignedByte(buffer.readerIndex() + 3);
 
-        if ((magic0 == 'G' && magic1 == 'E' && magic2 == 'T')
-            || (magic0 == 'P' && magic1 == 'O' && magic2 == 'S' && magic3 == 'T')) {
+        if ((magic0 == 'G' && magic1 == 'E' && magic2 == 'T') || //
+                (magic0 == 'P' && magic1 == 'O' && magic2 == 'S' && magic3 == 'T')) {
 
             int port = context.getPort();
             Serializer serializer = context.getSerializer();

@@ -1,3 +1,5 @@
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fnoctarius%2Ftengi.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fnoctarius%2Ftengi?ref=badge_shield)
+
 = tengi - Near-Realtime Communication Foundation
 Christoph Engelbert <https://github.com/noctarius[@noctarius2k]>
 // Settings:
@@ -778,3 +780,7 @@ Example: +
 === Object Header
 
 ==== Nullable Object
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fnoctarius%2Ftengi.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fnoctarius%2Ftengi?ref=badge_large)
